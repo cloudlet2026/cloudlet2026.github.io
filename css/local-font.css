@@ -1,0 +1,11 @@
+/* 声明字体名称，并指向本地文件路径 */
+@font-face {
+  font-family: 'LXGWMonoLocal';
+  font-display: swap; /* 优化字体加载体验，避免白屏 */
+  src: url('/fonts/LXGWWenKaiMono.ttf') format('truetype');
+}
+
+/* 将字体应用到整个网站 */
+body {
+  font-family: 'LXGWMonoLocal', sans-serif;
+}

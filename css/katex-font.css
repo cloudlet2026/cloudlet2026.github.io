@@ -1,0 +1,19 @@
+/* 设置中文字体 */
+.katex .mord.text {
+    font-family: 'LXGW Mono', sans-serif !important;
+}
+/*
+.katex {
+    font-size: 1.0em !important; 
+}
+
+
+.katex-inline {
+    font-size: 0.9em !important;
+}
+
+
+.katex-display > .katex {
+    font-size: 1.0em !important; 
+}
+*/

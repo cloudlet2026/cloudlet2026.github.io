@@ -1,0 +1,84 @@
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.18);
+  --glass-border: rgba(255, 255, 255, 0.28);
+  --glass-shadow: 0 10px 35px rgba(31, 38, 135, 0.14);
+  --glass-blur: blur(18px) saturate(180%);
+}
+
+[data-theme="dark"] {
+  --glass-bg: rgba(20, 24, 32, 0.35);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+body {
+  background-attachment: fixed;
+}
+
+#nav,
+#content-inner > #post,
+#aside-content .card-widget,
+#card-toc,
+#recent-posts .recent-post-item,
+.pagination-post .pagination-related,
+#local-search .search-dialog,
+#footer {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+#nav {
+  border-radius: 12px 12px 12px 12px;
+}
+
+#content-inner > #post,
+#aside-content .card-widget,
+#card-toc,
+#recent-posts .recent-post-item,
+.pagination-post .pagination-related,
+#local-search .search-dialog,
+#footer {
+  border-radius: 16px;
+}
+
+#content-inner > #post,
+#aside-content .card-widget,
+#card-toc,
+#recent-posts .recent-post-item,
+.pagination-post .pagination-related,
+#local-search .search-dialog,
+#footer,
+#nav {
+  position: relative;
+  overflow: hidden;
+}
+
+#content-inner > #post::before,
+#aside-content .card-widget::before,
+#card-toc::before,
+#recent-posts .recent-post-item::before,
+.pagination-post .pagination-related::before,
+#local-search .search-dialog::before,
+#footer::before,
+#nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.02));
+}
+
+#content-inner > #post > *,
+#aside-content .card-widget > *,
+#card-toc > *,
+#recent-posts .recent-post-item > *,
+.pagination-post .pagination-related > *,
+#local-search .search-dialog > *,
+#footer > *,
+#nav > * {
+  position: relative;
+  z-index: 1;
+}

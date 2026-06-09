@@ -51,7 +51,9 @@ body {
 .pagination-post .pagination-related,
 #local-search .search-dialog,
 #footer,
-
+#nav {
+  overflow: hidden;
+}
 
 #content-inner > #post::before,
 #aside-content .card-widget::before,
@@ -78,4 +80,9 @@ body {
 #nav > * {
   position: relative;
   z-index: 1;
+}
+[data-theme="light"] #local-search .search-dialog {
+  /* 增大背景不透明度，让毛玻璃底色更实在 */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  background: var(--glass-bg);
 }

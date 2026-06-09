@@ -86,3 +86,7 @@ body {
   --glass-bg: rgba(255, 255, 255, 0.85);
   background: var(--glass-bg);
 }
+/* 浅色模式下隐藏搜索框的伪元素渐变层 */
+[data-theme="light"] #local-search .search-dialog::before {
+  display: none;
+}

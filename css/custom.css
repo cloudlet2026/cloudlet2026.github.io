@@ -6,9 +6,9 @@
 }
 
 [data-theme="dark"] {
-  --glass-bg: rgba(20, 24, 32, 0.35);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  --glass-bg: rgba(8, 10, 15, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); 
 }
 
 body {
@@ -51,10 +51,7 @@ body {
 .pagination-post .pagination-related,
 #local-search .search-dialog,
 #footer,
-#nav {
-  position: relative;
-  overflow: hidden;
-}
+
 
 #content-inner > #post::before,
 #aside-content .card-widget::before,

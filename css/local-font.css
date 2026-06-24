@@ -1,15 +1,6 @@
-/* 声明字体名称，并指向 jsDelivr CDN 链接 */
-@font-face {
-  font-family: 'LXGW Mono';
-  font-display: swap; /* 优化字体加载体验，避免白屏 */
-  src: url('https://cdn.jsdelivr.net/gh/cloudlet2026/cloudlet2026.github.io@main/fonts/LXGWWenKaiMono.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'JetBrains Mono';
-  font-display: swap; /* 优化字体加载体验，避免白屏 */
-  src: url('https://cdn.jsdelivr.net/gh/cloudlet2026/cloudlet2026.github.io@main/fonts/JetBrainsMono.ttf') format('truetype');
-}
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.min.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.20/index.css');
 /* 将字体应用到整个网站 */
 body {
-  font-family: 'LXGW Mono', 'JetBrains Mono', sans-serif;
+  font-family: 'LXGW WenKai', 'JetBrains Mono', sans-serif;
 }

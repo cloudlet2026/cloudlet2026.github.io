@@ -8,10 +8,3 @@ body {
   font-family: 'LXGW WenKai Mono', 'JetBrains Mono', sans-serif;
 }
 
-/* 针对 ascii-art-font 类的代码块设置字体 */
-.highlight.ascii-art-font,
-pre.ascii-art-font,
-figure.highlight.ascii-art-font {
-    font-family: 'JetBrains Mono', 'Courier New', monospace !important;
-    word-break: break-all;
-}

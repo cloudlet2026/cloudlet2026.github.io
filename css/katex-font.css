@@ -1,6 +1,6 @@
 /* 设置中文字体 */
 .katex .mord.text {
-    font-family: 'LXGW WenKai', sans-serif !important;
+    font-family: 'LXGW WenKai Mono', sans-serif !important;
 }
 /*
 .katex {

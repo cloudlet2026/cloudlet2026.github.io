@@ -2029,7 +2029,7 @@ figure.highlight pre .javascript .function {
 .container pre,
 .container code {
   font-size: 16px;
-  font-family: "JetBrains Mono", sans-serif !important;
+  font-family: "LXGW WenKai Mono", monospace !important;
   border-radius: 6px;
 }
 .container code {

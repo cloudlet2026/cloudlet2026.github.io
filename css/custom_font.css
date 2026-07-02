@@ -1,7 +1,26 @@
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.min.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.20/index.css');
-/* 将字体应用到整个网站 */
+
 body {
-  font-family: 'LXGW WenKai Mono', 'JetBrains Mono', sans-serif;
+  font-family: 'LXGW WenKai', 'LXGW WenKai Mono', sans-serif;
 }
 
+figure.highlight.plaintext .code pre,
+figure.highlight.plaintext .code pre .line,
+figure.highlight.plain .code pre,
+figure.highlight.plain .code pre .line,
+figure.highlight.text .code pre,
+figure.highlight.text .code pre .line,
+figure.shiki.plaintext .code pre,
+figure.shiki.plaintext .code pre code,
+figure.shiki.plaintext .code pre span,
+figure.shiki.plain .code pre,
+figure.shiki.plain .code pre code,
+figure.shiki.plain .code pre span,
+figure.shiki.text .code pre,
+figure.shiki.text .code pre code,
+figure.shiki.text .code pre span {
+  font-family: 'LXGW WenKai Mono', sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}

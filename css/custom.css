@@ -20,7 +20,6 @@ body {
 #aside-content .card-widget,
 #card-toc,
 #recent-posts .recent-post-item,
-.pagination-post .pagination-related,
 #local-search .search-dialog,
 #footer {
   background: var(--glass-bg) !important;
@@ -38,7 +37,6 @@ body {
 #aside-content .card-widget,
 #card-toc,
 #recent-posts .recent-post-item,
-.pagination-post .pagination-related,
 #local-search .search-dialog,
 #footer {
   border-radius: 16px;
@@ -48,7 +46,6 @@ body {
 #aside-content .card-widget,
 #card-toc,
 #recent-posts .recent-post-item,
-.pagination-post .pagination-related,
 #local-search .search-dialog,
 #footer,
 #nav {
@@ -59,7 +56,6 @@ body {
 #content-inner > #post,
 #aside-content .card-widget,
 #recent-posts .recent-post-item,
-.pagination-post .pagination-related,
 #footer {
   position: relative;
 }
@@ -68,7 +64,6 @@ body {
 #aside-content .card-widget::before,
 #card-toc::before,
 #recent-posts .recent-post-item::before,
-.pagination-post .pagination-related::before,
 #local-search .search-dialog::before,
 #footer::before,
 #nav::before {
@@ -84,7 +79,6 @@ body {
 #aside-content .card-widget > *,
 #card-toc > *,
 #recent-posts .recent-post-item > *,
-.pagination-post .pagination-related > *,
 #local-search .search-dialog > *,
 #footer > *,
 #nav > * {
@@ -96,6 +90,7 @@ body {
   --glass-bg: rgba(255, 255, 255, 0.85);
   background: var(--glass-bg);
 }
+
 /* 浅色模式下隐藏搜索框的伪元素渐变层 */
 [data-theme="light"] #local-search .search-dialog::before {
   display: none;

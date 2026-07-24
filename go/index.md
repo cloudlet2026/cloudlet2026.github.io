@@ -6,6 +6,12 @@ date: 2026-07-25 12:00:00
 ---
 
 <style>
+  h1 a[href*="cloudlet2026"] {
+    display: none !important;
+  }
+</style>
+
+<style>
   /* 中转页专用样式 */
   .go-card {
     max-width: 500px;
@@ -76,13 +82,10 @@ date: 2026-07-25 12:00:00
     color: #58a6ff;
   }
   [data-theme="dark"] .go-card .footer-note { color: #5a5a5a; }
-  #nav {
-    display: none !important;
   }
 </style>
 
 <div class="go-card">
-  <div class="icon">🔗</div>
   <h2>正在跳转至外部链接</h2>
   <p class="desc">您即将离开本站，前往以下第三方网站</p>
   <div class="warning">

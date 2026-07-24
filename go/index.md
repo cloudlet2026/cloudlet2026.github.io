@@ -76,6 +76,9 @@ date: 2026-07-25 12:00:00
     color: #58a6ff;
   }
   [data-theme="dark"] .go-card .footer-note { color: #5a5a5a; }
+  #nav {
+    display: none !important;
+  }
 </style>
 
 <div class="go-card">

@@ -35,7 +35,11 @@
 
     // 阻止默认跳转，改为走中转页
     e.preventDefault();
-    window.location.href = CONFIG.redirectPath + encodeURIComponent(href);
+    var a = document.createElement('a');
+    a.href = CONFIG.redirectPath + encodeURIComponent(href);
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.click();
   });
 
 })();

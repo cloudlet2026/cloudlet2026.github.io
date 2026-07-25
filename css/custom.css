@@ -17,6 +17,8 @@ body {
 
 #nav,
 #content-inner > #post,
+#content-inner > #page,
+#content-inner > #archive,
 #aside-content .card-widget,
 #card-toc,
 #recent-posts .recent-post-item,
@@ -34,6 +36,8 @@ body {
 }
 
 #content-inner > #post,
+#content-inner > #page,
+#content-inner > #archive,
 #aside-content .card-widget,
 #card-toc,
 #recent-posts .recent-post-item,
@@ -43,6 +47,8 @@ body {
 }
 
 #content-inner > #post,
+#content-inner > #page,
+#content-inner > #archive,
 #aside-content .card-widget,
 #card-toc,
 #recent-posts .recent-post-item,
@@ -54,6 +60,8 @@ body {
 }
 
 #content-inner > #post,
+#content-inner > #page,
+#content-inner > #archive,
 #aside-content .card-widget,
 #recent-posts .recent-post-item,
 #footer {
@@ -61,6 +69,8 @@ body {
 }
 
 #content-inner > #post::before,
+#content-inner > #page::before,
+#content-inner > #archive::before,
 #aside-content .card-widget::before,
 #card-toc::before,
 #recent-posts .recent-post-item::before,
@@ -76,6 +86,8 @@ body {
 }
 
 #content-inner > #post > *,
+#content-inner > #page > *,
+#content-inner > #archive > *,
 #aside-content .card-widget > *,
 #card-toc > *,
 #recent-posts .recent-post-item > *,

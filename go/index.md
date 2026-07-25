@@ -6,86 +6,132 @@ date: 2026-07-25 12:00:00
 ---
 
 <style>
-  h1 a[href*="cloudlet2026"] {
+  /* 隐藏 Butterfly 自动生成的标题和元信息 */
+  #post > .post-title,
+  #post > .post-meta {
     display: none !important;
   }
-</style>
 
-<style>
-  /* 中转页专用样式 */
+  /* 中转页容器 */
   .go-card {
-    max-width: 500px;
-    margin: 60px auto;
-    padding: 40px 30px;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 44px 32px 36px;
     text-align: center;
   }
-  .go-card .icon { font-size: 48px; margin-bottom: 16px; }
-  .go-card h2 { font-size: 22px; color: #24292f; margin-bottom: 8px; }
-  .go-card .desc { font-size: 14px; color: #57606a; margin-bottom: 24px; }
-  .go-card .warning {
-    background: #fff8e7;
-    border-left: 4px solid #f0b400;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #8a6d0b;
-    text-align: left;
-    margin-bottom: 28px;
+
+  .go-card .icon-wrap {
+    font-size: 52px;
+    line-height: 1;
+    margin-bottom: 20px;
   }
+
+  .go-card h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--font-color);
+    margin: 0 0 8px;
+  }
+
+  .go-card .desc {
+    font-size: 14px;
+    color: var(--second-font-color, #666);
+    margin: 0 0 28px;
+    line-height: 1.6;
+  }
+
+  .go-card .warning {
+    background: rgba(240, 180, 0, 0.1);
+    border: 1px solid rgba(240, 180, 0, 0.25);
+    border-left: 4px solid #f0b400;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #a07000;
+    text-align: left;
+    margin-bottom: 30px;
+    line-height: 1.7;
+  }
+
+  [data-theme="dark"] .go-card .warning {
+    background: rgba(240, 180, 0, 0.06);
+    border-color: rgba(240, 180, 0, 0.15);
+    color: #d4a520;
+  }
+
+  /* 倒计时区域 */
   .go-card .countdown-wrap {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     margin-bottom: 28px;
   }
-  .go-card .countdown-num {
-    font-size: 36px;
-    font-weight: 700;
-    color: #0969da;
-    background: #f0f6ff;
-    padding: 0 16px;
-    border-radius: 8px;
-    min-width: 60px;
-    line-height: 64px;
+
+  .go-card .countdown-label {
+    font-size: 14px;
+    color: var(--second-font-color, #8b949e);
   }
+
+  .go-card .countdown-num {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--btn-bg, #49b1f5);
+    background: rgba(73, 177, 245, 0.1);
+    min-width: 52px;
+    line-height: 56px;
+    border-radius: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  [data-theme="dark"] .go-card .countdown-num {
+    background: rgba(73, 177, 245, 0.08);
+  }
+
+  /* 按钮 */
   .go-card .btn {
     display: inline-block;
-    padding: 12px 36px;
-    background: #0969da;
-    color: #fff !important;
+    padding: 12px 40px;
+    background: var(--btn-bg, #49b1f5);
+    color: #fff;
     border-radius: 8px;
-    text-decoration: none;
-    font-size: 16px;
+    text-decoration: none !important;
+    font-size: 15px;
     font-weight: 500;
-    transition: background 0.2s;
+    transition: all 0.25s ease;
+    border: none;
+    cursor: pointer;
   }
-  .go-card .btn:hover { background: #0550ae; color: #fff !important; }
-  .go-card .footer-note { margin-top: 20px; font-size: 12px; color: #8b949e; }
-  /* 暗色模式下适配 Butterfly */
-  [data-theme="dark"] .go-card {
-    background: #1c1c1c;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+
+  .go-card .btn:hover {
+    background: var(--btn-hover-color, #3ea2e8);
+    color: #fff !important;
+    text-decoration: none !important;
+    box-shadow: 0 4px 16px rgba(73, 177, 245, 0.35);
   }
-  [data-theme="dark"] .go-card h2 { color: #e6e6e6; }
-  [data-theme="dark"] .go-card .desc { color: #a0a0a0; }
-  [data-theme="dark"] .go-card .warning {
-    background: #2a2416;
-    color: #d4a00a;
-    border-left-color: #f0b400;
+
+  .go-card .footer-note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #adb5bd;
   }
-  [data-theme="dark"] .go-card .countdown-num {
-    background: #1a2a40;
-    color: #58a6ff;
+
+  [data-theme="dark"] .go-card .footer-note {
+    color: #555;
   }
-  [data-theme="dark"] .go-card .footer-note { color: #5a5a5a; }
+
+  /* 无效链接提示 */
+  .go-error {
+    padding: 32px 20px;
+    text-align: center;
   }
+  .go-error .error-icon { font-size: 48px; margin-bottom: 16px; line-height: 1; }
+  .go-error h2 { font-size: 18px; color: var(--font-color); margin: 0 0 8px; }
+  .go-error p { font-size: 14px; color: var(--second-font-color, #666); margin: 0; }
 </style>
 
 <div class="go-card">
+  <div class="icon-wrap">🔗</div>
   <h2>正在跳转至外部链接</h2>
   <p class="desc">您即将离开本站，前往以下第三方网站</p>
   <div class="warning">
@@ -97,7 +143,7 @@ date: 2026-07-25 12:00:00
     <span class="countdown-num" id="timer">3</span>
     <span class="countdown-label">秒</span>
   </div>
-  <a href="#" id="targetLink" class="btn">立即前往 ➜</a>
+  <a href="#" id="targetLink" class="btn">立即前往 →</a>
   <div class="footer-note">
     如果页面未自动跳转，请点击上方按钮
   </div>
@@ -105,26 +151,25 @@ date: 2026-07-25 12:00:00
 
 <script>
   (function() {
-    const params = new URLSearchParams(window.location.search);
-    let target = params.get('url');
+    var params = new URLSearchParams(window.location.search);
+    var target = params.get('url');
 
-    if (!target || !target.match(/^https?:\/\/.+/)) {
-      document.querySelector('.go-card').innerHTML = `
-        <div style="padding:20px;">
-          <div style="font-size:48px;margin-bottom:16px;">🚫</div>
-          <h2>无效链接</h2>
-          <p style="color:#57606a;font-size:14px;">缺少或包含非法参数的跳转请求</p>
-        </div>
-      `;
-      throw new Error('Invalid URL');
+    if (!target || !/^https?:\/\/.+/.test(target)) {
+      var card = document.querySelector('.go-card');
+      card.innerHTML = '<div class="go-error">' +
+        '<div class="error-icon">🚫</div>' +
+        '<h2>无效链接</h2>' +
+        '<p>缺少或包含非法参数的跳转请求</p>' +
+        '</div>';
+      return;
     }
 
-    const btn = document.getElementById('targetLink');
-    const timerEl = document.getElementById('timer');
+    var btn = document.getElementById('targetLink');
+    var timerEl = document.getElementById('timer');
     btn.href = target;
 
-    let seconds = 3;
-    const interval = setInterval(() => {
+    var seconds = 3;
+    var interval = setInterval(function() {
       seconds--;
       timerEl.textContent = seconds;
       if (seconds <= 0) {

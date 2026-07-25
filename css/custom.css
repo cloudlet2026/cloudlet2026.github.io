@@ -117,16 +117,9 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 44px 48px 36px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  border-radius: 14px;
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
-}
-
-[data-theme="dark"] .page.type-link #article-container > .flink {
-  background: rgba(17, 24, 39, 0.82);
-  border-color: rgba(148, 163, 184, 0.14);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .page.type-link #article-container > .flink > p:first-of-type,
@@ -134,9 +127,16 @@ body {
   margin: 0 0 28px;
   padding: 18px 18px 16px;
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(47, 138, 245, 0.08), rgba(47, 138, 245, 0.03));
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   color: var(--font-color);
   line-height: 1.75;
+}
+
+[data-theme="dark"] .page.type-link #article-container > .flink > p:first-of-type,
+[data-theme="dark"] .page.type-link #article-container > .flink > .link-intro {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .page.type-link #article-container > .flink > h2 {
@@ -174,13 +174,13 @@ body {
   min-height: 68px;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.68);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.03);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 [data-theme="dark"] .page.type-link #article-container > .flink > ul > li {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.055);
   border-color: rgba(148, 163, 184, 0.12);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
@@ -216,14 +216,14 @@ body {
   margin: 16px 0 28px;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.16);
   overflow: auto;
   border-collapse: separate;
   border-spacing: 0;
 }
 
 [data-theme="dark"] .page.type-link #article-container > .flink > table {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   border-color: rgba(148, 163, 184, 0.12);
 }
 

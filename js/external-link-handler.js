@@ -3,7 +3,8 @@
   const CONFIG = {
     // 你的博客域名（多个用逗号分隔）
     whitelistDomains: [
-      'cloudlet2026.github.io'
+      'cloudlet2026.github.io',
+      'github.com'
     ],
     // 中转页路径
     redirectPath: '/go/?url='

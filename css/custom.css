@@ -133,8 +133,8 @@ body {
   padding: 0 14px !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: 12px !important;
-  background: rgba(245, 245, 245, 0.88) !important;
   color: var(--font-color) !important;
+  border-color: var(--theme-color) !important;
   opacity: 1 !important;
   font-family: inherit !important;
   box-shadow: var(--glass-shadow) !important;
@@ -142,10 +142,6 @@ body {
   appearance: none;
   position: relative !important;
   z-index: 2 !important;
-}
-
-[data-theme="dark"] .hbe-input-field-default {
-  background: rgba(8, 10, 15, 0.78) !important;
 }
 
 [data-theme="dark"] .hbe input[type="password"]::-ms-reveal,
@@ -161,7 +157,7 @@ body {
   font-family: inherit !important;
   color: var(--font-color) !important;
   position: relative !important;
-  top: -4px !important;
+  top: -24px !important;
   line-height: 1 !important;
 }
 
@@ -174,7 +170,6 @@ body {
 .hbe .hbe-input-field:focus,
 .hbe-input-field:focus {
   border-color: var(--theme-color) !important;
-  box-shadow: 0 0 0 3px rgba(47, 138, 245, 0.16), var(--glass-shadow) !important;
 }
 
 .hbe-button {
@@ -182,29 +177,21 @@ body {
   min-width: 120px;
   height: 40px;
   padding: 0 20px;
-  border: 0;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #4db5ff 0%, #2f8af5 100%) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
   color: #fff !important;
   font-family: 'LXGW WenKai', 'LXGW WenKai Mono', sans-serif !important;
   font-size: 16px !important;
   font-weight: 600 !important;
   line-height: 40px !important;
   white-space: nowrap;
+  top: -44px !important;
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(47, 138, 245, 0.28);
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
-.hbe-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(47, 138, 245, 0.34);
-}
 
-.hbe-button:active {
-  transform: translateY(0);
-  opacity: 0.92;
-}
 
 /* Link page layout */
 .page.type-link #content-inner > #page {

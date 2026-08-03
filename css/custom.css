@@ -108,6 +108,104 @@ body {
   display: none;
 }
 
+/* Hexo-Blog-Encrypt */
+.hbe-form {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.hbe-input-default {
+  overflow: visible !important;
+  width: 100%;
+  max-width: 420px;
+  position: relative !important;
+}
+
+.hbe-input-field-default {
+  width: 100% !important;
+  height: 44px;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  background: rgba(245, 245, 245, 0.88) !important;
+  color: var(--font-color) !important;
+  opacity: 1 !important;
+  font-family: inherit !important;
+  box-shadow: var(--glass-shadow) !important;
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+[data-theme="dark"] .hbe-input-field-default {
+  background: rgba(8, 10, 15, 0.78) !important;
+}
+
+[data-theme="dark"] .hbe input[type="password"]::-ms-reveal,
+[data-theme="dark"] .hbe input[type="password"]::-ms-clear,
+[data-theme="dark"] .hbe input[type="password"]::-webkit-credentials-auto-fill-button,
+[data-theme="dark"] .hbe input[type="password"]::-webkit-password-toggle-button {
+  filter: invert(1) brightness(1.4);
+  opacity: 1;
+}
+
+.hbe-input-label-default,
+.hbe-input-label-content-default {
+  font-family: inherit !important;
+  color: var(--font-color) !important;
+  position: relative !important;
+  top: -4px !important;
+  line-height: 1 !important;
+}
+
+.hbe-input-label-default::before,
+.hbe-input-label-default::after {
+  display: none !important;
+  content: none !important;
+}
+
+.hbe .hbe-input-field:focus,
+.hbe-input-field:focus {
+  border-color: var(--theme-color) !important;
+  box-shadow: 0 0 0 3px rgba(47, 138, 245, 0.16), var(--glass-shadow) !important;
+}
+
+.hbe-button {
+  width: 200px !important;
+  min-width: 120px;
+  height: 40px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #4db5ff 0%, #2f8af5 100%) !important;
+  color: #fff !important;
+  font-family: 'LXGW WenKai', 'LXGW WenKai Mono', sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 40px !important;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(47, 138, 245, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.hbe-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(47, 138, 245, 0.34);
+}
+
+.hbe-button:active {
+  transform: translateY(0);
+  opacity: 0.92;
+}
+
 /* Link page layout */
 .page.type-link #content-inner > #page {
   max-width: 1280px !important;

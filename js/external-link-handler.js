@@ -43,4 +43,18 @@
     a.click();
   });
 
+  const rewriteHbeButtonText = () => {
+    document.querySelectorAll('.hbe-button').forEach(button => {
+      if (button.textContent.trim() === 'Decrypt') {
+        button.textContent = '解密';
+      }
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', rewriteHbeButtonText, { once: true });
+  } else {
+    rewriteHbeButtonText();
+  }
+
 })();

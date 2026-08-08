@@ -1,5 +1,7 @@
 (function() {
   // ====== 配置区 ======
+  // 如果当前页面是中转页，直接退出不执行任何逻辑
+  if (window.location.pathname.includes('/go/')) return;
   const CONFIG = {
     // 你的博客域名（多个用逗号分隔）
     whitelistDomains: [

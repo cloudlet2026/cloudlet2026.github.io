@@ -1763,6 +1763,9 @@ body {
 *::-webkit-scrollbar-track {
   background-color: transparent;
 }
+html.with-fancybox {
+  --scrollbar-color: transparent;
+}
 input::placeholder {
   color: var(--font-color);
 }
@@ -2207,6 +2210,109 @@ figure.highlight pre .javascript .function {
   white-space: nowrap;
   font-size: 12px;
   pointer-events: none;
+}
+.container .code-expand-btn {
+  position: absolute;
+  bottom: 0;
+  z-index: 10;
+  width: 100%;
+  background: var(--hlexpand-bg);
+  text-align: center;
+  font-size: 14px;
+  cursor: pointer;
+}
+.container .code-expand-btn i {
+  padding: 6px 0;
+  color: var(--hlnumber-color);
+  -webkit-animation: code-expand-key 1.2s infinite;
+  -moz-animation: code-expand-key 1.2s infinite;
+  -o-animation: code-expand-key 1.2s infinite;
+  -ms-animation: code-expand-key 1.2s infinite;
+  animation: code-expand-key 1.2s infinite;
+}
+.container .code-expand-btn.expand-done > i {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+.container .code-expand-btn.expand-done + table,
+.container .code-expand-btn.expand-done + pre {
+  margin-bottom: 1.8em;
+}
+.container .code-expand-btn:not(.expand-done) ~ table,
+.container .code-expand-btn:not(.expand-done) ~ pre {
+  overflow: hidden;
+  height: 200px;
+}
+@-moz-keyframes code-expand-key {
+  0% {
+    opacity: 0.6;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+  }
+  50% {
+    opacity: 0.1;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=10)";
+    filter: alpha(opacity=10);
+  }
+  100% {
+    opacity: 0.6;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+  }
+}
+@-webkit-keyframes code-expand-key {
+  0% {
+    opacity: 0.6;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+  }
+  50% {
+    opacity: 0.1;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=10)";
+    filter: alpha(opacity=10);
+  }
+  100% {
+    opacity: 0.6;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+  }
+}
+@-o-keyframes code-expand-key {
+  0% {
+    opacity: 0.6;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+  }
+  50% {
+    opacity: 0.1;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=10)";
+    filter: alpha(opacity=10);
+  }
+  100% {
+    opacity: 0.6;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+  }
+}
+@keyframes code-expand-key {
+  0% {
+    opacity: 0.6;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+  }
+  50% {
+    opacity: 0.1;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=10)";
+    filter: alpha(opacity=10);
+  }
+  100% {
+    opacity: 0.6;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+    filter: alpha(opacity=60);
+  }
 }
 .article-sort {
   margin-left: 10px;
@@ -5259,7 +5365,7 @@ figure.highlight pre .javascript .function {
 }
 .layout .pagination > * {
   display: inline-block;
-  margin: 0 6px;
+  margin: 6px;
   width: 2.5em;
   height: 2.5em;
   line-height: 2.5em;
@@ -6040,12 +6146,6 @@ mjx-assistive-mml {
   right: 0;
   bottom: 0;
 }
-.aplayer {
-  color: #4c4948;
-}
-.container .aplayer {
-  margin: 0 0 20px;
-}
 .snackbar-container.snackbar-css {
   border-radius: 5px;
   opacity: 0.85 !important;
@@ -6069,8 +6169,9 @@ mjx-assistive-mml {
   filter: none;
 }
 @media screen and (max-width: 768px) {
-  .fancybox__toolbar__column.is-middle {
-    display: none;
+  .fancybox__toolbar__column.is-middle,
+  .f-carousel__toolbar__column.is-middle {
+    visibility: hidden;
   }
 }
 .container .btn-center {
@@ -7549,9 +7650,6 @@ blockquote.pullquote.right {
 }
 [data-theme='dark'] .container .note code {
   background: rgba(27,31,35,0.05);
-}
-[data-theme='dark'] .container .aplayer {
-  filter: brightness(0.8);
 }
 [data-theme='dark'] .container kbd {
   border-color: #696969;

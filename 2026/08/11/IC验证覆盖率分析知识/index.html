@@ -1,0 +1,826 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>IC验证覆盖率分析知识 | Cloudlet</title><meta name="author" content="Cloudlet"><meta name="copyright" content="Cloudlet"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本文由AI生成，不具备参考价值。 基于Cadence IMC（Incisive Metrics Center）工具环境  一、覆盖率概述 1.1 覆盖率的核心定义 在IC验证中，覆盖率是衡量验证完备性的核心量化指标。覆盖率回答两个核心问题：  “设计能工作吗？” → 功能验证 “验证做完了吗？” → 覆盖率量化  覆盖率分为两大类别：    类别 定义 来源     代码覆盖率 衡量RTL代码被">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IC验证覆盖率分析知识">
+<meta property="og:url" content="https://9606960.xyz/2026/08/11/IC%E9%AA%8C%E8%AF%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90%E7%9F%A5%E8%AF%86/index.html">
+<meta property="og:site_name" content="Cloudlet">
+<meta property="og:description" content="本文由AI生成，不具备参考价值。 基于Cadence IMC（Incisive Metrics Center）工具环境  一、覆盖率概述 1.1 覆盖率的核心定义 在IC验证中，覆盖率是衡量验证完备性的核心量化指标。覆盖率回答两个核心问题：  “设计能工作吗？” → 功能验证 “验证做完了吗？” → 覆盖率量化  覆盖率分为两大类别：    类别 定义 来源     代码覆盖率 衡量RTL代码被">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg">
+<meta property="article:published_time" content="2026-08-11T15:56:31.000Z">
+<meta property="article:modified_time" content="2026-08-11T16:22:31.128Z">
+<meta property="article:author" content="Cloudlet">
+<meta property="article:tag" content="IMC">
+<meta property="article:tag" content="覆盖率">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "IC验证覆盖率分析知识",
+  "url": "https://9606960.xyz/2026/08/11/IC%E9%AA%8C%E8%AF%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90%E7%9F%A5%E8%AF%86/",
+  "image": "https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg",
+  "datePublished": "2026-08-11T15:56:31.000Z",
+  "dateModified": "2026-08-11T16:22:31.128Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Cloudlet",
+      "url": "https://9606960.xyz"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://9606960.xyz/2026/08/11/IC%E9%AA%8C%E8%AF%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90%E7%9F%A5%E8%AF%86/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: {"chs_to_cht":"已切换为繁体中文","cht_to_chs":"已切换为简体中文","day_to_night":"已切换为深色模式","night_to_day":"已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"bottom-left"},
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'IC验证覆盖率分析知识',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom_font.css"><link rel="stylesheet" href="/css/custom.css"><link rel="stylesheet" href="/css/katex-font.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">26</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Cloudlet</span></a><a class="nav-page-title" href="/"><span class="site-name">IC验证覆盖率分析知识</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">IC验证覆盖率分析知识</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-08-11T15:56:31.000Z" title="发表于 2026-08-11 23:56:31">2026-08-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-11T16:22:31.128Z" title="更新于 2026-08-12 00:22:31">2026-08-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/IC%E9%AA%8C%E8%AF%81/">IC验证</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><blockquote>
+<p>本文由AI生成，不具备参考价值。<br>
+基于Cadence IMC（Incisive Metrics Center）工具环境</p>
+</blockquote>
+<h2 id="一、覆盖率概述">一、覆盖率概述</h2>
+<h3 id="1-1-覆盖率的核心定义">1.1 覆盖率的核心定义</h3>
+<p>在IC验证中，覆盖率是衡量验证完备性的核心量化指标。覆盖率回答两个核心问题：</p>
+<ul>
+<li><strong>“设计能工作吗？”</strong> → 功能验证</li>
+<li><strong>“验证做完了吗？”</strong> → 覆盖率量化</li>
+</ul>
+<p>覆盖率分为两大类别：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>定义</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>代码覆盖率</strong></td>
+<td>衡量RTL代码被测试执行的程度</td>
+<td>EDA工具自动生成</td>
+</tr>
+<tr>
+<td><strong>功能覆盖率</strong></td>
+<td>衡量验证计划中功能点被测试的程度</td>
+<td>验证工程师手动定义</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1-2-Cadence-IMC工具简介">1.2 Cadence IMC工具简介</h3>
+<p>IMC（Incisive Metrics Center）是Cadence的覆盖率管理与分析工具，核心功能：</p>
+<ul>
+<li>支持所有代码覆盖率类型的收集、合并、分析</li>
+<li>提供Types（模块定义）和Instances（例化层次）双视图</li>
+<li>内置UNR App进行形式化不可达分析</li>
+<li>支持vRefine排除文件管理</li>
+</ul>
+<h3 id="1-3-常用IMC命令速查">1.3 常用IMC命令速查</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>编译开启覆盖率</td>
+<td><code>irun -coverage all -covdut &lt;module&gt;</code></td>
+</tr>
+<tr>
+<td>指定覆盖率类型</td>
+<td><code>-coverage line+cond+fsm+tgl+branch+assert</code></td>
+</tr>
+<tr>
+<td>指定统计层次</td>
+<td><code>-cov_hier_depth 10</code></td>
+</tr>
+<tr>
+<td>合并数据库</td>
+<td><code>imc -merge *.vdb -out merged.vdb</code></td>
+</tr>
+<tr>
+<td>GUI查看</td>
+<td><code>imc -gui -db merged.vdb</code></td>
+</tr>
+<tr>
+<td>生成报告</td>
+<td><code>imc -report -db merged.vdb -format html</code></td>
+</tr>
+<tr>
+<td>排除文件使用</td>
+<td><code>-vrefine exclude.vRefine</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="二、Coverage-Database（覆盖率数据库）管理">二、Coverage Database（覆盖率数据库）管理</h2>
+<h3 id="2-1-数据库生成">2.1 数据库生成</h3>
+<p>每个测试用例仿真后，IMC生成独立覆盖率数据库（<code>.vdb</code>目录）。<strong>多个用例必须各自独立仿真</strong>，最后合并。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 单个用例仿真</span></span><br><span class="line">irun -coverage all -covdut dut_module -covtest testcase1 testbench.v</span><br><span class="line"><span class="comment"># 生成 ./cov_work/testcase1.vdb</span></span><br></pre></td></tr></table></figure>
+<h3 id="2-2-数据库合并">2.2 数据库合并</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 合并所有vdb</span></span><br><span class="line">imc -merge *.vdb -out merged.vdb -parallel</span><br></pre></td></tr></table></figure>
+<h3 id="2-3-数据库报告导出">2.3 数据库报告导出</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成HTML报告</span></span><br><span class="line">imc -report -db merged.vdb -format html -output coverage_report</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成文本报告</span></span><br><span class="line">imc -report -db merged.vdb -format text -output coverage.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 按实例层次导出Excel</span></span><br><span class="line">imc -report -db merged.vdb -format excel -hierarchy</span><br></pre></td></tr></table></figure>
+<h2 id="三、Block-Coverage（块-行覆盖率）">三、Block Coverage（块/行覆盖率）</h2>
+<h3 id="3-1-定义">3.1 定义</h3>
+<p>Block Coverage衡量RTL代码中每一行可执行语句是否被执行过。IMC中Block Coverage已包含Statement Coverage（语句覆盖率）。</p>
+<h3 id="3-2-未覆盖典型例子">3.2 未覆盖典型例子</h3>
+<p><strong>例1：复位分支中的正常操作行未覆盖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">always @(posedge clk or negedge rst_n) begin</span><br><span class="line">  if (!rst_n) begin</span><br><span class="line">    state &lt;= IDLE;        // ✅️ 覆盖</span><br><span class="line">    cnt &lt;= 0;             // ✅️ 覆盖</span><br><span class="line">  end else begin</span><br><span class="line">    state &lt;= next_state;  // ❎ 仿真只跑完复位就结束，这行不覆盖</span><br><span class="line">    cnt &lt;= cnt + 1;       // ❎ 同上</span><br><span class="line">  end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：仿真时长不够，未经历正常操作周期。<strong>解决</strong>：延长仿真时间。</p>
+<hr>
+<p><strong>例2：case语句中的保留编码项</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">case (fifo_status)</span><br><span class="line">  2&#x27;b00: empty_flag = 1;      // ✅️ 覆盖</span><br><span class="line">  2&#x27;b01: half_full_flag = 1;  // ✅️ 覆盖</span><br><span class="line">  2&#x27;b10: full_flag = 1;       // ✅️ 覆盖</span><br><span class="line">  2&#x27;b11: error_flag = 1;      // ❎ 2&#x27;b11是保留编码，永不执行</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：FIFO状态编码为硬件自动生成，2’b11是非法保留编码。<strong>处理</strong>：豁免（Exclude），注释&quot;FIFO状态保留编码&quot;。</p>
+<hr>
+<p><strong>例3：参数化模块中禁用功能对应的行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">module arbiter #(parameter ENABLE_FAST_MODE = 0) ( ... );</span><br><span class="line">always @(*) begin</span><br><span class="line">  if (ENABLE_FAST_MODE) begin</span><br><span class="line">    grant = fast_arbitration();  // ❎ ENABLE_FAST_MODE=0时，这行永不执行</span><br><span class="line">  end else begin</span><br><span class="line">    grant = round_robin();       // ✅️ 覆盖</span><br><span class="line">  end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：该芯片配置固定为0，快速模式功能禁用。<strong>处理</strong>：豁免，注释&quot;该实例化ENABLE_FAST_MODE=0&quot;。</p>
+<hr>
+<p><strong>例4：断言/打印语句后的永远不会执行行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if (data_valid) begin</span><br><span class="line">  $display(&quot;Data received: %h&quot;, data);</span><br><span class="line">  process_data(data);   // ✅️ 覆盖</span><br><span class="line">end else begin</span><br><span class="line">  $error(&quot;Data invalid!&quot;);  // ❎ data_valid恒为1，这行不执行</span><br><span class="line">  recover_from_error();     // ❎ 同上</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：验证环境中data_valid被约束恒为1。<strong>解决</strong>：若设计需处理无效数据，写定向用例驱动data_valid=0；若设计保证永远有效，则豁免。</p>
+<hr>
+<p><strong>例5：循环次数为0时循环体行未执行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for (int i = 0; i &lt; burst_len; i++) begin</span><br><span class="line">  data_buffer[i] = data_in;  // ❎ 如果burst_len=0，这行永不执行</span><br><span class="line">  data_buffer[i+1] = 0;      // ❎ 同上</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：burst_len来自配置寄存器，若允许为0表示空操作。<strong>处理</strong>：若允许0值则豁免，否则检查初始化代码。</p>
+<hr>
+<p><strong>例6：generate语句中未被选中的分支</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">generate</span><br><span class="line">  if (WIDTH == 32) begin : GEN_32</span><br><span class="line">    data_out = data_in[31:0];     // ✅️ 覆盖（WIDTH=32时）</span><br><span class="line">  end else if (WIDTH == 16) begin : GEN_16</span><br><span class="line">    data_out = data_in[15:0];     // ❎ WIDTH=32时，这行不执行</span><br><span class="line">  end else begin : GEN_8</span><br><span class="line">    data_out = data_in[7:0];      // ❎ WIDTH=32时，这行不执行</span><br><span class="line">  end</span><br><span class="line">endgenerate</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：参数在编译时确定，仿真中无法动态改变。<strong>处理</strong>：对未选中的generate分支整体豁免，若需验证所有宽度，需在不同编译配置中分别跑。</p>
+<hr>
+<p><strong>例7：assertion中的$fatal行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">always @(*) begin</span><br><span class="line">  if (state == ILLEGAL) begin</span><br><span class="line">    $fatal(&quot;Illegal state reached!&quot;);  // ❎ 状态机保证不会非法，这行不执行</span><br><span class="line">  end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：$fatal为防呆保护逻辑，设计保证永不进入。<strong>处理</strong>：豁免，注释&quot;状态机设计保证不会进入非法状态&quot;。</p>
+<hr>
+<p><strong>例8：子模块valid为假时的处理行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (submodule_valid) begin</span><br><span class="line">  data_reg &lt;= submodule_data;   // ✅️ 覆盖</span><br><span class="line">end else begin</span><br><span class="line">  data_reg &lt;= data_reg;         // ❎ submodule_valid恒为1，这行不覆盖</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：子模块输出valid在仿真中始终为高。<strong>解决</strong>：构造子模块无效周期场景（如复位期间）。</p>
+<hr>
+<p><strong>例9：函数中因参数条件永不满足而跳过的行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function int calc(int a, int b, bit mode);</span><br><span class="line">  if (mode == 0) begin</span><br><span class="line">    return a + b;               // ✅️ 覆盖</span><br><span class="line">  end else begin</span><br><span class="line">    return a - b;               // ❎ mode恒为0，这行不覆盖</span><br><span class="line">  end</span><br><span class="line">endfunction</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：调用时mode总传0（减法模式已废弃）。<strong>处理</strong>：若减法功能已废弃则豁免，否则写mode=1的用例。</p>
+<hr>
+<p><strong>例10：interface中modport未被使用的方向信号行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">interface bus_if;</span><br><span class="line">  logic [7:0] data;</span><br><span class="line">  logic valid;</span><br><span class="line">  logic ready;</span><br><span class="line">  modport MASTER (output data, valid, input ready);</span><br><span class="line">  modport SLAVE  (input data, valid, output ready);  // SLAVE modport内的assign行不执行</span><br><span class="line">endinterface</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：验证环境只例化了MASTER modport，SLAVE modport内的连续赋值或always块可能不执行。</p>
+<hr>
+<p><strong>例11：unique case中未命中的case项</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">unique case (priority)</span><br><span class="line">  2&#x27;b00: grant = req0;</span><br><span class="line">  2&#x27;b01: grant = req1;</span><br><span class="line">  2&#x27;b10: grant = req2;</span><br><span class="line">  2&#x27;b11: grant = req3;  // ❎ priority约束限定为&#123;0,1,2&#125;，2&#x27;b11不执行</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：priority随机约束限定为0/1/2，2’b11是保留值。<strong>处理</strong>：若2’b11为保留编码则豁免，若合法则放宽约束。</p>
+<hr>
+<p><strong>例12：specify块中的时序检查行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">specify</span><br><span class="line">  specparam tSETUP = 1.0;</span><br><span class="line">  specparam tHOLD = 0.5;</span><br><span class="line">  $setup(data, clk, tSETUP);   // ❎ 功能仿真不跑时序，这行不执行</span><br><span class="line">  $hold(clk, data, tHOLD);     // ❎ 同上</span><br><span class="line">endspecify</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：功能仿真不反标SDF，时序检查行不执行。<strong>处理</strong>：若只做功能仿真，整体豁免。门级仿真时自会覆盖。</p>
+<hr>
+<p><strong>例13：DPI-C导入的C函数内部行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import &quot;DPI-C&quot; function void c_model_process(input int data);</span><br><span class="line">// C函数内部每一行 —— IMC的行覆盖率无法统计</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：IMC只统计Verilog/SystemVerilog代码行，不统计C代码。<strong>处理</strong>：C模型单独用gcov等工具统计。</p>
+<hr>
+<p><strong>例14：被综合工具优化掉的代码行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">reg unused_reg;</span><br><span class="line">always @(*) begin</span><br><span class="line">  unused_reg = 1&#x27;b0;   // 综合会删掉，但仿真时行覆盖率可能覆盖</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：仿真与综合差异，行覆盖率以仿真为准。若仿真覆盖了，该行统计为覆盖；但综合后逻辑不存在。</p>
+<hr>
+<p><strong>例15：always_comb中的隐含锁存器保护行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">always_comb begin</span><br><span class="line">  case (sel)</span><br><span class="line">    2&#x27;b00: out = a;</span><br><span class="line">    2&#x27;b01: out = b;</span><br><span class="line">    2&#x27;b10: out = c;</span><br><span class="line">    // 缺少2&#x27;b11分支 —— 工具会报告default隐含分支的“未覆盖行”</span><br><span class="line">  endcase</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：always_comb要求所有分支覆盖，缺少2’b11分支会导致工具报告一个隐含的“保持行”未覆盖。<strong>处理</strong>：添加default分支或补充2’b11分支。</p>
+<hr>
+<p><strong>例16：covergroup内部声明行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">covergroup cg;</span><br><span class="line">  coverpoint a &#123;</span><br><span class="line">    bins low = &#123;0,1,2&#125;;   // 声明性代码，IMC不统计Block Coverage</span><br><span class="line">    bins high = &#123;3,4,5&#125;;  // 同上</span><br><span class="line">  &#125;</span><br><span class="line">endgroup</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：covergroup中的bins定义是声明性代码，不产生可执行语句，IMC不统计这些行的Block Coverage。<strong>处理</strong>：工具正确行为，忽略。</p>
+<hr>
+<p><strong>例17：条件编译#ifdef屏蔽的代码块</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">`ifdef DEBUG</span><br><span class="line">  $display(&quot;Debug: state=%s&quot;, state.name());  // ❎ 若DEBUG未定义，整块不执行</span><br><span class="line">  debug_cnt++;                                // ❎ 同上</span><br><span class="line">`endif</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：<code>ifdef</code>屏蔽的代码在仿真中不存在。<strong>处理</strong>：若需要覆盖，在编译时添加<code>+define+DEBUG</code>。若无需覆盖，保持现状。</p>
+<hr>
+<p><strong>例18：always块中的“永不发生的else if”链</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if (alarm_triggered) begin</span><br><span class="line">  alarm_handler();  // ✅️ 覆盖（如果注入了alarm）</span><br><span class="line">end else if (alarm_disabled) begin</span><br><span class="line">  // 处理禁用状态  // ❎ 如果alarm_disabled恒为0，这行不覆盖</span><br><span class="line">end else begin</span><br><span class="line">  normal_operation();  // 通常覆盖</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：alarm_disabled信号在配置中恒为0。<strong>处理</strong>：若alarm_disabled从未使能，豁免该分支。</p>
+<hr>
+<p><strong>例19：时钟门控的“门控关闭”路径</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (clock_enable) begin</span><br><span class="line">  gated_clk = clk;      // ✅️ 覆盖</span><br><span class="line">end else begin</span><br><span class="line">  gated_clk = 1&#x27;b0;     // ❎ 如果clock_enable恒为1，这行不覆盖</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：测试中时钟门控始终打开，从未关闭。<strong>解决</strong>：构造clock_enable=0的用例验证门控关闭。</p>
+<hr>
+<p><strong>例20：多时钟域同步器的“亚稳态保护”行</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">always @(posedge clk_b) begin</span><br><span class="line">  sync1 &lt;= signal_a;</span><br><span class="line">  sync2 &lt;= sync1;         // ✅️ 通常覆盖</span><br><span class="line">  if (sync2 &amp;&amp; !sync1) begin</span><br><span class="line">    pulse_out &lt;= 1;       // ❎ 如果signal_a跳变太快，或同步器输出从未检测到边沿</span><br><span class="line">  end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：pulse_out赋值需要检测sync2=1且sync1=0（上升沿）。如果signal_a在仿真中一直为0或一直为1，则这行不执行。<strong>解决</strong>：确保源时钟域信号有足够翻转。</p>
+<h2 id="四、Toggle-Coverage（跳变覆盖率）">四、Toggle Coverage（跳变覆盖率）</h2>
+<h3 id="4-1-定义">4.1 定义</h3>
+<p>Toggle覆盖率要求设计中每个信号的<strong>每一位</strong>都发生过<code>0→1</code>和<code>1→0</code>两种跳变。这是所有覆盖率类型中最难达标的，实际项目常卡在94%-95%。</p>
+<h3 id="4-2-未覆盖典型例子">4.2 未覆盖典型例子</h3>
+<p><strong>例1：常量信号/接电源接地的信号</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parameter VERSION = 8&#x27;h12;  // 固定值，每一位永远不变</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：VERSION[7:0]中所有为0的bit位永远无0→1跳变，所有为1的bit位永远无1→0跳变。<strong>处理</strong>：设计不可达，直接豁免所有bit。</p>
+<hr>
+<p><strong>例2：只读/只写寄存器的固定值</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">assign fifo_full = (wr_ptr == rd_ptr);  // 如果FIFO从未写满，该信号恒为0</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：fifo_full的0→1跳变需要FIFO写满，但测试中队列深度总小于最大值。<strong>解决</strong>：写压力测试用例，持续写数据直到FIFO满。</p>
+<hr>
+<p><strong>例3：未使用的信号位宽（填充位）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg [31:0] data_bus;  // 设计中仅使用低16位，高16位恒为0</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：高16位每一位的0→1跳变无法覆盖。<strong>处理</strong>：若设计确实不用高16位，豁免这些位。</p>
+<hr>
+<p><strong>例4：多bit计数器的高位难以翻转</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">reg [31:0] cycle_cnt;</span><br><span class="line">always @(posedge clk) begin</span><br><span class="line">  cycle_cnt &lt;= cycle_cnt + 1;</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：仿真时长只有1000周期，cycle_cnt[31:10]高位从未翻转。<strong>处理</strong>：豁免高位bit，注释&quot;计数器高位翻转需极长仿真时间&quot;。</p>
+<hr>
+<p><strong>例5：状态机编码中从未进入的状态对应的bit</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// 独热码状态：IDLE=4&#x27;b0001, READY=4&#x27;b0010, BUSY=4&#x27;b0100, DONE=4&#x27;b1000</span><br><span class="line">// 如果BUSY从未进入，则state[2]的0→1跳变未覆盖</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：某个状态从未进入，其对应bit位的1状态从未出现。<strong>解决</strong>：确保所有状态都被进入。</p>
+<hr>
+<p><strong>例6：仲裁器grant信号只固定给一个master</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">reg [3:0] grant;  // 4个master，独热码</span><br><span class="line">// 如果测试中只有master0发起请求，grant始终为4&#x27;b0001</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：grant[3:1]共3个bit位始终保持0，0→1跳变未覆盖。grant[0]始终保持1，1→0跳变未覆盖（除非复位）。<strong>解决</strong>：让所有master轮流发起请求。</p>
+<hr>
+<p><strong>例7：总线地址信号高位从未变化</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wire [31:0] addr;</span><br><span class="line">// 测试中所有传输地址都在0x0000_0000~0x0000_0FFF范围</span><br><span class="line">// 则addr[31:12]共20个bit位从未翻转</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：地址空间限制导致高位恒为0。<strong>处理</strong>：若高地址位确实为0填充（如AHB Lite），豁免。若支持大地址空间，构造高地址传输。</p>
+<hr>
+<p><strong>例8：一维数组中某些元素从未写入</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">reg [7:0] mem [0:15];</span><br><span class="line">// 测试中只读写地址0~7，则mem[8]~mem[15]的所有bit从未翻转</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：写memory test用例遍历所有地址，写全0再写全1。</p>
+<hr>
+<p><strong>例9：二维数组中某些行列从未访问</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">reg [7:0] matrix [0:3][0:3];</span><br><span class="line">// 如果只访问matrix[0][*]和matrix[*][0]，则matrix[1][1]等元素从未翻转</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：构造遍历所有行列的用例。</p>
+<hr>
+<p><strong>例10：打包结构体中某些字段从未赋非0值</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">typedef struct packed &#123;</span><br><span class="line">  logic [3:0] id;</span><br><span class="line">  logic [1:0] priority;</span><br><span class="line">  logic valid;</span><br><span class="line">&#125; pkt_t;</span><br><span class="line">pkt_t pkt;</span><br><span class="line">// 如果priority始终为2&#x27;b00，则priority[1:0]的0→1跳变未覆盖</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：在随机约束中为priority分配非0值。</p>
+<hr>
+<p><strong>例11：输出端口悬空导致toggle统计不准确</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">module dut (output logic [7:0] data_out);</span><br><span class="line">// 如果顶层testbench未连接data_out，内部驱动可能被优化或未统计</span><br></pre></td></tr></table></figure>
+<p><strong>处理</strong>：确保所有输出端口在testbench中有负载（即使悬空也需bind监控）。</p>
+<hr>
+<p><strong>例12：锁存器输出因enable恒为0而保持</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">always @(enable or data) begin</span><br><span class="line">  if (enable) latch_out = data;  // enable恒为0，latch_out保持，各bit不翻转</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：构造enable=1的用例，让锁存器捕获不同数据。</p>
+<hr>
+<p><strong>例13：握手协议中从不出现的反压信号</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wire backpressure;  // 从设备反压信号</span><br><span class="line">// 如果从设备响应总是足够快，backpressure在仿真中恒为0</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：backpressure的0→1跳变需要从设备故意拉低HREADY或VALID。<strong>解决</strong>：专门的反压测试用例，在传输过程中注入反压。</p>
+<hr>
+<p><strong>例14：复位信号本身（只在复位时跳变一次）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wire rst_n;  // 复位信号：从0→1跳变覆盖（复位释放），但1→0跳变呢？</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：如果仿真只做一次复位释放，rst_n只有0→1跳变。1→0跳变需要重新拉低复位。<strong>解决</strong>：在仿真中做多次复位（如热复位），覆盖1→0跳变。</p>
+<hr>
+<p><strong>例15：配置寄存器写入值恰好与复位值相同</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">reg [3:0] cfg_reg;  // 复位值=4&#x27;b0000</span><br><span class="line">// 测试中配置写入值也是4&#x27;b0000，则每个bit既无0→1也无1→0跳变</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：写入值与复位值相同，无任何bit翻转。<strong>解决</strong>：在回归测试中安排不同配置值（0x0、0xF、0x5等）。</p>
+<hr>
+<p><strong>例16：单向变化信号（如计数器只递增不递减）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">reg [3:0] cnt;  // 从0递增到15然后停止</span><br><span class="line">// 每个bit都有0→1跳变（递增过程），但某些bit的1→0跳变呢？</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：如果cnt只递增到15后停止，没有回绕到0，则1→0跳变可能不完整（如bit2从1→0需要cnt从15回到0，如果停止则无1→0）。<strong>解决</strong>：让计数器循环（回绕）或写入不同值使bit双向翻转。</p>
+<h2 id="五、FSM-Coverage（有限状态机覆盖率）">五、FSM Coverage（有限状态机覆盖率）</h2>
+<h3 id="5-1-定义">5.1 定义</h3>
+<p>FSM覆盖率包含三类子项：</p>
+<ul>
+<li><strong>状态覆盖</strong>：每个状态是否进入过</li>
+<li><strong>跳转覆盖</strong>：每对状态转移是否发生</li>
+<li><strong>弧覆盖</strong>：每条转移路径的条件是否满足</li>
+</ul>
+<p>IMC支持状态、跳转、弧覆盖的三维统计，且支持非法状态自动排除。</p>
+<h3 id="5-2-未覆盖典型例子">5.2 未覆盖典型例子</h3>
+<p><strong>例1：某个状态从未进入</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">状态图：IDLE → ARB → <span class="keyword">GRANT</span> → RESP → IDLE</span><br></pre></td></tr></table></figure>
+<p><strong>覆盖率报告</strong>：GRANT状态覆盖率0%。<strong>分析</strong>：仲裁器的grant条件依赖req_valid为高，但测试中从未有外设发起请求。<strong>解决</strong>：构造外设请求用例。</p>
+<hr>
+<p><strong>例2：状态间“直接跳转”从未发生（设计拓扑不可达）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">case (state)</span><br><span class="line">  IDLE : if (start) next = READY;</span><br><span class="line">  READY: if (ack) next = BUSY;</span><br><span class="line">  BUSY : if (done) next = IDLE;</span><br><span class="line">  default: next = IDLE;</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>覆盖率报告</strong>：IDLE→BUSY跳转未覆盖。<strong>分析</strong>：设计本身不允许从IDLE直接跳到BUSY，必须经过READY。但FSM工具统计所有状态对组合。<strong>处理</strong>：豁免所有不在状态转移图中的跳转。</p>
+<hr>
+<p><strong>例3：反向路径从未发生</strong><br>
+<strong>覆盖率报告</strong>：DONE→IDLE跳转未覆盖（但IDLE→DONE已覆盖）。<strong>分析</strong>：状态机在DONE后可能等待外部clear信号才回到IDLE，测试在DONE后终止仿真，未等待clear。<strong>解决</strong>：传输完成后继续运行直到状态机回到IDLE。</p>
+<hr>
+<p><strong>例4：弧覆盖的“假分支”未覆盖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (data_ready &amp;&amp; fifo_not_full) begin</span><br><span class="line">  next_state = WRITE;</span><br><span class="line">end else begin</span><br><span class="line">  next_state = WAIT;    // ← 这个转移的“假分支”未覆盖</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：data_ready为高时fifo_not_full也总为高，从未进入else。<strong>解决</strong>：构造fifo_full场景。</p>
+<hr>
+<p><strong>例5：超时保护路径从未触发</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">case (state)</span><br><span class="line">  WAIT_RESP: begin</span><br><span class="line">    if (resp_valid) next = DONE;</span><br><span class="line">    else if (timeout_cnt == MAX_WAIT) next = TIMEOUT;  // TIMEOUT状态未进入</span><br><span class="line">    else next = WAIT_RESP;</span><br><span class="line">  end</span><br><span class="line">  TIMEOUT: begin  // ← 整个状态的代码行未覆盖</span><br><span class="line">    // 错误处理逻辑</span><br><span class="line">  end</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：从设备响应总是及时，超时计数器从未达到MAX_WAIT。<strong>解决</strong>：写注入从设备不响应的用例。</p>
+<hr>
+<p><strong>例6：复位状态退出路径</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">always @(posedge clk or negedge rst_n) begin</span><br><span class="line">  if (!rst_n) state &lt;= IDLE;</span><br><span class="line">  else if (state == IDLE &amp;&amp; start_signal) state &lt;= RUN;</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>覆盖率报告</strong>：IDLE→RUN跳转未覆盖。<strong>分析</strong>：测试中start_signal在复位释放后至少一个周期才有效。设计可能需要start在复位释放同一拍有效。<strong>解决</strong>：定向用例让start_signal在复位释放上升沿同时有效。</p>
+<hr>
+<p><strong>例7：自环路径从未发生</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">case (state)</span><br><span class="line">  IDLE: if (start) next = READY; else next = IDLE;  // IDLE→IDLE自环未覆盖</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：测试中start总是立即有效，IDLE从未等待而自环。<strong>解决</strong>：让start延迟若干周期再拉高。</p>
+<hr>
+<p><strong>例8：独热码FSM的非法编码状态</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">// 8个状态独热编码，共有2^8=256种编码，其中248种非法</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：FSM覆盖率工具将所有二进制组合列为潜在状态，非法组合不可达。<strong>处理</strong>：IMC中使用<code>-cm_fsmignore</code>或在vRefine中排除非法状态。</p>
+<hr>
+<p><strong>例9：并行转移弧未覆盖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (condition1 &amp;&amp; condition2) next = STATE_A;</span><br><span class="line">else if (condition1 &amp;&amp; !condition2) next = STATE_B;</span><br><span class="line">else if (!condition1 &amp;&amp; condition2) next = STATE_C;</span><br><span class="line">else next = STATE_D;</span><br><span class="line">// 只覆盖了路径1和路径4，路径2和路径3未覆盖</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：构造定向用例覆盖condition1=1,condition2=0和condition1=0,condition2=1。</p>
+<hr>
+<p><strong>例10：错误恢复路径从未触发</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">case (state)</span><br><span class="line">  NORMAL: if (error_detected) next = ERROR_RECOVER;  // error_detected恒为0</span><br><span class="line">  ERROR_RECOVER: if (recover_done) next = NORMAL;</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：注入错误（CRC错、超时错、非法命令）触发错误恢复流程。</p>
+<hr>
+<p><strong>例11：状态跳过路径（快速通道）未覆盖</strong></p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">正常路径：<span class="selector-tag">A</span> → <span class="selector-tag">B</span> → C → D</span><br><span class="line">快速通道：<span class="selector-tag">A</span> → D（如果设计支持）</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：快速通道弧可能从未测试。<strong>解决</strong>：检查设计规范，确认所有跳转弧并逐一构造用例。</p>
+<hr>
+<p><strong>例12：测试模式/调试模式状态未进入</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">case (state)</span><br><span class="line">  NORMAL: if (test_mode_en) next = TEST_MODE;  // test_mode_en恒为0</span><br><span class="line">  TEST_MODE: // 测试逻辑</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：如果测试模式需要覆盖，写测试模式专用用例，通过后门或特定序列使能test_mode_en。</p>
+<hr>
+<p><strong>例13：非法状态恢复路径</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if ((state != IDLE) &amp;&amp; (state != RUN) &amp;&amp; (state != DONE)) begin</span><br><span class="line">  state &lt;= IDLE;  // 此路径不可达</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：FSM保护逻辑，状态机编码保证合法。<strong>处理</strong>：豁免，注释&quot;FSM编码安全，非法状态保护为冗余设计&quot;。</p>
+<hr>
+<p><strong>例14：状态机的“最后退出”路径</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// 状态机在DONE后必须等待clear信号回到IDLE</span><br><span class="line">// 如果测试中每次进入DONE后立即停止仿真，则DONE→IDLE跳转未覆盖</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：在DONE状态后继续运行仿真，触发clear信号。</p>
+<h2 id="六、Branch-Coverage（分支覆盖率）">六、Branch Coverage（分支覆盖率）</h2>
+<h3 id="6-1-定义">6.1 定义</h3>
+<p>分支覆盖要求每个条件判断的<strong>真/假出口</strong>都执行过，包括if-else、case、for/while循环的进入与退出。</p>
+<h3 id="6-2-未覆盖典型例子">6.2 未覆盖典型例子</h3>
+<p><strong>例1：if的else分支因条件始终为真而未覆盖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (|parity_error) begin</span><br><span class="line">  error_cnt &lt;= error_cnt + 1;</span><br><span class="line">end else begin</span><br><span class="line">  error_cnt &lt;= error_cnt;  // ❎ parity_error恒为0，从不进入else</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：注入错误的奇偶校验位。</p>
+<hr>
+<p><strong>例2：嵌套if中内层else分支</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if (enable) begin</span><br><span class="line">  if (mode == FAST) begin</span><br><span class="line">    fast_process();</span><br><span class="line">  end else begin</span><br><span class="line">    slow_process();   // ❎ mode始终为FAST</span><br><span class="line">  end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>处理</strong>：若支持慢速模式，构造mode=SLOW用例。若已禁用，豁免。</p>
+<hr>
+<p><strong>例3：case的default分支因枚举完整而未覆盖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">typedef enum &#123;RED, GREEN, BLUE&#125; color_e;</span><br><span class="line">color_e color;</span><br><span class="line">case (color)</span><br><span class="line">  RED: led = 3&#x27;b001;</span><br><span class="line">  GREEN: led = 3&#x27;b010;</span><br><span class="line">  BLUE: led = 3&#x27;b100;</span><br><span class="line">  default: led = 3&#x27;b000;  // ❎ color是枚举类型，永不执行</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：SystemVerilog枚举在仿真中不可能出现枚举外的值。<strong>处理</strong>：豁免，注释&quot;枚举已覆盖所有合法值&quot;。</p>
+<hr>
+<p><strong>例4：while循环的条件为假直接退出</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">while (fifo_empty) begin</span><br><span class="line">  wait_for_data();  // ❎ fifo_empty始终为0，从不进入循环</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：测试开始时清空FIFO，使fifo_empty为真并进入循环。</p>
+<hr>
+<p><strong>例5：三目运算符的“假”分支</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">assign result = (overflow) ? SATURATED_VALUE : normal_value;</span><br><span class="line">// overflow始终为0，SATURATED_VALUE赋值从未发生</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：构造溢出场景（加法结果超过最大值）。</p>
+<hr>
+<p><strong>例6：for循环条件初始即为假</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for (int i = 0; i &lt; MAX; i++) begin</span><br><span class="line">  process_data(i);  // ❎ 如果MAX=0，循环体永不执行</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：参数化模块中MAX配置为0（功能禁用）。<strong>处理</strong>：若MAX=0是合法配置，豁免循环体所有行。</p>
+<hr>
+<p><strong>例7：while(1)无限循环的条件为假分支</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">while (1) begin  // 条件恒为真</span><br><span class="line">  if (done) break;</span><br><span class="line">  process();</span><br><span class="line">end</span><br><span class="line">// while(1)的&quot;条件为假&quot;分支永不执行</span><br></pre></td></tr></table></figure>
+<p><strong>处理</strong>：豁免该while条件的&quot;假&quot;分支，注释&quot;无限循环，条件恒真&quot;。</p>
+<hr>
+<p><strong>例8：do-while的条件分支</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">do &#123;</span><br><span class="line">  process();</span><br><span class="line">  i++;</span><br><span class="line">&#125; while (i &lt; 10);</span><br><span class="line">// 如果i恒为0导致循环永不退出，则&quot;条件为假&quot;分支不覆盖</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：确保循环变量会变化并最终使条件为假。</p>
+<hr>
+<p><strong>例9：unique case中的default不可达</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">unique case (state)</span><br><span class="line">  IDLE : next = READY;</span><br><span class="line">  READY: next = BUSY;</span><br><span class="line">  BUSY : next = DONE;</span><br><span class="line">  DONE : next = IDLE;</span><br><span class="line">  default: next = IDLE;  // ❎ unique case保证不会进入default</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>处理</strong>：豁免default，注释&quot;unique case保证所有合法状态已覆盖&quot;。</p>
+<hr>
+<p><strong>例10：priority case中的低优先级项被高优先级拦截</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">priority case (1&#x27;b1)</span><br><span class="line">  interrupt3: handle_int3();  // 最高优先级</span><br><span class="line">  interrupt2: handle_int2();  // ❎ 如果interrupt3恒为1，这行不执行</span><br><span class="line">  interrupt1: handle_int1();  // ❎ 同上</span><br><span class="line">  default: handle_default();</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：构造多种中断场景，让不同优先级中断分别触发。</p>
+<hr>
+<p><strong>例11：if-else if链中中间分支因约束限制</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">if (a == 0) begin</span><br><span class="line">  // ...</span><br><span class="line">end else if (a == 1) begin</span><br><span class="line">  // ...</span><br><span class="line">end else if (a == 2) begin   // ❎ a的约束只允许0和1</span><br><span class="line">  // ...</span><br><span class="line">end else begin</span><br><span class="line">  // ...</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：放宽随机约束允许a=2，或写定向用例。</p>
+<hr>
+<p><strong>例12：条件为常数真时else不可达</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (1&#x27;b1) begin</span><br><span class="line">  data_out = data_in;   // ✅️ 覆盖</span><br><span class="line">end else begin</span><br><span class="line">  data_out = 0;         // ❎ 永远不执行</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>处理</strong>：若1’b1确实永远为真，豁免else分支。建议修改RTL删除冗余else。</p>
+<hr>
+<p><strong>例13：case中的重复项从未匹配</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">case (opcode)</span><br><span class="line">  2&#x27;b00: out = a + b;</span><br><span class="line">  2&#x27;b01: out = a - b;</span><br><span class="line">  2&#x27;b00: out = a &amp; b;  // ❎ 重复项，opcode=2&#x27;b00时匹配第一个</span><br><span class="line">  default: out = 0;</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：RTL编码错误，重复的case项永远不会被匹配。<strong>处理</strong>：<strong>必须修改RTL</strong>，不能豁免。</p>
+<hr>
+<p><strong>例14：casez中的通配符吞噬后续项</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">casez (sel)</span><br><span class="line">  3&#x27;b1??: out = a;  // sel=100,101,110,111都匹配这里</span><br><span class="line">  3&#x27;b01?: out = b;  // ❎ 某些sel值匹配第一项，不匹配这里</span><br><span class="line">  3&#x27;b001: out = c;</span><br><span class="line">  default: out = 0;</span><br><span class="line">endcase</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：casez通配符导致后续某些case项永远无法命中。<strong>处理</strong>：若设计意图就是重叠覆盖，则低优先级项的部分取值不可达，需豁免。</p>
+<h2 id="七、Condition-Expression-Coverage（条件-表达式覆盖率）">七、Condition/Expression Coverage（条件/表达式覆盖率）</h2>
+<h3 id="7-1-定义">7.1 定义</h3>
+<p>条件覆盖率要求<strong>布尔表达式中每个原子条件的所有取值组合</strong>都被评估。IMC将复杂表达式拆解为原子条件（T1~T7），并监控每种组合是否被求值。</p>
+<p><strong>注意</strong>：分支覆盖与条件覆盖的区别——分支覆盖关注&quot;是否进入分支&quot;，条件覆盖关注&quot;进入分支的条件组合是否全部被遍历&quot;。</p>
+<h3 id="7-2-未覆盖典型例子">7.2 未覆盖典型例子</h3>
+<p><strong>例1：短路与（&amp;&amp;）中后项条件从未被求值</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if (enable &amp;&amp; (cnt == MAX)) begin  // enable恒为0，cnt==MAX从不求值</span><br><span class="line">  action();</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：&amp;&amp;是短路运算符，左边为假则右边不计算。IMC报告cnt==MAX的&quot;真&quot;和&quot;假&quot;都未覆盖。<strong>解决</strong>：构造enable=1的用例。</p>
+<hr>
+<p><strong>例2：短路或（||）中后项条件从未被求值</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if (error_flag || (status == TIMEOUT)) begin  // error_flag恒为1</span><br><span class="line">  recover();</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：||左边为真则右边不计算，status==TIMEOUT从未被求值。<strong>解决</strong>：构造error_flag=0且status=TIMEOUT的用例。</p>
+<hr>
+<p><strong>例3：多条件组合中的“互斥”原子条件</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if ((read_en &amp;&amp; write_en) || (read_en &amp;&amp; !write_en)) begin</span><br><span class="line">  // 实际等价于 read_en</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：write_en对结果无影响，某些组合因短路或优化从未被求值。<strong>处理</strong>：建议修改RTL简化为<code>if (read_en)</code>，或豁免。</p>
+<hr>
+<p><strong>例4：原子条件中存在“永远为假”的子条件</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if ((state == IDLE) &amp;&amp; (state == READY)) begin  // 永远为假</span><br><span class="line">  // ...</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：state不可能同时等于两个值，(state==READY)的真分支从未被求值。<strong>处理</strong>：<strong>RTL bug</strong>，必须修改逻辑，不能豁免。</p>
+<hr>
+<p><strong>例5：信号位宽截断导致的“不可能组合”</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if ((cnt[3:0] == 4&#x27;hF) &amp;&amp; (cnt[7:4] == 4&#x27;h0)) begin  // cnt=0x0F</span><br><span class="line">  // ...</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：仿真时长不足以让cnt增加到15，两种原子条件同时为真的组合未覆盖。<strong>解决</strong>：延长仿真时间或后门加载cnt到接近15。</p>
+<hr>
+<p><strong>例6：原子条件之间存在因果关系导致某些组合不可达</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if ((fifo_full == 0) &amp;&amp; (wr_en == 1)) begin</span><br><span class="line">  // 写入FIFO</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：fifo_full==1时wr_en应当为0（设计保证不能同时写满），(fifo_full=1, wr_en=1)是设计禁止组合。<strong>处理</strong>：豁免设计禁止的组合。</p>
+<hr>
+<p><strong>例7：原子条件之间存在时序依赖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if ((req_valid == 1) &amp;&amp; (ack == 1)) begin</span><br><span class="line">  // 握手成功</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：规范中req和ack可能不允许同一拍同时为高（有延迟要求），(req_valid=1, ack=1)组合不可达。<strong>处理</strong>：豁免设计禁止的组合。</p>
+<hr>
+<p><strong>例8：===与!==的“全等比较”</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if ((data === 8&#x27;hxx) || (data === 8&#x27;hzz)) begin</span><br><span class="line">  error = 1;</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>覆盖率报告</strong>：data===8’hxx的真分支覆盖，但data===8’hzz的真分支未覆盖。<strong>分析</strong>：仿真中从未出现data=8’hzz（三态未驱动）。<strong>解决</strong>：若设计有三态总线，构造高阻态用例；若设计无三态，豁免。</p>
+<hr>
+<p><strong>例9：通过||连接的多个原子条件，中间项因短路从未求值</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if (signal_a || signal_b || signal_c) begin</span><br><span class="line">  // 动作</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：signal_a始终为1，signal_b和signal_c从未被求值。<strong>解决</strong>：构造signal_a=0, signal_b=0, signal_c=1的用例。</p>
+<hr>
+<p><strong>例10：取反条件只覆盖了一侧</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (!rst_n) begin</span><br><span class="line">  // 复位逻辑</span><br><span class="line">end</span><br><span class="line">// !rst_n在rst_n=1时为假（正常工作），在rst_n=0时为真（复位）</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：如果仿真中从未复位，则!rst_n为真的分支不覆盖。<strong>解决</strong>：确保仿真包含复位释放。</p>
+<hr>
+<p><strong>例11：括号改变求值顺序导致子条件未评估</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if ((a &amp;&amp; b) || (c &amp;&amp; d)) begin</span><br><span class="line">  // 动作</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>覆盖率报告</strong>：(c&amp;&amp;d)内部的c和d从未被求值，因为(a&amp;&amp;b)总为真。<strong>解决</strong>：构造(a&amp;&amp;b)=0的用例。</p>
+<hr>
+<p><strong>例12：self-determined表达式中某些子项永远无效</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if ((cnt == 5) || (cnt == 10) || (cnt == 15)) begin</span><br><span class="line">  // 动作</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：cnt是3位计数器，取值0~7，cnt==10和cnt==15永远为假，其&quot;真&quot;分支从未被求值。<strong>处理</strong>：豁免，注释&quot;cnt取值范围0~7，大于7的比较不可达&quot;。</p>
+<hr>
+<p><strong>例13：硬编码值导致的条件范围缺失</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (ca_de &gt;= 3&#x27;h4) begin</span><br><span class="line">  // ...</span><br><span class="line">end else begin</span><br><span class="line">  // ...</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：信号ca_de在仿真中取值恒大于4，则<code>&lt;4</code>的取值路径未覆盖。<strong>解决</strong>：构造ca_de=0~3的用例。</p>
+<h2 id="八、Path-Coverage（路径覆盖率）—-IMC支持类型">八、Path Coverage（路径覆盖率）— IMC支持类型</h2>
+<h3 id="8-1-定义">8.1 定义</h3>
+<p>Path Coverage衡量模块内<strong>所有可能的执行路径</strong>是否都被执行过。路径由连续的语句序列组成，从模块入口到出口。IMC的Path Coverage需要通过<code>-coverage path</code>选项开启。</p>
+<h3 id="8-2-未覆盖典型例子">8.2 未覆盖典型例子</h3>
+<p><strong>例1：if-else的路径组合爆炸</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">if (a) begin</span><br><span class="line">  if (b) begin</span><br><span class="line">    // 路径1：a=1,b=1</span><br><span class="line">  end else begin</span><br><span class="line">    // 路径2：a=1,b=0</span><br><span class="line">  end</span><br><span class="line">end else begin</span><br><span class="line">  if (c) begin</span><br><span class="line">    // 路径3：a=0,c=1</span><br><span class="line">  end else begin</span><br><span class="line">    // 路径4：a=0,c=0</span><br><span class="line">  end</span><br><span class="line">end</span><br><span class="line">// 路径覆盖要求4条路径全部执行，可能只覆盖了路径1和路径4</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：构造定向用例覆盖所有条件组合。</p>
+<hr>
+<p><strong>例2：循环中的路径（进入循环、循环体内不同迭代次数、退出）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for (int i=0; i&lt;10; i++) begin</span><br><span class="line">  if (i &lt; 5) process_a();</span><br><span class="line">  else process_b();</span><br><span class="line">end</span><br><span class="line">// 路径覆盖要求：i=0~4走process_a路径，i=5~9走process_b路径</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：如果循环只跑了3次就结束，process_b路径未覆盖。<strong>解决</strong>：确保循环跑满10次。</p>
+<h2 id="九、Assertion-Coverage（断言覆盖率）">九、Assertion Coverage（断言覆盖率）</h2>
+<h3 id="9-1-定义">9.1 定义</h3>
+<p>断言覆盖率指<code>cover property</code>语句监控的序列或状态是否被触发。IMC支持SVA（SystemVerilog Assertion）的cover property统计。</p>
+<h3 id="9-2-未覆盖典型例子">9.2 未覆盖典型例子</h3>
+<p><strong>例1：延迟范围的边界值未命中</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cover property (@(posedge clk) req |-&gt; ##[1:10] ack);</span><br><span class="line">// 覆盖req到ack之间的延迟周期1~10</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：从设备响应延迟总是3、5、7，边界值1、2、4、6、8、9、10未覆盖。<strong>解决</strong>：调整随机分布权重或写定向用例。</p>
+<hr>
+<p><strong>例2：握手组合从未发生</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cover property (@(posedge clk) (valid &amp;&amp; ready) |=&gt; (data_out == expected));</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：valid和ready从未在同一拍同时为高。<strong>解决</strong>：构造同时握手用例。</p>
+<hr>
+<p><strong>例3：总线空闲时长特定值未覆盖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cover property (@(posedge clk) $rose(busy) |-&gt; ##[1:100] $fell(busy));</span><br><span class="line">// 覆盖busy持续时长1~100</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：busy持续时长总是10~20，短到1或长到100的边界未覆盖。<strong>解决</strong>：调整激励持续时间。</p>
+<hr>
+<p><strong>例4：复位后首次传输时序未覆盖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cover property (@(posedge clk) $rose(rst_n) ##1 start_transfer);</span><br><span class="line">// 覆盖复位释放后1拍立即开始传输</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：测试中复位释放后总是等待若干周期才发起传输。<strong>解决</strong>：定向用例在复位释放下一拍立即驱动start。</p>
+<hr>
+<p><strong>例5：背靠背传输序列未覆盖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cover property (@(posedge clk) transfer_done ##1 transfer_start);</span><br><span class="line">// 覆盖前一传输结束的下一拍立即开始新传输</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：两笔传输之间总有空闲周期（IDLE）。<strong>解决</strong>：构造连续传输序列。</p>
+<hr>
+<p><strong>例6：多个信号组合的cover交叉点</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cover property (@(posedge clk) (opcode == WRITE) &amp;&amp; (burst_type == INCR) &amp;&amp; (size == WORD));</span><br><span class="line">// 覆盖opcode=WRITE, burst_type=INCR, size=WORD同时发生的组合</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：三者同时满足的场景从未随机到。<strong>解决</strong>：调整随机约束或写定向用例。</p>
+<hr>
+<p><strong>例7：协议违规检测的cover</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cover property (@(posedge clk) !(req &amp;&amp; ack));  // 握手同时发生</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：如果环境中刻意避免req和ack同时为高（设计不支持），cover点永不触发。<strong>处理</strong>：若设计确实不支持，豁免。</p>
+<hr>
+<p><strong>例8：bind模块中的断言覆盖率不归属父模块</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bind dut u_assertions u_assert(...);</span><br><span class="line">// 断言覆盖率统计在u_assert实例下，不统计在dut下</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：IMC中查看dut覆盖率时看不到绑定的断言覆盖率。<strong>处理</strong>：单独查看u_assert实例。</p>
+<h2 id="十、Subprogram-Package-Coverage（子程序-包覆盖率）">十、Subprogram/Package Coverage（子程序/包覆盖率）</h2>
+<h3 id="10-1-IMC特殊配置">10.1 IMC特殊配置</h3>
+<p>IMC对Package中的function/task<strong>默认不深入统计</strong>。需在覆盖率配置文件（<code>.ccf</code>）中显式开启：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set_subprogram_scoring -all -svpackages</span><br></pre></td></tr></table></figure>
+<h3 id="10-2-未覆盖典型例子">10.2 未覆盖典型例子</h3>
+<p><strong>例1：Package中未被调用的function</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">package pkg;</span><br><span class="line">  function int add(int a, int b);</span><br><span class="line">    return a + b;</span><br><span class="line">  endfunction</span><br><span class="line">  function int sub(int a, int b);  // ❎ 从未被调用，整个函数不覆盖</span><br><span class="line">    return a - b;</span><br><span class="line">  endfunction</span><br><span class="line">endpackage</span><br></pre></td></tr></table></figure>
+<p><strong>分析</strong>：测试中只调用了add函数，sub函数从未被调用。<strong>解决</strong>：增加对sub的调用。</p>
+<hr>
+<p><strong>例2：function中某些分支未覆盖</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">function int calc(input bit mode, input int val);</span><br><span class="line">  if (mode) return val + 1;</span><br><span class="line">  else return val - 1;  // ❎ mode恒为1</span><br><span class="line">endfunction</span><br></pre></td></tr></table></figure>
+<p><strong>解决</strong>：构造mode=0的调用。</p>
+<h2 id="十一、IMC特有的Types-vs-Instances覆盖率差异">十一、IMC特有的Types vs Instances覆盖率差异</h2>
+<h3 id="11-1-概念区分">11.1 概念区分</h3>
+<table>
+<thead>
+<tr>
+<th>视图</th>
+<th>定义</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Types</strong></td>
+<td>模块定义本身的覆盖率</td>
+<td>合并所有实例化该模块的覆盖率（平均值或并集）</td>
+</tr>
+<tr>
+<td><strong>Instances</strong></td>
+<td>每个具体例化层次的覆盖率</td>
+<td>该实例下代码实际执行的情况</td>
+</tr>
+</tbody>
+</table>
+<h3 id="11-2-参数化模块的差异例子">11.2 参数化模块的差异例子</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">module fifo #(parameter DEPTH = 8) ( ... );</span><br><span class="line">// 实例化1：fifo #(.DEPTH(8)) u_fifo1();</span><br><span class="line">// 实例化2：fifo #(.DEPTH(16)) u_fifo2();</span><br></pre></td></tr></table></figure>
+<p><strong>IMC报告</strong>：</p>
+<ul>
+<li>Types视图：fifo模块定义覆盖率 = 70%（合并两个不同参数实例的平均）</li>
+<li>Instances视图：u_fifo1覆盖率 = 85%，u_fifo2覆盖率 = 80%</li>
+</ul>
+<p><strong>分析</strong>：两个实例化参数不同，代码中依赖于DEPTH的分支在不同实例中覆盖情况不同。<strong>处理</strong>：优先查看<strong>Instances视图</strong>，这才是该实例化下代码实际执行的情况。</p>
+<h2 id="十二、IMC跨用例合并覆盖率问题">十二、IMC跨用例合并覆盖率问题</h2>
+<h3 id="12-1-合并后覆盖率下降">12.1 合并后覆盖率下降</h3>
+<p><strong>场景</strong>：两个测试用例各自代码覆盖率95%，合并后降到90%。</p>
+<p><strong>原因分析</strong>：IMC合并覆盖率时，如果两个用例使用了<strong>不同编译配置</strong>（不同<code>define</code>、不同参数），IMC会将它们视为不同的&quot;类型（Type）&quot;，合并时并集不完整。</p>
+<p><strong>解决方案</strong>：</p>
+<ol>
+<li>确保所有用例使用<strong>完全相同的编译选项和参数</strong></li>
+<li>在IMC中合并时选择&quot;Unified Coverage&quot;模式而非&quot;Average&quot;模式</li>
+<li>使用<code>-merge</code>命令时添加<code>-parallel</code>选项</li>
+</ol>
+<h3 id="12-2-IMC合并命令">12.2 IMC合并命令</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 正确合并方式</span></span><br><span class="line">imc -merge *.vdb -out merged.vdb -parallel</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看各用例单独覆盖率</span></span><br><span class="line">imc -db testcase1.vdb</span><br><span class="line">imc -db testcase2.vdb</span><br></pre></td></tr></table></figure>
+<h2 id="十三、IMC的vRefine排除文件实战">十三、IMC的vRefine排除文件实战</h2>
+<h3 id="13-1-vRefine文件格式">13.1 vRefine文件格式</h3>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">exclude</span>&gt;</span></span><br><span class="line">  <span class="comment">&lt;!-- 排除单个信号 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">signal</span> <span class="attr">name</span>=<span class="string">&quot;dut.u_fifo.full&quot;</span> <span class="attr">type</span>=<span class="string">&quot;toggle&quot;</span> </span></span><br><span class="line"><span class="tag">          <span class="attr">why</span>=<span class="string">&quot;FIFO full信号在测试中未触发，设计签字确认&quot;</span>/&gt;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">&lt;!-- 排除单行 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">line</span> <span class="attr">path</span>=<span class="string">&quot;dut/u_arbiter/arbiter.v&quot;</span> <span class="attr">line</span>=<span class="string">&quot;45&quot;</span> </span></span><br><span class="line"><span class="tag">        <span class="attr">why</span>=<span class="string">&quot;保留编码default分支，设计不可达&quot;</span>/&gt;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">&lt;!-- 排除整个模块 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">module</span> <span class="attr">name</span>=<span class="string">&quot;dut.u_debug&quot;</span> </span></span><br><span class="line"><span class="tag">          <span class="attr">why</span>=<span class="string">&quot;调试模块，功能验证不关注，设计确认&quot;</span>/&gt;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">&lt;!-- 排除条件覆盖中的特定原子条件 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">expression</span> <span class="attr">path</span>=<span class="string">&quot;dut/u_alu/alu.v&quot;</span> <span class="attr">line</span>=<span class="string">&quot;78&quot;</span> <span class="attr">atom</span>=<span class="string">&quot;T3&quot;</span> </span></span><br><span class="line"><span class="tag">              <span class="attr">why</span>=<span class="string">&quot;条件A恒为0，T3不可达，设计签字&quot;</span>/&gt;</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">&lt;!-- 排除状态机非法状态 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">fsm</span> <span class="attr">path</span>=<span class="string">&quot;dut/fsm&quot;</span> <span class="attr">state</span>=<span class="string">&quot;3&#x27;b000&quot;</span> </span></span><br><span class="line"><span class="tag">       <span class="attr">why</span>=<span class="string">&quot;独热码非法编码，设计确认&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">exclude</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="13-2-vRefine操作流程">13.2 vRefine操作流程</h3>
+<ol>
+<li>
+<p><strong>在IMC GUI中操作</strong>：</p>
+<ul>
+<li>右键未覆盖项 → <code>Exclude</code></li>
+<li>弹窗填写原因（<code>Ctrl+T</code>快捷调出注释框）</li>
+<li>选择导出为<code>.vRefine</code>文件</li>
+</ul>
+</li>
+<li>
+<p><strong>回归编译时使用</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">irun -coverage all -vrefine exclude.vRefine testbench.v</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="13-3-铁律">13.3 铁律</h3>
+<ul>
+<li>每条排除必须有注释：<code>why=&quot;原因&quot; who=&quot;签字人&quot; date=&quot;日期&quot;</code></li>
+<li>排除文件需要<strong>版本管理</strong>（入Git/SVN）</li>
+<li>每次代码修改后重新审查排除文件合理性</li>
+</ul>
+<h2 id="十四、IMC-UNR-App（不可达分析）实战">十四、IMC UNR App（不可达分析）实战</h2>
+<h3 id="14-1-使用场景">14.1 使用场景</h3>
+<p>当有大量未覆盖项，人工分析耗时巨大时，使用UNR App通过形式化验证自动分析是否为&quot;真·不可达&quot;。</p>
+<h3 id="14-2-命令流程">14.2 命令流程</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 仿真收集覆盖率</span></span><br><span class="line">irun -coverage all -covdut dut_module testbench.v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 运行UNR App进行形式化分析</span></span><br><span class="line">unr_app -db coverage.vdb -unr_out unreachable.vdb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 在IMC中合并</span></span><br><span class="line">imc -merge coverage.vdb unreachable.vdb -out merged.vdb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 查看合并结果</span></span><br><span class="line">imc -gui -db merged.vdb</span><br></pre></td></tr></table></figure>
+<h3 id="14-3-UNR-App自动识别类型">14.3 UNR App自动识别类型</h3>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>常数信号相关分支</td>
+<td>信号恒为0/1导致的分支不可达</td>
+</tr>
+<tr>
+<td>枚举类型不可能值</td>
+<td>枚举范围外值不可达</td>
+</tr>
+<tr>
+<td>状态机不可达状态/跳转</td>
+<td>状态转移图中不存在的路径</td>
+</tr>
+<tr>
+<td>因前级条件限制的后级不可达</td>
+<td>条件依赖导致的后级分支不可达</td>
+</tr>
+</tbody>
+</table>
+<p><strong>注意</strong>：UNR App是形式化工具，分析耗时可能数小时。建议在<strong>回归末期</strong>运行。</p>
+<h2 id="十五、各类未覆盖处理决策树总览">十五、各类未覆盖处理决策树总览</h2>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">                        ┌─────────┐</span><br><span class="line">                        │  发现未覆盖项    │</span><br><span class="line">                        └────┬────┘</span><br><span class="line">                                  ▼</span><br><span class="line">                  ┌───────────────┐</span><br><span class="line">                  │     是设计不可达吗？         │</span><br><span class="line">                  │    (常数/保留/非法编码/      │</span><br><span class="line">                  │     配置禁用/状态机非法)     │</span><br><span class="line">                  └───────┬───────┘</span><br><span class="line">                                  │</span><br><span class="line">                  ┌───────┴───────┐</span><br><span class="line">                  │ 是                           │ 否</span><br><span class="line">                  ▼                              ▼</span><br><span class="line">┌───────────┐     ┌─────────────────┐</span><br><span class="line">│      添加Exclude     │     │     是工具限制/不统计吗？        │</span><br><span class="line">│      (记录原因)      │     │  ($display/bind/covergroup声明)  │</span><br><span class="line">│      设计签字确认    │     │                                  │</span><br><span class="line">└───────────┘     └────────┬────────┘</span><br><span class="line">                                                 │</span><br><span class="line">                                 ┌───────┴───────┐</span><br><span class="line">                                 │ 是                           │ 否</span><br><span class="line">                                 ▼                              ▼</span><br><span class="line">                    ┌────────────┐     ┌─────────────┐</span><br><span class="line">                    │ 忽略(备注在报告中)     │     │  是激励不足吗？          │</span><br><span class="line">                    │                        │     │ (约束太紧/时序边界未触发)│</span><br><span class="line">                    └────────────┘     └──────┬──────┘</span><br><span class="line">                                                                   │</span><br><span class="line">                                                   ┌───────┴───────┐</span><br><span class="line">                                                   │ 是                           │ 否</span><br><span class="line">                                                   ▼                              ▼</span><br><span class="line">                                           ┌─────────┐     ┌─────────┐</span><br><span class="line">                                           │    调整约束/     │     │    是代码冗余/   │</span><br><span class="line">                                           │    写定向用例    │     │    死代码吗？    │</span><br><span class="line">                                           └─────────┘     └────┬────┘</span><br><span class="line">                                                                                │</span><br><span class="line">                                                                ┌───────┴───────┐</span><br><span class="line">                                                                │ 是                           │ 否</span><br><span class="line">                                                                ▼                              ▼</span><br><span class="line">                                                        ┌─────────┐     ┌─────────┐</span><br><span class="line">                                                        │   修改RTL删除    │     │是仿真时长不够吗？│</span><br><span class="line">                                                        │   冗余(或豁免)   │     │                  │</span><br><span class="line">                                                        └─────────┘     └────┬────┘</span><br><span class="line">                                                                                             │</span><br><span class="line">                                                                             ┌───────┴───────┐</span><br><span class="line">                                                                             │ 是                           │ 否</span><br><span class="line">                                                                             ▼                              ▼</span><br><span class="line">                                                                     ┌─────────┐     ┌─────────┐</span><br><span class="line">                                                                     │   延长仿真时间   │     │   深入波形分析   │</span><br><span class="line">                                                                     │                  │     │   定位根本原因   │</span><br><span class="line">                                                                     └─────────┘     └─────────┘</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://9606960.xyz">Cloudlet</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://9606960.xyz/2026/08/11/IC%E9%AA%8C%E8%AF%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90%E7%9F%A5%E8%AF%86/">https://9606960.xyz/2026/08/11/IC%E9%AA%8C%E8%AF%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90%E7%9F%A5%E8%AF%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://9606960.xyz" target="_blank">Cloudlet</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%A6%86%E7%9B%96%E7%8E%87/">覆盖率</a><a class="post-meta__tags" href="/tags/IMC/">IMC</a></div><div class="post-share"><div class="social-share" data-image="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/08/12/WPS-VBA6-0%E5%AE%8C%E6%95%B4%E8%AF%A6%E7%BB%86%E6%95%99%E7%A8%8B/" title="WPS-VBA6.0完整详细教程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">WPS-VBA6.0完整详细教程</div></div><div class="info-2"><div class="info-item-1"> 本文由AI生成，不具备参考价值。 适用于 WPS 2019/2021 专业版 + VBA 6.0 + Windows 环境，涵盖 Excel 表格、Word 文档处理（表格、图片、题注）、窗体、API 等全部可用语法   第一部分：基础进阶 一、变量与常量完整版 123456789101112131415161718192021222324252627282930313233343536Option Explicit  &#x27; 强制声明变量&#x27; ===== 变量类型 =====Dim name As String              &#x27; 字符串Dim age As Byte                 &#x27; 0-255Dim count As Integer            &#x27; -32768 到 32767Dim bigNum As Long              &#x27; 大整数，WPS建议多用LongDim price As Single             &#x27; 单精度浮点Dim amount ...</div></div></div></a><a class="pagination-related" href="/2026/08/01/IC%E9%AA%8C%E8%AF%81%E4%B8%AD%E7%9A%84%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="IC验证中的软件测试基础知识"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">IC验证中的软件测试基础知识</div></div><div class="info-2"><div class="info-item-1"> 本文由AI生成，不具备参考价值。   第一篇：SoC验证中的CPU核心知识与C语言编程基础 第1章 从模块验证到SoC验证——C语言的角色转变 1.1 为什么带CPU的SoC验证比模块级验证难？ 在模块级验证中，你的角色是&quot;上帝&quot;——你可以精确控制在每个时钟周期往DUT的输入端口灌什么值，然后检查输出端口的值是否符合预期。这种验证模式可以形象地比喻为出题-答题-批改的闭环。 但在带CPU的SoC验证中，情况彻底变了。CPU是一个能执行指令序列的主动器件，它按照你预先烧录在存储器里的软件代码（C或汇编程序）自主运行。这时候你的UVM testbench不再直接驱动SoC内部的总线，而是像一个观察员，监控CPU通过总线发起的每一次读写操作，并校验这些操作是否在正确的时机、以正确的数据和地址触发了正确的硬件行为。 这个变化带来的核心挑战有两个：  激励来源不可控：CPU的执行路径由软件逻辑决定，而软件逻辑又受中断、外部输入、硬件状态等多种异步因素影响，状态空间远大于模块级验证。 调试维度增加：一个SoC层面的bug，可能源自RTL硬件设计错误，也可能源自编译器生成...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Cloudlet</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">26</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/cloudlet2026"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="mailto:2380797942@qq.com.com" rel="external nofollow noreferrer" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%A6%86%E7%9B%96%E7%8E%87%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">一、覆盖率概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E8%A6%86%E7%9B%96%E7%8E%87%E7%9A%84%E6%A0%B8%E5%BF%83%E5%AE%9A%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 覆盖率的核心定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Cadence-IMC%E5%B7%A5%E5%85%B7%E7%AE%80%E4%BB%8B"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 Cadence IMC工具简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%B8%B8%E7%94%A8IMC%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 常用IMC命令速查</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Coverage-Database%EF%BC%88%E8%A6%86%E7%9B%96%E7%8E%87%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%89%E7%AE%A1%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">二、Coverage Database（覆盖率数据库）管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%94%9F%E6%88%90"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 数据库生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%95%B0%E6%8D%AE%E5%BA%93%E5%90%88%E5%B9%B6"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 数据库合并</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%95%B0%E6%8D%AE%E5%BA%93%E6%8A%A5%E5%91%8A%E5%AF%BC%E5%87%BA"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 数据库报告导出</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Block-Coverage%EF%BC%88%E5%9D%97-%E8%A1%8C%E8%A6%86%E7%9B%96%E7%8E%87%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">三、Block Coverage（块&#x2F;行覆盖率）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%AE%9A%E4%B9%89"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%9C%AA%E8%A6%86%E7%9B%96%E5%85%B8%E5%9E%8B%E4%BE%8B%E5%AD%90"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 未覆盖典型例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Toggle-Coverage%EF%BC%88%E8%B7%B3%E5%8F%98%E8%A6%86%E7%9B%96%E7%8E%87%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">四、Toggle Coverage（跳变覆盖率）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%AE%9A%E4%B9%89"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%9C%AA%E8%A6%86%E7%9B%96%E5%85%B8%E5%9E%8B%E4%BE%8B%E5%AD%90"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 未覆盖典型例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81FSM-Coverage%EF%BC%88%E6%9C%89%E9%99%90%E7%8A%B6%E6%80%81%E6%9C%BA%E8%A6%86%E7%9B%96%E7%8E%87%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">五、FSM Coverage（有限状态机覆盖率）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%AE%9A%E4%B9%89"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%9C%AA%E8%A6%86%E7%9B%96%E5%85%B8%E5%9E%8B%E4%BE%8B%E5%AD%90"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 未覆盖典型例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Branch-Coverage%EF%BC%88%E5%88%86%E6%94%AF%E8%A6%86%E7%9B%96%E7%8E%87%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">六、Branch Coverage（分支覆盖率）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%AE%9A%E4%B9%89"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E6%9C%AA%E8%A6%86%E7%9B%96%E5%85%B8%E5%9E%8B%E4%BE%8B%E5%AD%90"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 未覆盖典型例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81Condition-Expression-Coverage%EF%BC%88%E6%9D%A1%E4%BB%B6-%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%A6%86%E7%9B%96%E7%8E%87%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">七、Condition&#x2F;Expression Coverage（条件&#x2F;表达式覆盖率）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%AE%9A%E4%B9%89"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E6%9C%AA%E8%A6%86%E7%9B%96%E5%85%B8%E5%9E%8B%E4%BE%8B%E5%AD%90"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 未覆盖典型例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Path-Coverage%EF%BC%88%E8%B7%AF%E5%BE%84%E8%A6%86%E7%9B%96%E7%8E%87%EF%BC%89%E2%80%94-IMC%E6%94%AF%E6%8C%81%E7%B1%BB%E5%9E%8B"><span class="toc-number">8.</span> <span class="toc-text">八、Path Coverage（路径覆盖率）— IMC支持类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E5%AE%9A%E4%B9%89"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E6%9C%AA%E8%A6%86%E7%9B%96%E5%85%B8%E5%9E%8B%E4%BE%8B%E5%AD%90"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 未覆盖典型例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Assertion-Coverage%EF%BC%88%E6%96%AD%E8%A8%80%E8%A6%86%E7%9B%96%E7%8E%87%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">九、Assertion Coverage（断言覆盖率）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E5%AE%9A%E4%B9%89"><span class="toc-number">9.1.</span> <span class="toc-text">9.1 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E6%9C%AA%E8%A6%86%E7%9B%96%E5%85%B8%E5%9E%8B%E4%BE%8B%E5%AD%90"><span class="toc-number">9.2.</span> <span class="toc-text">9.2 未覆盖典型例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81Subprogram-Package-Coverage%EF%BC%88%E5%AD%90%E7%A8%8B%E5%BA%8F-%E5%8C%85%E8%A6%86%E7%9B%96%E7%8E%87%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">十、Subprogram&#x2F;Package Coverage（子程序&#x2F;包覆盖率）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-IMC%E7%89%B9%E6%AE%8A%E9%85%8D%E7%BD%AE"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 IMC特殊配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-%E6%9C%AA%E8%A6%86%E7%9B%96%E5%85%B8%E5%9E%8B%E4%BE%8B%E5%AD%90"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 未覆盖典型例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81IMC%E7%89%B9%E6%9C%89%E7%9A%84Types-vs-Instances%E8%A6%86%E7%9B%96%E7%8E%87%E5%B7%AE%E5%BC%82"><span class="toc-number">11.</span> <span class="toc-text">十一、IMC特有的Types vs Instances覆盖率差异</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-%E6%A6%82%E5%BF%B5%E5%8C%BA%E5%88%86"><span class="toc-number">11.1.</span> <span class="toc-text">11.1 概念区分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-%E5%8F%82%E6%95%B0%E5%8C%96%E6%A8%A1%E5%9D%97%E7%9A%84%E5%B7%AE%E5%BC%82%E4%BE%8B%E5%AD%90"><span class="toc-number">11.2.</span> <span class="toc-text">11.2 参数化模块的差异例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81IMC%E8%B7%A8%E7%94%A8%E4%BE%8B%E5%90%88%E5%B9%B6%E8%A6%86%E7%9B%96%E7%8E%87%E9%97%AE%E9%A2%98"><span class="toc-number">12.</span> <span class="toc-text">十二、IMC跨用例合并覆盖率问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E5%90%88%E5%B9%B6%E5%90%8E%E8%A6%86%E7%9B%96%E7%8E%87%E4%B8%8B%E9%99%8D"><span class="toc-number">12.1.</span> <span class="toc-text">12.1 合并后覆盖率下降</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-IMC%E5%90%88%E5%B9%B6%E5%91%BD%E4%BB%A4"><span class="toc-number">12.2.</span> <span class="toc-text">12.2 IMC合并命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81IMC%E7%9A%84vRefine%E6%8E%92%E9%99%A4%E6%96%87%E4%BB%B6%E5%AE%9E%E6%88%98"><span class="toc-number">13.</span> <span class="toc-text">十三、IMC的vRefine排除文件实战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-vRefine%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-number">13.1.</span> <span class="toc-text">13.1 vRefine文件格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-vRefine%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">13.2.</span> <span class="toc-text">13.2 vRefine操作流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-3-%E9%93%81%E5%BE%8B"><span class="toc-number">13.3.</span> <span class="toc-text">13.3 铁律</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81IMC-UNR-App%EF%BC%88%E4%B8%8D%E5%8F%AF%E8%BE%BE%E5%88%86%E6%9E%90%EF%BC%89%E5%AE%9E%E6%88%98"><span class="toc-number">14.</span> <span class="toc-text">十四、IMC UNR App（不可达分析）实战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#14-1-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">14.1.</span> <span class="toc-text">14.1 使用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-2-%E5%91%BD%E4%BB%A4%E6%B5%81%E7%A8%8B"><span class="toc-number">14.2.</span> <span class="toc-text">14.2 命令流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-3-UNR-App%E8%87%AA%E5%8A%A8%E8%AF%86%E5%88%AB%E7%B1%BB%E5%9E%8B"><span class="toc-number">14.3.</span> <span class="toc-text">14.3 UNR App自动识别类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%90%84%E7%B1%BB%E6%9C%AA%E8%A6%86%E7%9B%96%E5%A4%84%E7%90%86%E5%86%B3%E7%AD%96%E6%A0%91%E6%80%BB%E8%A7%88"><span class="toc-number">15.</span> <span class="toc-text">十五、各类未覆盖处理决策树总览</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/12/Microsoft-Office-Word-VBA7-1%E8%AF%A6%E7%BB%86%E6%95%99%E7%A8%8B/" title="Microsoft-Office-Word-VBA7.1详细教程">Microsoft-Office-Word-VBA7.1详细教程</a><time datetime="2026-08-11T16:33:41.000Z" title="发表于 2026-08-12 00:33:41">2026-08-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/12/WPS-VBA6-0%E5%AE%8C%E6%95%B4%E8%AF%A6%E7%BB%86%E6%95%99%E7%A8%8B/" title="WPS-VBA6.0完整详细教程">WPS-VBA6.0完整详细教程</a><time datetime="2026-08-11T16:32:53.000Z" title="发表于 2026-08-12 00:32:53">2026-08-12</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/11/IC%E9%AA%8C%E8%AF%81%E8%A6%86%E7%9B%96%E7%8E%87%E5%88%86%E6%9E%90%E7%9F%A5%E8%AF%86/" title="IC验证覆盖率分析知识">IC验证覆盖率分析知识</a><time datetime="2026-08-11T15:56:31.000Z" title="发表于 2026-08-11 23:56:31">2026-08-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/01/IC%E9%AA%8C%E8%AF%81%E4%B8%AD%E7%9A%84%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="IC验证中的软件测试基础知识">IC验证中的软件测试基础知识</a><time datetime="2026-08-01T13:05:25.000Z" title="发表于 2026-08-01 21:05:25">2026-08-01</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/21/GMAC%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/" title="GMAC接口详解">GMAC接口详解</a><time datetime="2026-07-21T15:05:25.000Z" title="发表于 2026-07-21 23:05:25">2026-07-21</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Cloudlet</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">簡</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/js/tw_cn.js?v=5.7.0"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar@0.1.16/dist/snackbar.min.js"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script></div><script src="/js/external-link-handler.js"></script><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

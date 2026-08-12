@@ -1742,7 +1742,7 @@ body {
   background: var(--global-bg);
   color: var(--font-color);
   font-size: var(--global-font-size);
-  font-family: "LXGW WenKai Mono", sans-serif;
+  font-family: "LXGW WenKai Mono Screen", sans-serif;
   line-height: 2;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
   scroll-behavior: smooth;
@@ -2032,7 +2032,7 @@ figure.highlight pre .javascript .function {
 .container pre,
 .container code {
   font-size: 14px;
-  font-family: "JetBrains Mono", "LXGW WenKai Mono", monospace !important;
+  font-family: "JetBrains Mono","LXGW WenKai Screen", monospace !important;
   border-radius: 6px;
 }
 .container code {
@@ -2244,7 +2244,7 @@ figure.highlight pre .javascript .function {
 .container .code-expand-btn:not(.expand-done) ~ table,
 .container .code-expand-btn:not(.expand-done) ~ pre {
   overflow: hidden;
-  height: 200px;
+  height: 800px;
 }
 @-moz-keyframes code-expand-key {
   0% {

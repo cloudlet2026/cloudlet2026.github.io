@@ -117,7 +117,7 @@ body {
   border: 1px solid var(--glass-border) !important;
   border-radius: 12px !important;
   color: #fff !important;
-  font-family: 'LXGW WenKai Mono', sans-serif !important;
+  font-family: "LXGW WenKai Mono", sans-serif !important;
   font-size: 16px !important;
   font-weight: 600 !important;
   line-height: 40px !important;
@@ -136,7 +136,7 @@ body {
 .hbe .hbe-input-field:focus,
 .hbe-input-field:focus {
   box-shadow: 0 0 0 3px rgba(47, 138, 245, 0.16) !important;
-  font-family: 'LXGW WenKai Mono', sans-serif !important;
+  font-family: "LXGW WenKai Mono", sans-serif !important;
 }
 
 [data-theme="light"] .hbe .hbe-input-field:focus,

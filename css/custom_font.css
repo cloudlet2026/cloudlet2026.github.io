@@ -1,16 +1,11 @@
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-mono@5.3.0/index.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.22/index.css');
-
-@font-face {
-  font-family: "LXGW WenKai Mono Screen";
-  src: url('/fonts/LXGWWenKaiMonoScreen.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-body {
-  font-family: "LXGW WenKai Mono","LXGW WenKai Mono Screen", sans-serif;
-}
+@import url('https://cdn.jsdelivr.net/npm/comic-mono@0.0.1/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/fira-code@5.0.22/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.0.22/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/maple-mono@7.0.0/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/cascadia-mono@1.0.0/index.css');
 
 figure.highlight.plaintext .code pre,
 figure.highlight.plaintext .code pre .line,
@@ -18,5 +13,9 @@ figure.highlight.plain .code pre,
 figure.highlight.plain .code pre .line,
 figure.highlight.text .code pre,
 figure.highlight.text .code pre .line {
-  font-family: "LXGW WenKai Mono","LXGW WenKai Mono Screen", sans-serif !important;
+  font-family: "LXGW WenKai Mono" !important;
+}
+
+.katex .mord.text {
+    font-family: "LXGW WenKai Mono" !important;
 }

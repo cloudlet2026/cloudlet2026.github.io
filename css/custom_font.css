@@ -17,5 +17,27 @@ figure.highlight.text .code pre .line {
 }
 
 .katex .mord.text {
-    font-family: "LXGW WenKai Mono" !important;
+    font-family: "JetBrains Mono","LXGW WenKai Mono" !important;
+}
+
+.katex-display > .katex {
+    font-size: 1.0em !important; 
+}
+
+.post-content .katex {
+  font-size: 1.1em; 
+}
+
+/* 行内公式行高调整 */
+.post-content p .katex,
+.post-content li .katex {
+  line-height: 2;
+  padding: 2px 0;
+}
+
+/* 块级公式容器 */
+.post-content .katex-display {
+  margin: 1em 0;
+  padding: 0.5em 0;
+  overflow: visible;
 }

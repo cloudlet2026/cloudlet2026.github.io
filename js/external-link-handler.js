@@ -6,6 +6,7 @@
     // 你的博客域名（多个用逗号分隔）
     whitelistDomains: [
       'cloudlet2026.github.io',
+      '9606960.xyz',
       'github.com'
     ],
     // 中转页路径

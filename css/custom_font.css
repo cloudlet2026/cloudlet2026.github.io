@@ -1,4 +1,5 @@
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.min.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-mono@5.3.0/index.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.22/index.css');
 @import url('https://cdn.jsdelivr.net/npm/comic-mono@0.0.1/index.css');
@@ -14,10 +15,11 @@ figure.highlight.plain .code pre .line,
 figure.highlight.text .code pre,
 figure.highlight.text .code pre .line {
   font-family: "LXGW WenKai Mono" !important;
+  font-weight: bold;
 }
 
 .katex .mord.text {
-    font-family: "JetBrains Mono","LXGW WenKai Mono" !important;
+    font-family: "JetBrains Mono","LXGW WenKai Screen" !important;
 }
 
 .katex-display > .katex {
@@ -42,3 +44,17 @@ figure.highlight.text .code pre .line {
   overflow: visible;
 }
 
+
+h1 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+h3, h4, h5, h6 {
+  font-size: 16px;
+}

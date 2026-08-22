@@ -1,5 +1,5 @@
-@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css');
-@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.min.css');
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/lxgwwenkaimono-bold.css');
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/lxgwwenkaiscreen.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-mono@5.3.0/index.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.22/index.css');
 @import url('https://cdn.jsdelivr.net/npm/comic-mono@0.0.1/index.css');
@@ -8,6 +8,7 @@
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/maple-mono@7.0.0/index.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/cascadia-mono@1.0.0/index.css');
 
+
 figure.highlight.plaintext .code pre,
 figure.highlight.plaintext .code pre .line,
 figure.highlight.plain .code pre,
@@ -15,7 +16,6 @@ figure.highlight.plain .code pre .line,
 figure.highlight.text .code pre,
 figure.highlight.text .code pre .line {
   font-family: "LXGW WenKai Mono" !important;
-  font-weight: bold;
 }
 
 .katex .mord.text {

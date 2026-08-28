@@ -136,7 +136,7 @@ h3, h4, h5, h6 {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin: 1em 0;
-  font-size: 14px;     /* 基准大小，小屏幕再调整 */
+  font-size: 16px;     /* 基准大小，小屏幕再调整 */
 }
 
 /* 表格容器自动适应 */
@@ -166,26 +166,26 @@ h3, h4, h5, h6 {
 /* ===== 小屏幕时只调字体大小，不限制宽度 ===== */
 @media screen and (max-width: 600px) {
   .post-content table {
-    font-size: 12px;
+    font-size: 16px;
   }
   .post-content table td,
   .post-content table th {
     padding: 4px 8px;
   }
   .post-content pre {
-    font-size: 12px;
+    font-size: 16px;
   }
 }
 
 @media screen and (max-width: 400px) {
   .post-content table {
-    font-size: 10px;
+    font-size: 14px;
   }
   .post-content table td,
   .post-content table th {
     padding: 2px 4px;
   }
   .post-content pre {
-    font-size: 10px;
+    font-size: 14px;
   }
 }

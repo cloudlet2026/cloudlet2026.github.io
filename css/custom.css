@@ -1,0 +1,191 @@
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/lxgwwenkaimono-bold.css');
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-tc-webfont@1.2.0/lxgwwenkaimonotc-bold.css');
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/lxgwwenkaiscreen.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-mono@5.3.0/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.22/index.css');
+@import url('https://cdn.jsdelivr.net/npm/comic-mono@0.0.1/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/fira-code@5.0.22/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5.0.22/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/maple-mono@7.0.0/index.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/cascadia-mono@1.0.0/index.css');
+
+
+/* ----- 有语言标签的代码块：优先 JetBrains ----- */
+/* 覆盖所有有语言标签的代码块 */
+html:lang(zh-CN) .highlight:not(.plaintext):not(.plain):not(.text) .code pre,
+html:lang(zh-CN) .highlight:not(.plaintext):not(.plain):not(.text) .code pre .line,
+html:lang(zh-CN) figure.highlight:not(.plaintext):not(.plain):not(.text) .code pre,
+html:lang(zh-CN) figure.highlight:not(.plaintext):not(.plain):not(.text) .code pre .line,
+html:lang(zh-CN) .highlight[class*="language-"] .code pre,
+html:lang(zh-CN) .highlight[class*="language-"] .code pre .line {
+  font-family: "JetBrains Mono", "LXGW WenKai Mono", monospace !important;
+}
+
+html:lang(zh-TW) .highlight:not(.plaintext):not(.plain):not(.text) .code pre,
+html:lang(zh-TW) .highlight:not(.plaintext):not(.plain):not(.text) .code pre .line,
+html:lang(zh-TW) figure.highlight:not(.plaintext):not(.plain):not(.text) .code pre,
+html:lang(zh-TW) figure.highlight:not(.plaintext):not(.plain):not(.text) .code pre .line,
+html:lang(zh-TW) .highlight[class*="language-"] .code pre,
+html:lang(zh-TW) .highlight[class*="language-"] .code pre .line {
+  font-family: "JetBrains Mono", "LXGW WenKai Mono TC", monospace !important;
+}
+
+/* ----- 无语言标签的纯文本代码块：直接使用 WenKai ----- */
+html:lang(zh-CN) .highlight.plaintext .code pre,
+html:lang(zh-CN) .highlight.plaintext .code pre .line,
+html:lang(zh-CN) .highlight.plain .code pre,
+html:lang(zh-CN) .highlight.plain .code pre .line,
+html:lang(zh-CN) .highlight.text .code pre,
+html:lang(zh-CN) .highlight.text .code pre .line,
+html:lang(zh-CN) figure.highlight.plaintext .code pre,
+html:lang(zh-CN) figure.highlight.plaintext .code pre .line,
+html:lang(zh-CN) figure.highlight.plain .code pre,
+html:lang(zh-CN) figure.highlight.plain .code pre .line,
+html:lang(zh-CN) figure.highlight.text .code pre,
+html:lang(zh-CN) figure.highlight.text .code pre .line {
+  font-family: "LXGW WenKai Mono", monospace !important;
+}
+
+html:lang(zh-TW) .highlight.plaintext .code pre,
+html:lang(zh-TW) .highlight.plaintext .code pre .line,
+html:lang(zh-TW) .highlight.plain .code pre,
+html:lang(zh-TW) .highlight.plain .code pre .line,
+html:lang(zh-TW) .highlight.text .code pre,
+html:lang(zh-TW) .highlight.text .code pre .line,
+html:lang(zh-TW) figure.highlight.plaintext .code pre,
+html:lang(zh-TW) figure.highlight.plaintext .code pre .line,
+html:lang(zh-TW) figure.highlight.plain .code pre,
+html:lang(zh-TW) figure.highlight.plain .code pre .line,
+html:lang(zh-TW) figure.highlight.text .code pre,
+html:lang(zh-TW) figure.highlight.text .code pre .line {
+  font-family: "LXGW WenKai Mono TC", monospace !important;
+}
+
+/* ==========================================
+   正文字体
+   ========================================== */
+
+html:lang(zh-CN) body,
+html:not([lang]) body {
+  font-family: "LXGW WenKai Screen", sans-serif !important;
+}
+
+html:lang(zh-TW) body {
+  font-family: "LXGW WenKai TC", "LXGW WenKai Screen", sans-serif !important;
+}
+
+/* ===== KaTeX 公式 ===== */
+html:lang(zh-CN) .katex .mord.text {
+  font-family: "JetBrains Mono", "LXGW WenKai Screen" !important;
+}
+
+html:lang(zh-TW) .katex .mord.text {
+  font-family: "JetBrains Mono", "LXGW WenKai TC", !important;
+}
+
+.katex-display > .katex {
+    font-size: 1.0em !important; 
+}
+
+.post-content .katex {
+  font-size: 1.1em; 
+}
+
+/* 行内公式行高调整 */
+.post-content p .katex,
+.post-content li .katex {
+  line-height: 2;
+  padding: 2px 0;
+}
+
+/* 块级公式容器 */
+.post-content .katex-display {
+  margin: 1em 0;
+  padding: 0.5em 0;
+  overflow: visible;
+}
+
+
+h1 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+h3, h4, h5, h6 {
+  font-size: 16px;
+}
+
+/* ===== 移动端表格和代码块滚动优化 ===== */
+
+/* 让所有内容不溢出视口 */
+.post-content {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* 表格：不限制宽度，允许横向滚动 */
+.post-content table {
+  display: block;
+  width: max-content;  /* 按内容实际宽度显示 */
+  max-width: 100%;     /* 超出容器时启用滚动 */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1em 0;
+  font-size: 14px;     /* 基准大小，小屏幕再调整 */
+}
+
+/* 表格容器自动适应 */
+.post-content .table-container {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 代码块同样处理 */
+.post-content .highlight,
+.post-content pre,
+.post-content .code {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.post-content pre code {
+  display: inline-block;   /* 让 code 按内容宽度显示 */
+  white-space: pre;
+  word-wrap: normal;
+  min-width: 100%;         /* 至少占满容器宽度 */
+}
+
+/* ===== 小屏幕时只调字体大小，不限制宽度 ===== */
+@media screen and (max-width: 600px) {
+  .post-content table {
+    font-size: 12px;
+  }
+  .post-content table td,
+  .post-content table th {
+    padding: 4px 8px;
+  }
+  .post-content pre {
+    font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .post-content table {
+    font-size: 10px;
+  }
+  .post-content table td,
+  .post-content table th {
+    padding: 2px 4px;
+  }
+  .post-content pre {
+    font-size: 10px;
+  }
+}

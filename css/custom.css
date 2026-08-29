@@ -186,13 +186,13 @@ h3, h4, h5, h6 {
     padding: 2px 4px;
   }
   .post-content pre {
-    font-size: 12px;
+    font-size: 14px;
   }
   .post-content table .katex {
     font-size: 0.85em;
   }
   .post-content .highlight pre code,
   .post-content pre code {
-    font-size: 12px;
+    font-size: 14px;
   }
 }

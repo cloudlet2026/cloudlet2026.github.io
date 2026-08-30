@@ -142,8 +142,7 @@ h3, h4, h5, h6 {
 .post-content table td,
 .post-content table th {
   white-space: nowrap;
-  padding: 6px 12px;
-  border: 1px solid #ddd;
+  padding: 4px 8px;
 }
 
 

@@ -26,7 +26,7 @@ html:not([lang]) body {
 }
 
 html:lang(zh-TW) body {
-  font-family: var(--font-body) !important;
+  font-family: "LXGW WenKai TC", var(--font-body) !important;
 }
 
 /* 代码块使用变量 */
@@ -79,15 +79,137 @@ html:lang(zh-TW) figure.highlight.text .code pre .line {
   font-family: var(--font-code-tw) !important;
 }
 
-/* KaTeX 公式 */
-html:lang(zh-CN) .katex .mord.text {
-  font-family: var(--font-code) !important;
+/* ==========================================
+   KaTeX 公式
+   ========================================== */
+html:lang(zh-CN) .katex .mord.text,
+html:lang(zh-CN) .katex .mord.text .mord {
+  font-family: "JetBrains Mono", "LXGW WenKai Screen", sans-serif !important;
 }
 
-html:lang(zh-TW) .katex .mord.text {
-  font-family: var(--font-code) !important;
+html:lang(zh-TW) .katex .mord.text,
+html:lang(zh-TW) .katex .mord.text .mord {
+  font-family: "JetBrains Mono", "LXGW WenKai Mono TC", "LXGW WenKai TC", sans-serif !important;
 }
 
+/* 公式字号与行高 */
+.katex-display > .katex {
+    font-size: 1.0em !important;
+}
+
+.post-content p .katex,
+.post-content li .katex {
+  font-size: 1.1em;
+}
+
+/* 行内公式行高调整 */
+.post-content p .katex,
+.post-content li .katex {
+  line-height: 2;
+  padding: 2px 0;
+}
+
+/* 块级公式容器 */
+.post-content .katex-display {
+  margin: 1em 0;
+  padding: 0.5em 0;
+  overflow: visible;
+}
+
+/* ==========================================
+   标题字号
+   ========================================== */
+h1 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+h3, h4, h5, h6 {
+  font-size: 16px;
+}
+
+/* ==========================================
+   移动端表格和代码块滚动优化
+   ========================================== */
+
+/* 让所有内容不溢出视口 */
+.post-content {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.post-content table {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1em 0;
+  font-size: 14px;
+  border-collapse: collapse;
+}
+
+/* 表格内单元格不换行，保持内容完整 */
+.post-content table td,
+.post-content table th {
+  white-space: nowrap;
+  padding: 4px 8px;
+}
+
+.post-content table code {
+  font-size: 1em;
+}
+
+/* 表格容器自动适应 */
+.post-content .table-container {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 代码块容器自动适应 */
+.post-content .highlight,
+.post-content pre,
+.post-content .code {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.post-content pre code {
+  display: inline-block;
+  white-space: pre;
+  word-wrap: normal;
+  min-width: 100%;
+}
+
+/* ===== 小屏幕时只调字体大小，不限制宽度 ===== */
+/* 手机 */
+@media screen and (max-width: 400px) {
+  .post-content table {
+    font-size: 14px;
+  }
+  .post-content table td,
+  .post-content table th {
+    padding: 2px 4px;
+  }
+  .post-content pre {
+    font-size: 14px;
+  }
+  .post-content table .katex {
+    font-size: 0.85em;
+  }
+  .post-content .highlight pre code,
+  .post-content pre code {
+    font-size: 14px;
+  }
+}
 
 /* ==========================================
    WaveDrom 字体

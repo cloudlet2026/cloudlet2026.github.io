@@ -1,0 +1,1057 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>玄铁C910/C920的MMU详解 | Cloudlet</title><meta name="author" content="Cloudlet"><meta name="copyright" content="Cloudlet"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="引言 C910 和 C920 是阿里平头哥玄铁系列的两款 64 位 RISC-V 处理器，均采用 12 级乱序流水线，支持 RV64GC 及多核簇扩展。C920 相比 C910 的最大差异是从 RVV 0.7.1 升级到 RVV 1.0，并可选配 128&#x2F;256 位向量单元。 两者共享同一套内存子系统架构：MMU 采用 SV39 标准 + 两级 TLB 结构，Cache 采用“私有 L1 + 共享">
+<meta property="og:type" content="article">
+<meta property="og:title" content="玄铁C910&#x2F;C920的MMU详解">
+<meta property="og:url" content="https://9606960.xyz/2026/09/11/%E7%8E%84%E9%93%81C910-C920%E7%9A%84MMU%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="Cloudlet">
+<meta property="og:description" content="引言 C910 和 C920 是阿里平头哥玄铁系列的两款 64 位 RISC-V 处理器，均采用 12 级乱序流水线，支持 RV64GC 及多核簇扩展。C920 相比 C910 的最大差异是从 RVV 0.7.1 升级到 RVV 1.0，并可选配 128&#x2F;256 位向量单元。 两者共享同一套内存子系统架构：MMU 采用 SV39 标准 + 两级 TLB 结构，Cache 采用“私有 L1 + 共享">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg">
+<meta property="article:published_time" content="2026-09-11T14:51:28.000Z">
+<meta property="article:modified_time" content="2026-09-11T17:24:43.874Z">
+<meta property="article:author" content="Cloudlet">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "玄铁C910/C920的MMU详解",
+  "url": "https://9606960.xyz/2026/09/11/%E7%8E%84%E9%93%81C910-C920%E7%9A%84MMU%E8%AF%A6%E8%A7%A3/",
+  "image": "https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg",
+  "datePublished": "2026-09-11T14:51:28.000Z",
+  "dateModified": "2026-09-11T17:24:43.874Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Cloudlet",
+      "url": "https://9606960.xyz"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://9606960.xyz/2026/09/11/%E7%8E%84%E9%93%81C910-C920%E7%9A%84MMU%E8%AF%A6%E8%A7%A3/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":800,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '玄铁C910/C920的MMU详解',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Cloudlet</span></a><a class="nav-page-title" href="/"><span class="site-name">玄铁C910/C920的MMU详解</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">玄铁C910/C920的MMU详解</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-11T14:51:28.000Z" title="发表于 2026-09-11 22:51:28">2026-09-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-11T17:24:43.874Z" title="更新于 2026-09-12 01:24:43">2026-09-12</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><h2 id="引言">引言</h2>
+<p>C910 和 C920 是阿里平头哥玄铁系列的两款 64 位 RISC-V 处理器，均采用 12 级乱序流水线，支持 RV64GC 及多核簇扩展。C920 相比 C910 的最大差异是<strong>从 RVV 0.7.1 升级到 RVV 1.0</strong>，并可选配 128/256 位向量单元。</p>
+<p>两者共享同一套内存子系统架构：<strong>MMU 采用 SV39 标准 + 两级 TLB 结构，Cache 采用“私有 L1 + 共享 L2”的层次化设计</strong>。理解这套架构，是进行 IC 验证的基础。</p>
+<h2 id="一、整体结构框图">一、整体结构框图</h2>
+<p>C910/C920 的内存子系统分为<strong>核内私有部分</strong>和<strong>簇内共享部分</strong>两层。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" data-config="{&quot;themeVariables&quot;: { &quot;fontSize&quot;: &quot;16px&quot;, &quot;fontFamily&quot;: &quot;var(--font-body)&quot;}, &quot;look&quot;: &quot;handDrawn&quot;}" hidden>
+    flowchart TB
+    subgraph Cluster[&quot;SoC &#x2F; Cluster&quot;]
+        direction TB
+
+        subgraph Core0[&quot;Core 0&quot;]
+            direction TB
+            IFU0[&quot;IFU &#x2F; IDU&quot;]
+            IC0[&quot;L1 I-Cache&lt;br&#x2F;&gt;32&#x2F;64KB, VIPT&quot;]
+            MMU0[&quot;MMU&quot;]
+            DC0[&quot;L1 D-Cache&lt;br&#x2F;&gt;32&#x2F;64KB, PIPT&quot;]
+        end
+
+        subgraph Core1[&quot;Core 1&quot;]
+            direction TB
+            IFU1[&quot;IFU &#x2F; IDU&quot;]
+            IC1[&quot;L1 I-Cache&lt;br&#x2F;&gt;32&#x2F;64KB, VIPT&quot;]
+            MMU1[&quot;MMU&quot;]
+            DC1[&quot;L1 D-Cache&lt;br&#x2F;&gt;32&#x2F;64KB, PIPT&quot;]
+        end
+
+        CIU[&quot;CIU 一致性接口单元&lt;br&#x2F;&gt;sfence.vma 广播 &#x2F; Snoop 处理&quot;]
+        L2[&quot;L2 Cache&lt;br&#x2F;&gt;256KB~8MB, 16路, MOESI&quot;]
+        BUS[&quot;AXI &#x2F; ACE&lt;br&#x2F;&gt;系统总线 &#x2F; 内存控制器&quot;]
+
+        IFU0 --&gt; IC0
+        IC0 --&gt; MMU0
+        IFU0 --&gt; MMU0
+        MMU0 --&gt; DC0
+        IFU0 --&gt; DC0
+
+        IFU1 --&gt; IC1
+        IC1 --&gt; MMU1
+        IFU1 --&gt; MMU1
+        MMU1 --&gt; DC1
+        IFU1 --&gt; DC1
+
+        DC0 --&gt; CIU
+        DC1 --&gt; CIU
+        MMU0 --&gt; CIU
+        MMU1 --&gt; CIU
+        CIU --&gt; L2
+        L2 --&gt; BUS
+    end
+  </pre></div>
+<p><strong>关键设计事实</strong>：</p>
+<ul>
+<li><strong>L1 Cache 和 TLB 是每核私有的</strong>，L2 是簇内共享的。</li>
+<li><strong>CIU 处于 L1 和 L2 之间</strong>，是所有一致性流量（Cache Snoop + TLB Shootdown）的枢纽。</li>
+<li>C920 的向量扩展对 DTLB 和 L1 D-Cache 的带宽提出了更高要求。</li>
+</ul>
+<h2 id="二、MMU：虚拟地址到物理地址的翻译引擎">二、MMU：虚拟地址到物理地址的翻译引擎</h2>
+<p>MMU（Memory Management Unit，内存管理单元）是一种硬件模块，用于在CPU和内存之间实现虚拟内存管理。</p>
+<h3 id="2-1-为什么需要-MMU">2.1 为什么需要 MMU</h3>
+<p>没有 MMU 时，程序直接面对物理内存，存在两个致命问题：</p>
+<ul>
+<li><strong>隔离性差</strong>：程序 A 可以随意读写程序 B 的内存。</li>
+<li><strong>地址空间不够用</strong>：每个程序独占连续物理内存，碎片化严重。</li>
+</ul>
+<p>MMU 通过<strong>分页机制</strong>解决：虚拟地址空间切成 4KB 的“页”，物理内存切成同样大小的“页框”，页表记录“哪一页对应哪一页框”。</p>
+<h3 id="2-2-页表遍历的代价">2.2 页表遍历的代价</h3>
+<p>SV39 标准下，虚拟地址被切成 4 个部分：<strong>VPN[2]、VPN[1]、VPN[0]、页内偏移</strong>。页表是三级树状结构，一次完整的 TLB 缺失，PTW 需要<strong>最多四次内存访问</strong>。</p>
+<p>假设内存访问延迟 100 个周期，一次翻译就要多花 <strong>300 个周期</strong>。如果每次访存都这样，CPU 性能会直接崩掉。这就是 TLB 存在的意义。</p>
+<h3 id="2-3-TLB-的两级结构">2.3 TLB 的两级结构</h3>
+<p>C910 的 TLB 组织是 <strong>“第一级全相联小容量 + 第二级组相联大容量”</strong>。</p>
+<p><strong>第一级 UTLB（DTLB/ITLB）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>DTLB</th>
+<th>ITLB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>结构</td>
+<td>全相联</td>
+<td>全相联</td>
+</tr>
+<tr>
+<td>表项数</td>
+<td>17</td>
+<td>与 DTLB 类似</td>
+</tr>
+<tr>
+<td>端口</td>
+<td><strong>双读端口</strong>（支持 Load/Store 双发射并行转换）</td>
+<td>单端口</td>
+</tr>
+<tr>
+<td>大页处理</td>
+<td>前 16 项存 4KB/2MB，第 17 项存 1GB</td>
+<td>类似</td>
+</tr>
+</tbody>
+</table>
+<p><strong>第二级 JTLB</strong>：</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" data-config="{&quot;themeVariables&quot;: { &quot;fontSize&quot;: &quot;16px&quot;, &quot;fontFamily&quot;: &quot;var(--font-body)&quot;}, &quot;look&quot;: &quot;handDrawn&quot;}" hidden>
+    flowchart TB
+    subgraph JTLB[&quot;JTLB — 4路组相联, 256项&quot;]
+        direction TB
+        subgraph W0[&quot;Way 0&quot;]
+            direction LR
+            T0[&quot;Tag: 27-bit VPN&quot;]
+            A0[&quot;ASID: 16-bit&quot;]
+            P0[&quot;PageSz: 3-bit&quot;]
+            V0[&quot;Valid&quot;]
+            PPN0[&quot;PPN: 28-bit&quot;]
+            PERM0[&quot;Perm: 15-bit&quot;]
+        end
+        subgraph W1[&quot;Way 1&quot;]
+            direction LR
+            T1[&quot;Tag: 27-bit VPN&quot;]
+            A1[&quot;ASID: 16-bit&quot;]
+            P1[&quot;PageSz: 3-bit&quot;]
+            V1[&quot;Valid&quot;]
+            PPN1[&quot;PPN: 28-bit&quot;]
+            PERM1[&quot;Perm: 15-bit&quot;]
+        end
+        subgraph W2[&quot;Way 2&quot;]
+            direction LR
+            T2[&quot;Tag: 27-bit VPN&quot;]
+            A2[&quot;ASID: 16-bit&quot;]
+            P2[&quot;PageSz: 3-bit&quot;]
+            V2[&quot;Valid&quot;]
+            PPN2[&quot;PPN: 28-bit&quot;]
+            PERM2[&quot;Perm: 15-bit&quot;]
+        end
+        subgraph W3[&quot;Way 3&quot;]
+            direction LR
+            T3[&quot;Tag: 27-bit VPN&quot;]
+            A3[&quot;ASID: 16-bit&quot;]
+            P3[&quot;PageSz: 3-bit&quot;]
+            V3[&quot;Valid&quot;]
+            PPN3[&quot;PPN: 28-bit&quot;]
+            PERM3[&quot;Perm: 15-bit&quot;]
+        end
+    end
+
+    VA[&quot;虚拟地址&quot;] --&gt; IDX[&quot;虚拟地址低位&lt;br&#x2F;&gt;作为组索引&quot;]
+    IDX --&gt; JTLB
+    JTLB --&gt; CMP[&quot;4路 Tag 并行比较&quot;]
+    CMP --&gt; HIT{&quot;命中条件:&lt;br&#x2F;&gt;VPN匹配 + ASID匹配 + Valid&#x3D;1&quot;}
+    HIT --&gt;|命中| PA[&quot;物理地址&quot;]
+    HIT --&gt;|缺失| PTW[&quot;触发 PTW&quot;]
+  </pre></div>
+<p><strong>工程含义</strong>：</p>
+<ul>
+<li>JTLB 用<strong>虚拟地址做索引</strong>，Tag 里存 <strong>ASID</strong>。进程切换时只要新进程 ASID 不同，旧表项就不会误匹配，<strong>不需要刷新 JTLB</strong>。</li>
+<li>但 DTLB/ITLB 不存 ASID，写 SATP 寄存器（切换页表根）时必须<strong>全部刷新 UTLB</strong>。</li>
+</ul>
+<h3 id="2-4-PTW-页表遍历流程">2.4 PTW 页表遍历流程</h3>
+<p>PTW 是 TLB 缺失后真正去读页表的模块。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" data-config="{&quot;themeVariables&quot;: { &quot;fontSize&quot;: &quot;16px&quot;, &quot;fontFamily&quot;: &quot;var(--font-body)&quot;}, &quot;look&quot;: &quot;handDrawn&quot;}" hidden>
+    flowchart TB
+    START[&quot;SATP.ppn&lt;br&#x2F;&gt;根页表物理基址&quot;] --&gt; L1[&quot;第1次访存&lt;br&#x2F;&gt;根页表基址 + VPN[2]×8&lt;br&#x2F;&gt;读根页表项&quot;]
+    L1 --&gt; CHK1{&quot;叶表项?&quot;}
+    CHK1 --&gt;|是| DONE[&quot;完成&lt;br&#x2F;&gt;得到物理页号&quot;]
+    CHK1 --&gt;|否| L2[&quot;第2次访存&lt;br&#x2F;&gt;上级PPN + VPN[1]×8&lt;br&#x2F;&gt;读中间页表项&quot;]
+    L2 --&gt; CHK2{&quot;叶表项?&quot;}
+    CHK2 --&gt;|是| DONE2MB[&quot;完成&lt;br&#x2F;&gt;得到 2MB 大页&quot;]
+    CHK2 --&gt;|否| L3[&quot;第3次访存&lt;br&#x2F;&gt;上级PPN + VPN[0]×8&lt;br&#x2F;&gt;读叶子页表项&quot;]
+    L3 --&gt; CHK3{&quot;叶表项?&quot;}
+    CHK3 --&gt;|是| DONE4KB[&quot;完成&lt;br&#x2F;&gt;得到 4KB 页 PPN&quot;]
+    CHK3 --&gt;|否| FAULT[&quot;Page Fault&lt;br&#x2F;&gt;异常码生成&quot;]
+    DONE --&gt; PERM{&quot;权限检查&lt;br&#x2F;&gt;X&#x2F;W&#x2F;R&quot;}
+    DONE2MB --&gt; PERM
+    DONE4KB --&gt; PERM
+    PERM --&gt;|通过| OK[&quot;TLB 回填&quot;]
+    PERM --&gt;|违反| FAULT
+  </pre></div>
+<p><strong>PTW 与 DCache 的借用关系</strong>：PTW 读页表时不是独立访问内存，而是**“借用” LSU 的 DC 流水级**。PTW 向 MCIC 发送请求，若 DCache 响应，则读操作插入 LSU 的 DC 流水线。在 PTW 完成之前，<strong>LSU 的 DC 流水级会停顿</strong>来处理这个“借道”访问。这就是为什么 TLB 缺失虽然不阻塞流水线前端，但<strong>会占用 LSU 的访存带宽</strong>。</p>
+<h3 id="2-5-DTLB-缺失的“冻结-唤醒”机制">2.5 DTLB 缺失的“冻结-唤醒”机制</h3>
+<p>这是 C910 区别于顺序核的关键设计。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" data-config="{&quot;themeVariables&quot;: { &quot;fontSize&quot;: &quot;16px&quot;, &quot;fontFamily&quot;: &quot;var(--font-body)&quot;}, &quot;look&quot;: &quot;handDrawn&quot;}" hidden>
+    flowchart TB
+    LSIQ[&quot;LSU 乱序队列 LSIQ&quot;] --&gt; INA[&quot;指令 A&lt;br&#x2F;&gt;虚拟地址 VA_A&quot;]
+    LSIQ --&gt; INB[&quot;指令 B&lt;br&#x2F;&gt;继续乱序发射&quot;]
+
+    INA --&gt; AG[&quot;AG 级地址生成&quot;]
+    AG --&gt; DTLBQ[&quot;DTLB 查询&quot;]
+    DTLBQ --&gt; MISS{&quot;命中?&quot;}
+    MISS --&gt;|命中| PA[&quot;得到物理地址&lt;br&#x2F;&gt;继续执行&quot;]
+    MISS --&gt;|缺失| FREEZE[&quot;冻结 LSIQ 对应项&lt;br&#x2F;&gt;记录 VA_A&lt;br&#x2F;&gt;分配 Refill ID&quot;]
+    FREEZE --&gt; PTWGO[&quot;PTW 开始页表遍历&quot;]
+    PTWGO --&gt; FILL[&quot;回填完成&lt;br&#x2F;&gt;写入 DTLB&quot;]
+    FILL --&gt; WAKE[&quot;唤醒 LSIQ 表项&lt;br&#x2F;&gt;重新发射指令 A&quot;]
+    WAKE --&gt; AG
+
+    INB --&gt; AG2[&quot;AG 级&lt;br&#x2F;&gt;不受 A 缺失影响&quot;]
+    AG2 --&gt; DTLBQ2[&quot;DTLB 查询&quot;]
+    DTLBQ2 --&gt; PA2[&quot;得到物理地址&quot;]
+  </pre></div>
+<p><strong>两个缺失的仲裁</strong>：如果 Load 和 Store 同时发生 DTLB 缺失，DTLB <strong>比较指令 ID，优先处理更旧的指令</strong>。这是乱序处理器中“以程序顺序处理异常”原则的体现——异常（TLB 缺失最终可能变成 Page Fault）必须按程序顺序报告。</p>
+<h2 id="三、Cache：让数据离-CPU-更近">三、Cache：让数据离 CPU 更近</h2>
+<p>MMU 解决了“地址翻译”，但物理内存本身仍然很慢。Cache 的任务是<strong>把最近用过的数据放在离 CPU 更近的小容量存储器里</strong>。</p>
+<h3 id="3-1-Cache-层次">3.1 Cache 层次</h3>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>容量</th>
+<th>位置</th>
+<th>协议</th>
+<th>索引方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1 I-Cache</td>
+<td>32/64KB</td>
+<td><strong>每核私有</strong></td>
+<td>—</td>
+<td>VIPT</td>
+</tr>
+<tr>
+<td>L1 D-Cache</td>
+<td>32/64KB</td>
+<td><strong>每核私有</strong></td>
+<td>MESI</td>
+<td>PIPT</td>
+</tr>
+<tr>
+<td>L2 Cache</td>
+<td>256KB~8MB</td>
+<td><strong>簇内共享</strong></td>
+<td>MOESI</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>L1 是哈佛结构（指令和数据分开），L2 统一缓存所有数据和指令。</p>
+<h3 id="3-2-L1-D-Cache-的-Bank-组织">3.2 L1 D-Cache 的 Bank 组织</h3>
+<div class="mermaid-wrap"><pre class="mermaid-src" data-config="{&quot;themeVariables&quot;: { &quot;fontSize&quot;: &quot;16px&quot;, &quot;fontFamily&quot;: &quot;var(--font-body)&quot;}, &quot;look&quot;: &quot;handDrawn&quot;}" hidden>
+    flowchart TB
+    subgraph DCache[&quot;L1 D-Cache 64KB, 2路, 64B Line&quot;]
+        direction LR
+        subgraph Way0[&quot;Way 0&quot;]
+            direction TB
+            TAG0[&quot;Tag 物理地址高位&quot;]
+            ST0[&quot;Valid &#x2F; Dirty&quot;]
+            ECC0[&quot;Parity &#x2F; ECC&quot;]
+            B00[&quot;Data Bank 0: 128b&quot;]
+            B01[&quot;Data Bank 1: 128b&quot;]
+            B07[&quot;... Bank 7: 128b&quot;]
+        end
+        subgraph Way1[&quot;Way 1&quot;]
+            direction TB
+            TAG1[&quot;Tag 物理地址高位&quot;]
+            ST1[&quot;Valid &#x2F; Dirty&quot;]
+            ECC1[&quot;Parity &#x2F; ECC&quot;]
+            B10[&quot;Data Bank 0: 128b&quot;]
+            B11[&quot;Data Bank 1: 128b&quot;]
+            B17[&quot;... Bank 7: 128b&quot;]
+        end
+    end
+
+    PA[&quot;物理地址&quot;] --&gt; SETIDX[&quot;Set Index&quot;]
+    SETIDX --&gt; DCache
+    DCache --&gt; TAGCHK[&quot;两路 Tag 比较&quot;]
+    TAGCHK --&gt; HIT{&quot;命中?&quot;}
+    HIT --&gt;|是| DATA[&quot;返回数据&quot;]
+    HIT --&gt;|否| NEXT[&quot;向 L2 请求回填&quot;]
+  </pre></div>
+<p><strong>8 Bank 结构的意义</strong>：Data Array 分 8 个 bank，每个 bank 一次读 128bit。L1 D-Cache 一个周期最多可以<strong>并行服务两个 128bit 的访问</strong>（对应双发射 LSU）。当 LSU 双流水线同时访问 D-Cache 时，只要落在不同 bank，就能并发处理。</p>
+<p><strong>自适应写分配</strong>：常规 Cache 在写缺失时会把整个 Cache 行从内存读进来（Write-Allocate）。C910 检测到程序在<strong>连续地址上写入</strong>时（如 memset），切换为 <strong>Write-No-Allocate</strong>——直接写穿到下一级，不占用 L1 Cache 行。这避免了“写了就要驱逐”的无效占用。</p>
+<p><strong>为什么 I-Cache 用 VIPT，D-Cache 用 PIPT</strong>：</p>
+<ul>
+<li>VIPT 允许<strong>用虚拟地址低位索引 Cache 的同时，MMU 并行进行地址翻译</strong>，降低取指延迟。但容量超过 4KB×路数时有别名风险。</li>
+<li>PIPT <strong>从根本上消除了别名问题</strong>，同一个物理地址永远映射到同一个 Cache Set，软件不需要处理 Cache 别名。数据访问路径对延迟不如取指那么敏感，所以用 PIPT。</li>
+</ul>
+<h3 id="3-3-MESI-MOESI-状态转换">3.3 MESI/MOESI 状态转换</h3>
+<div class="mermaid-wrap"><pre class="mermaid-src" data-config="{&quot;themeVariables&quot;: { &quot;fontSize&quot;: &quot;16px&quot;, &quot;fontFamily&quot;: &quot;var(--font-body)&quot;}, &quot;look&quot;: &quot;handDrawn&quot;}" hidden>
+    stateDiagram-v2
+    [*] --&gt; I
+    I --&gt; E: 本地读缺失&lt;br&#x2F;&gt;其他核无副本
+    I --&gt; S: 本地读缺失&lt;br&#x2F;&gt;其他核有副本
+    I --&gt; M: 本地写缺失
+    E --&gt; M: 本地写命中
+    E --&gt; S: 其他核读&lt;br&#x2F;&gt;Snoop 响应
+    E --&gt; I: 其他核写&lt;br&#x2F;&gt;Snoop 响应
+    M --&gt; S: 其他核读&lt;br&#x2F;&gt;写回并转共享
+    M --&gt; I: 其他核写&lt;br&#x2F;&gt;写回并失效
+    M --&gt; O: 其他核读&lt;br&#x2F;&gt;转为 Owned
+    S --&gt; M: 本地写命中&lt;br&#x2F;&gt;其他核副本失效
+    S --&gt; I: 其他核写&lt;br&#x2F;&gt;Snoop 失效
+    O --&gt; S: 其他核读&lt;br&#x2F;&gt;继续共享
+    O --&gt; I: 其他核写&lt;br&#x2F;&gt;写回并失效
+    O --&gt; M: 本地写命中
+  </pre></div>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>使用位置</th>
+<th>状态数</th>
+<th>核心差异</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MESI</td>
+<td>L1 D-Cache</td>
+<td>4</td>
+<td>没有 Owned，脏数据必须写回内存</td>
+</tr>
+<tr>
+<td>MOESI</td>
+<td>L2 Cache</td>
+<td>5</td>
+<td>多了 <strong>O（Owned）</strong>：脏数据但可被其他核共享</td>
+</tr>
+</tbody>
+</table>
+<p><strong>O 状态的实际意义</strong>：核 A 的 L1 有一个 Modified 行，核 B 要读。MESI 下核 A 必须先写回内存，核 B 再从 L2 读。MOESI 下核 A 的行转为 <strong>O</strong>，核 B 直接从核 A 的 Cache <strong>通过 CIU 取数据</strong>（Cache-to-Cache Transfer），<strong>不需要经过内存</strong>，显著降低多核共享数据延迟。</p>
+<h3 id="3-4-多核假共享">3.4 多核假共享</h3>
+<p>假设核 0 和核 1 分别频繁写两个<strong>不同的变量</strong>，但这两个变量<strong>恰好落在同一个 64 字节 Cache 行</strong>里：</p>
+<ol>
+<li>核 0 写变量 A → 拿到 Cache 行的 M 状态，核 1 的副本被 Invalid。</li>
+<li>核 1 写变量 B → 核 0 的行被 Invalid，核 1 拿到 M。</li>
+<li>核 0 再写变量 A → 核 1 又被 Invalid……</li>
+</ol>
+<p>结果是：<strong>两个核在逻辑上访问的是不同数据，物理上却在反复争夺同一行 Cache</strong>，性能急剧下降。这就是<strong>假共享</strong>（False Sharing）。C910 的 L2 MOESI 和 CIU 硬件一致性机制，保证这种场景下数据依然正确（性能损失由软件通过 padding 等方式规避）。</p>
+<h2 id="四、CIU：Cache-一致性与-TLB-一致性的统一枢纽">四、CIU：Cache 一致性与 TLB 一致性的统一枢纽</h2>
+<p>CIU（Coherence Interface Unit）同时处理 <strong>Cache 一致性</strong>和 <strong>TLB 一致性</strong>的流量。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" data-config="{&quot;themeVariables&quot;: { &quot;fontSize&quot;: &quot;16px&quot;, &quot;fontFamily&quot;: &quot;var(--font-body)&quot;}, &quot;look&quot;: &quot;handDrawn&quot;}" hidden>
+    flowchart TB
+    subgraph Cores[&quot;多核&quot;]
+        direction TB
+        C0[&quot;Core 0&lt;br&#x2F;&gt;L1 + MMU&quot;]
+        C1[&quot;Core 1&lt;br&#x2F;&gt;L1 + MMU&quot;]
+        CN[&quot;Core N&lt;br&#x2F;&gt;L1 + MMU&quot;]
+    end
+
+    subgraph CIUDetail[&quot;CIU 内部&quot;]
+        direction TB
+        REQQ[&quot;一致性请求队列 + 仲裁&quot;]
+        SNOOP[&quot;Snoop Filter&lt;br&#x2F;&gt;向各核广播&lt;br&#x2F;&gt;Cache 失效请求&quot;]
+        SFENCE[&quot;sfence 广播队列&lt;br&#x2F;&gt;向各核广播&lt;br&#x2F;&gt;TLB Shootdown&quot;]
+    end
+
+    L2[&quot;L2 Cache&quot;]
+    MEM[&quot;内存控制器&quot;]
+
+    C0 &lt;--&gt;|&quot;Snoop Req &#x2F; Rsp&lt;br&#x2F;&gt;sfence.vma&quot;| CIUDetail
+    C1 &lt;--&gt;|&quot;Snoop Req &#x2F; Rsp&lt;br&#x2F;&gt;sfence.vma&quot;| CIUDetail
+    CN &lt;--&gt;|&quot;Snoop Req &#x2F; Rsp&lt;br&#x2F;&gt;sfence.vma&quot;| CIUDetail
+
+    REQQ --&gt; SNOOP
+    REQQ --&gt; SFENCE
+    CIUDetail --&gt; L2
+    L2 --&gt; MEM
+  </pre></div>
+<p><strong>关键理解</strong>：核 0 执行 <code>sfence.vma</code> 后，刷新请求<strong>不是点对点发给其他核</strong>，而是<strong>先发给 CIU</strong>，由 CIU 广播到所有核。每个核内部有一个<strong>队列</strong>缓冲来自 CIU 的刷新请求，并进行仲裁（可能同时有 Cache Snoop 和 TLB 刷新请求到达）。这种“集中广播”设计保证了所有核看到的一致性事件顺序一致。</p>
+<p><strong><code>sfence.vma rs1, rs2</code> 的语义</strong>：</p>
+<ul>
+<li><code>rs1=x0, rs2=x0</code>：刷新<strong>所有</strong> TLB 表项。</li>
+<li><code>rs1!=x0</code>：只刷新虚拟页号匹配的表项。</li>
+<li><code>rs2!=x0</code>：只刷新 ASID 匹配的表项。</li>
+</ul>
+<h2 id="五、融合理解：多核进程迁移的完整数据流">五、融合理解：多核进程迁移的完整数据流</h2>
+<p>把 MMU 和 Cache 放在一起，走一遍<strong>多核进程迁移</strong>的完整数据流。场景：进程 P 原本跑在核 0，现在 OS 决定把它迁移到核 1。</p>
+<div class="mermaid-wrap"><pre class="mermaid-src" data-config="{&quot;themeVariables&quot;: { &quot;fontSize&quot;: &quot;16px&quot;, &quot;fontFamily&quot;: &quot;var(--font-body)&quot;}, &quot;look&quot;: &quot;handDrawn&quot;}" hidden>
+    sequenceDiagram
+    participant OS as OS &#x2F; 核0
+    participant CIU as CIU
+    participant C0 as Core 0&lt;br&#x2F;&gt;L1 + TLB
+    participant C1 as Core 1&lt;br&#x2F;&gt;L1 + TLB
+    participant L2 as L2 Cache
+
+    Note over OS,C1: 进程 P 从核0迁移到核1
+
+    OS-&gt;&gt;OS: 修改进程 P 的页表项
+    OS-&gt;&gt;C0: 执行 sfence.vma rs1, rs2
+    C0-&gt;&gt;CIU: 发送 TLB 刷新请求
+    CIU-&gt;&gt;C0: 广播刷新（本地也刷）
+    CIU-&gt;&gt;C1: 广播刷新（VPN&#x3D;rs1, ASID&#x3D;rs2）
+    C1-&gt;&gt;C1: 无效化 JTLB 对应表项&lt;br&#x2F;&gt;逐出 DTLB&#x2F;ITLB 表项
+
+    Note over C1: 核1开始执行进程 P
+
+    C1-&gt;&gt;C1: ITLB 缺失 → PTW 读页表
+    C1-&gt;&gt;C1: DTLB 缺失 → PTW 读页表
+    C1-&gt;&gt;L2: 访问新映射的物理页
+    L2-&gt;&gt;CIU: 触发 Snoop 请求
+    CIU-&gt;&gt;C0: Snoop 请求（该行是否在核0 L1？）
+    C0-&gt;&gt;C0: 状态 M → O 或 I
+    C0-&gt;&gt;CIU: 返回数据（Cache-to-Cache）
+    CIU-&gt;&gt;C1: 数据传递
+    C1-&gt;&gt;C1: L1 获得数据&lt;br&#x2F;&gt;状态 S 或 E
+  </pre></div>
+<p><strong>工程含义</strong>：<strong>TLB 一致性和 Cache 一致性走的是同一条 CIU 通道</strong>，但处理的是不同类型的事务（TLB 失效广播 vs. Cache Line 数据共享）。验证时需要确保两者在 CIU 中互不阻塞，且广播顺序正确。</p>
+<h2 id="六、C920-向量扩展对内存子系统的影响">六、C920 向量扩展对内存子系统的影响</h2>
+<p>C920 与 C910 最核心的差异是<strong>从 RVV 0.7.1 升级到 RVV 1.0</strong>，并可选配 128/256 位向量单元。这对内存子系统意味着：</p>
+<p><strong>对 TLB 的压力</strong>：向量单元一条指令可能访问<strong>跨多个页的大量数据</strong>。如果向量访存跨越页边界，DTLB 需要在<strong>同一周期内处理多个不同页的翻译请求</strong>。C910/C920 的 D-uTLB 双读端口设计在这里派上用场，但<strong>跨页向量访存</strong>场景下 TLB 缺失队列的分配策略需要特别关注。</p>
+<p><strong>对 Cache 带宽的要求</strong>：256 位向量一次 load 就是 32 字节，接近 Cache 行的一半。L1 D-Cache 的 8-bank 结构、每次最多 128bit 的读能力，在向量密集场景下可能成为瓶颈。C920 支持<strong>高性能数据预取</strong>，正是为了缓解这种压力。</p>
+<h2 id="七、各组件一句话总结">七、各组件一句话总结</h2>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>一句话理解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DTLB/ITLB</strong></td>
+<td>全相联小缓存，DTLB 双端口支持双发射，不存 ASID 所以上下文切换要全刷</td>
+</tr>
+<tr>
+<td><strong>JTLB</strong></td>
+<td>4路组相联 256 项，存 ASID 所以进程切换不用刷，缺失时触发 PTW</td>
+</tr>
+<tr>
+<td><strong>PTW</strong></td>
+<td>最多 4 次访存遍历三级页表，借用 LSU 的 DC 流水线，期间阻塞 LSU 访存</td>
+</tr>
+<tr>
+<td><strong>L1 I-Cache</strong></td>
+<td>VIPT 结构降低取指延迟，但容量超过 4KB×路数时有别名风险</td>
+</tr>
+<tr>
+<td><strong>L1 D-Cache</strong></td>
+<td>PIPT 结构消除别名，8 Bank 支持双发射并发，自适应写分配优化连续写</td>
+</tr>
+<tr>
+<td><strong>L2 Cache</strong></td>
+<td>16路组相联共享，MOESI 协议支持 Cache-to-Cache 传输</td>
+</tr>
+<tr>
+<td><strong>CIU</strong></td>
+<td>Cache Snoop 和 TLB Shootdown 的统一广播枢纽，保证多核一致性事件顺序</td>
+</tr>
+</tbody>
+</table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://9606960.xyz">Cloudlet</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://9606960.xyz/2026/09/11/%E7%8E%84%E9%93%81C910-C920%E7%9A%84MMU%E8%AF%A6%E8%A7%A3/">https://9606960.xyz/2026/09/11/%E7%8E%84%E9%93%81C910-C920%E7%9A%84MMU%E8%AF%A6%E8%A7%A3/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://9606960.xyz" target="_blank">Cloudlet</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/09/11/%E7%8E%84%E9%93%81-C910-C920-Cache-%E4%B8%8E%E5%86%99%E5%90%88%E5%B9%B6%E8%AF%A6%E8%A7%A3/" title="玄铁 C910/C920 Cache 与写合并详解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">玄铁 C910/C920 Cache 与写合并详解</div></div><div class="info-2"><div class="info-item-1">第一章 为什么需要 Cache CPU 核心跑得非常快，C910 主频可达 2GHz 以上，一个时钟周期约 0.5 纳秒。但 DDR 内存响应慢得多，访问一次可能需要几十甚至上百纳秒。如果 CPU 每次要数据都直接去 DDR 拿，流水线会大量时间空转。 Cache（缓存）就是放在 CPU 旁边的小书架，把最常用的数据先搬过来。CPU 先从 Cache 找，找到直接用；找不到再去 DDR 拿，同时把周围数据一起搬回来备用。 C910/C920 采用两级缓存：  L1 Cache：最小最快，紧挨核心，分为 I-Cache（放指令）和 D-Cache（放数据） L2 Cache：大一些慢一些，同一 Cluster 内多个核心共享       graph TB     subgraph CLUSTER[&quot;玄铁 Cluster&quot;]         subgraph CORE0[&quot;Core 0: C910&#x2F;C920&quot;]             L1I0[&quot;L1 I-Cache&lt;br&#x2F;&gt;64KB &#x2F; 2...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Cloudlet</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/cloudlet2026"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="mailto:2380797942@qq.com.com" rel="external nofollow noreferrer" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">引言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%95%B4%E4%BD%93%E7%BB%93%E6%9E%84%E6%A1%86%E5%9B%BE"><span class="toc-number">2.</span> <span class="toc-text">一、整体结构框图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81MMU%EF%BC%9A%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E5%88%B0%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80%E7%9A%84%E7%BF%BB%E8%AF%91%E5%BC%95%E6%93%8E"><span class="toc-number">3.</span> <span class="toc-text">二、MMU：虚拟地址到物理地址的翻译引擎</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-MMU"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 为什么需要 MMU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E9%A1%B5%E8%A1%A8%E9%81%8D%E5%8E%86%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 页表遍历的代价</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-TLB-%E7%9A%84%E4%B8%A4%E7%BA%A7%E7%BB%93%E6%9E%84"><span class="toc-number">3.3.</span> <span class="toc-text">2.3 TLB 的两级结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-PTW-%E9%A1%B5%E8%A1%A8%E9%81%8D%E5%8E%86%E6%B5%81%E7%A8%8B"><span class="toc-number">3.4.</span> <span class="toc-text">2.4 PTW 页表遍历流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-DTLB-%E7%BC%BA%E5%A4%B1%E7%9A%84%E2%80%9C%E5%86%BB%E7%BB%93-%E5%94%A4%E9%86%92%E2%80%9D%E6%9C%BA%E5%88%B6"><span class="toc-number">3.5.</span> <span class="toc-text">2.5 DTLB 缺失的“冻结-唤醒”机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Cache%EF%BC%9A%E8%AE%A9%E6%95%B0%E6%8D%AE%E7%A6%BB-CPU-%E6%9B%B4%E8%BF%91"><span class="toc-number">4.</span> <span class="toc-text">三、Cache：让数据离 CPU 更近</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Cache-%E5%B1%82%E6%AC%A1"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 Cache 层次</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-L1-D-Cache-%E7%9A%84-Bank-%E7%BB%84%E7%BB%87"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 L1 D-Cache 的 Bank 组织</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-MESI-MOESI-%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2"><span class="toc-number">4.3.</span> <span class="toc-text">3.3 MESI&#x2F;MOESI 状态转换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%A4%9A%E6%A0%B8%E5%81%87%E5%85%B1%E4%BA%AB"><span class="toc-number">4.4.</span> <span class="toc-text">3.4 多核假共享</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81CIU%EF%BC%9ACache-%E4%B8%80%E8%87%B4%E6%80%A7%E4%B8%8E-TLB-%E4%B8%80%E8%87%B4%E6%80%A7%E7%9A%84%E7%BB%9F%E4%B8%80%E6%9E%A2%E7%BA%BD"><span class="toc-number">5.</span> <span class="toc-text">四、CIU：Cache 一致性与 TLB 一致性的统一枢纽</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%9E%8D%E5%90%88%E7%90%86%E8%A7%A3%EF%BC%9A%E5%A4%9A%E6%A0%B8%E8%BF%9B%E7%A8%8B%E8%BF%81%E7%A7%BB%E7%9A%84%E5%AE%8C%E6%95%B4%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="toc-number">6.</span> <span class="toc-text">五、融合理解：多核进程迁移的完整数据流</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81C920-%E5%90%91%E9%87%8F%E6%89%A9%E5%B1%95%E5%AF%B9%E5%86%85%E5%AD%98%E5%AD%90%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-number">7.</span> <span class="toc-text">六、C920 向量扩展对内存子系统的影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%90%84%E7%BB%84%E4%BB%B6%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">七、各组件一句话总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/11/%E7%8E%84%E9%93%81C910-C920%E7%9A%84MMU%E8%AF%A6%E8%A7%A3/" title="玄铁C910/C920的MMU详解">玄铁C910/C920的MMU详解</a><time datetime="2026-09-11T14:51:28.000Z" title="发表于 2026-09-11 22:51:28">2026-09-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/11/%E7%8E%84%E9%93%81-C910-C920-Cache-%E4%B8%8E%E5%86%99%E5%90%88%E5%B9%B6%E8%AF%A6%E8%A7%A3/" title="玄铁 C910/C920 Cache 与写合并详解">玄铁 C910/C920 Cache 与写合并详解</a><time datetime="2026-09-11T13:34:50.000Z" title="发表于 2026-09-11 21:34:50">2026-09-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/06/NIC-400-Outstanding%E6%B7%B1%E5%BA%A6%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%AA%8C%E8%AF%81%E6%8C%87%E5%8D%97/" title="NIC-400 Outstanding深度配置与验证指南">NIC-400 Outstanding深度配置与验证指南</a><time datetime="2026-09-06T05:41:00.000Z" title="发表于 2026-09-06 13:41:00">2026-09-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/06/IC%E9%AA%8C%E8%AF%81%E4%B8%ADforce%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/" title="IC验证中force命令使用指南">IC验证中force命令使用指南</a><time datetime="2026-09-06T05:08:02.000Z" title="发表于 2026-09-06 13:08:02">2026-09-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/19/NIC-400%E5%B7%A5%E7%A8%8B%E8%AF%A6%E8%A7%A3/" title="NIC-400工程详解">NIC-400工程详解</a><time datetime="2026-08-18T16:10:57.000Z" title="发表于 2026-08-19 00:10:57">2026-08-19</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Cloudlet</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">簡</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/js/tw_cn.js?v=5.7.0"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.innerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    // Clean up previous event listeners and pending frames
+    if (wrap.__mermaidAbortController) {
+      wrap.__mermaidAbortController.abort()
+      if (wrap.__mermaidRafId) cancelAnimationFrame(wrap.__mermaidRafId)
+    }
+    const ac = new AbortController()
+    wrap.__mermaidAbortController = ac
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+    // Disable default gestures to prevent scroll chaining and pinch-zoom penetration in Chrome
+    svg.style.touchAction = 'none'
+
+    // Cache BoundingClientRect, throttled on scroll to reduce reflow
+    let cachedRect = svg.getBoundingClientRect()
+    let rectDirty = false
+    const markRectDirty = () => { rectDirty = true }
+    window.addEventListener('resize', markRectDirty, { signal: ac.signal })
+    window.addEventListener('scroll', markRectDirty, { signal: ac.signal, capture: true })
+    const getRect = () => {
+      if (rectDirty) {
+        cachedRect = svg.getBoundingClientRect()
+        rectDirty = false
+      }
+      return cachedRect
+    }
+
+    // Precompute clamp bounds from initial viewBox
+    const minW = initVb[2] * 0.1
+    const maxW = initVb[2] * 10
+    const minH = initVb[3] * 0.1
+    const maxH = initVb[3] * 10
+    const clampVb = vb => {
+      const out = vb.slice()
+      out[2] = clamp(out[2], minW, maxW)
+      out[3] = clamp(out[3], minH, maxH)
+      return out
+    }
+
+    // Throttle DOM updates using requestAnimationFrame
+    let pendingVb = null
+    let rafId = null
+    const applyVb = () => {
+      if (pendingVb) {
+        wrap.__mermaidCurViewBox = pendingVb
+        setSvgViewBox(svg, pendingVb)
+        pendingVb = null
+      }
+      rafId = null
+      wrap.__mermaidRafId = null
+    }
+    const setCurVb = vb => {
+      pendingVb = clampVb(vb)
+      if (!rafId) {
+        rafId = requestAnimationFrame(applyVb)
+        wrap.__mermaidRafId = rafId
+      }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      lastPointerX: 0,
+      lastPointerY: 0
+    }
+
+    const onPointerDown = e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      const curVb = wrap.__mermaidCurViewBox
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (state.pointers.size === 1) {
+        state.startVb = curVb.slice()
+        state.lastPointerX = e.clientX
+        state.lastPointerY = e.clientY
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = curVb.slice()
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = state.pointers.values().next().value
+        const dxClient = p.x - state.lastPointerX
+        const dyClient = p.y - state.lastPointerY
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+        const dx = dxClient * (curVb[2] / rect.width)
+        const dy = dyClient * (curVb[3] / rect.height)
+        setCurVb([curVb[0] - dx, curVb[1] - dy, curVb[2], curVb[3]])
+        return
+      }
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const px = curVb[0] + (cx - rect.left) * (curVb[2] / rect.width)
+        const py = curVb[1] + (cy - rect.top) * (curVb[3] / rect.height)
+        setCurVb(zoomAtPoint(state.startVb, factor, px, py))
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      // Release PointerCapture to avoid event capture anomalies
+      if (svg.hasPointerCapture && svg.hasPointerCapture(e.pointerId)) {
+        svg.releasePointerCapture(e.pointerId)
+      }
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+      } else if (state.pointers.size === 1) {
+        const p = state.pointers.values().next().value
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+      }
+    }
+
+    const onWheel = e => {
+      // Prevent event bubbling from triggering external scroll
+      e.preventDefault()
+      e.stopPropagation()
+      // Normalize deltaY across deltaMode (Chrome uses pixels, Safari uses lines)
+      let delta = e.deltaY
+      if (e.deltaMode === 1) delta *= 16
+      else if (e.deltaMode === 2) delta *= 400
+
+      // Continuous zoom factor: smoother than fixed 1.1/0.9 steps
+      const zoomFactor = Math.pow(1.001, delta)
+
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      const px = curVb[0] + (e.clientX - rect.left) * (curVb[2] / rect.width)
+      const py = curVb[1] + (e.clientY - rect.top) * (curVb[3] / rect.height)
+      setCurVb(zoomAtPoint(curVb, zoomFactor, px, py))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (init) setCurVb(init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown, { signal: ac.signal })
+    svg.addEventListener('pointermove', onPointerMove, { signal: ac.signal })
+    svg.addEventListener('pointerup', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('pointercancel', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('wheel', onWheel, { passive: false, signal: ac.signal })
+    svg.addEventListener('dblclick', onDblClick, { signal: ac.signal })
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      // Clean up event listeners before removing old SVG
+      if (item.__mermaidAbortController) {
+        item.__mermaidAbortController.abort()
+      }
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      let config = {}
+      try {
+        config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      } catch (e) {
+        console.warn('[mermaid] failed to parse dataset.config:', e)
+      }
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+      const handleError = err => {
+        console.error(`[mermaid] render failed for block #${index}:`, err)
+        const errorEl = document.createElement('div')
+        errorEl.className = 'mermaid-error'
+        errorEl.textContent = `Mermaid render error: ${err.message || err}`
+        mermaidSrc.insertAdjacentElement('afterend', errorEl)
+      }
+
+      try {
+        const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+        // mermaid v9 and v10 compatibility
+        if (typeof renderFn === 'string') {
+          renderMermaid(renderFn)
+        } else {
+          renderFn.then(({ svg }) => renderMermaid(svg)).catch(handleError)
+        }
+      } catch (err) {
+        handleError(err)
+      }
+    })
+  }
+
+  const codeToMermaid = $article => {
+    const codeMermaidEle = $article.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    const $article = document.getElementById('article-container')
+    if (!$article) return
+
+    if (false) codeToMermaid($article)
+    const $mermaid = $article.querySelectorAll('.mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/external-link-handler.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/skins/default.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/wavedrom.min.js"></script><script>
+  window.addEventListener('load', function() {
+    if (typeof WaveDrom !== 'undefined') {
+      WaveDrom.ProcessAll();
+    }
+  });
+</script>
+<script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

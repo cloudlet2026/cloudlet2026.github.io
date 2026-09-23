@@ -1,0 +1,1080 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>NIC-400 RTL功能分析 | Cloudlet</title><meta name="author" content="Cloudlet"><meta name="copyright" content="Cloudlet"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="第一部分：NIC-400 主要功能详细描述 NIC-400 是 ARM 面向 AMBA 4 协议族设计的可配置互连组件（Network Interconnect），核心价值在于灵活的拓扑构建与精细的服务质量管控，支持从简单的单桥到包含最多 128 个主接口和 64 个从接口的复杂网络。 1. 多协议互连与转换 NIC-400 支持 AXI3、AXI4、AHB-Lite 及 APB 协议族。  AX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NIC-400 RTL功能分析">
+<meta property="og:url" content="https://9606960.xyz/2026/09/23/NIC-400-RTL%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Cloudlet">
+<meta property="og:description" content="第一部分：NIC-400 主要功能详细描述 NIC-400 是 ARM 面向 AMBA 4 协议族设计的可配置互连组件（Network Interconnect），核心价值在于灵活的拓扑构建与精细的服务质量管控，支持从简单的单桥到包含最多 128 个主接口和 64 个从接口的复杂网络。 1. 多协议互连与转换 NIC-400 支持 AXI3、AXI4、AHB-Lite 及 APB 协议族。  AX">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg">
+<meta property="article:published_time" content="2026-09-23T12:21:27.000Z">
+<meta property="article:modified_time" content="2026-09-23T13:44:29.059Z">
+<meta property="article:author" content="Cloudlet">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "NIC-400 RTL功能分析",
+  "url": "https://9606960.xyz/2026/09/23/NIC-400-RTL%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90/",
+  "image": "https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg",
+  "datePublished": "2026-09-23T12:21:27.000Z",
+  "dateModified": "2026-09-23T13:44:29.059Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Cloudlet",
+      "url": "https://9606960.xyz"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://9606960.xyz/2026/09/23/NIC-400-RTL%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":800,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'NIC-400 RTL功能分析',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Cloudlet</span></a><a class="nav-page-title" href="/"><span class="site-name">NIC-400 RTL功能分析</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">NIC-400 RTL功能分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-23T12:21:27.000Z" title="发表于 2026-09-23 20:21:27">2026-09-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-09-23T13:44:29.059Z" title="更新于 2026-09-23 21:44:29">2026-09-23</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><h2 id="第一部分：NIC-400-主要功能详细描述">第一部分：NIC-400 主要功能详细描述</h2>
+<p>NIC-400 是 ARM 面向 AMBA 4 协议族设计的可配置互连组件（Network Interconnect），核心价值在于<strong>灵活的拓扑构建</strong>与<strong>精细的服务质量管控</strong>，支持从简单的单桥到包含最多 <strong>128 个主接口和 64 个从接口</strong>的复杂网络。</p>
+<h3 id="1-多协议互连与转换">1. 多协议互连与转换</h3>
+<p>NIC-400 支持 <strong>AXI3、AXI4、AHB-Lite 及 APB</strong> 协议族。</p>
+<ul>
+<li><strong>AXI 主/从</strong>：完整的 AXI 全双工互连，支持独立的读写地址/数据通道。</li>
+<li><strong>AHB-Lite 主设备适配</strong>：可配置 <code>INCR promotion and Early Write Response</code> 选项，将 AHB 固定长度突发和 INCR 突发转换为 AXI 突发，同时提前返回写响应以提升吞吐。</li>
+<li><strong>APB 从设备接入</strong>：通过 <code>amib_apb</code> / <code>ib_apb_m</code> 实现 AXI 到 APB 的协议降级转换。</li>
+<li><strong>ITB 桥接</strong>：<code>axi_to_itb</code> 与 <code>itb_address_format</code> 实现 AXI 事务到 ITB（互连事务桥）格式的转换，支持 APB、A664 等特定协议从设备的接入。</li>
+<li><strong>错误响应</strong>：对于不满足 GPV 安全访问规则的非法事务，<code>default_slave_ds</code> 返回 DECERR 错误响应。</li>
+</ul>
+<h3 id="2-全局编程视图（GPV）">2. 全局编程视图（GPV）</h3>
+<p>所有配置寄存器通过 <strong>GPV（Global Programmers View）</strong> 暴露给软件。</p>
+<ul>
+<li>寄存器被划分为多个 <strong>4KB 块</strong>，基地址由节点编号在配置时确定，无连续性要求。</li>
+<li><strong>访问限制</strong>：仅支持 <code>AxSIZE=32</code> 的安全事务（<code>AxPROT[1]=0b0</code>），且只支持对齐访问和全 strobe 写数据。</li>
+<li>通过 <code>ib_gpv_ib_s</code>（从端）和 <code>ib_gpv_ib_m</code>（主端）实现配置访问的收发。</li>
+<li>典型寄存器包括 <code>max_ot</code>（最大 outstanding 事务数）、<code>qos_range</code>（QoS 范围）、<code>read_qos</code>/<code>write_qos</code> 等。</li>
+</ul>
+<h3 id="3-QoS-400-服务质量调节">3. QoS-400 服务质量调节</h3>
+<p>QoS-400 是可单独授权的扩展组件，提供三类调节机制：</p>
+<table>
+<thead>
+<tr>
+<th>调节类型</th>
+<th>机制说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>事务速率调节</strong></td>
+<td>基于 TSPEC 参数（峰值速率 p、突发容限 b、平均速率 r）限制主设备发出地址请求的速率。</td>
+</tr>
+<tr>
+<td><strong>未完成事务数调节</strong></td>
+<td>限制每个主设备可同时存在的未完成读/写事务数，防止从设备过载。</td>
+</tr>
+<tr>
+<td><strong>事务/地址延迟调节</strong></td>
+<td>通过反馈控制动态修改 <code>axqos</code> 值以瞄准目标延迟。实际延迟高于目标时提高 QoS 值以降低延迟。</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>📌 利用 Little's Law 关系（<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>R</mi><mi>T</mi></msub><mo>=</mo><msub><mi>N</mi><mi>T</mi></msub><mo>×</mo><mn>1</mn><mi mathvariant="normal">/</mi><msub><mi>L</mi><mi>T</mi></msub></mrow><annotation encoding="application/x-tex">R_T = N_T \times 1/L_T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0077em;">R</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0077em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.109em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1/</span><span class="mord"><span class="mord mathnormal">L</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>），通过背压机制防止从设备过载。</p>
+</blockquote>
+<h3 id="4-数据位宽与时钟域适配">4. 数据位宽与时钟域适配</h3>
+<ul>
+<li><strong>位宽转换</strong>：通过 <code>downsize</code>（降位宽，如 64bit→32bit）和 <code>upsize</code>（升位宽）模块处理，配合写合并缓冲（Write Merge Buffer）处理拆分事务的响应聚合。</li>
+<li><strong>时钟域转换</strong>：<code>boundary_chan_slice</code> 用于跨时钟域（CDC）处理，支持 ASYNC、SYNC 1:1、SYNC n:m 等多种同步模式。</li>
+<li><strong>异步桥</strong>：<code>apb_async_s</code> / <code>apb_async_m</code> 处理 APB 与 AXI 时钟域之间的同步。</li>
+</ul>
+<h3 id="5-安全与错误保护">5. 安全与错误保护</h3>
+<ul>
+<li><strong>TrustZone 支持</strong>：通过 <code>AxPROT[1]</code> 信号实现安全/非安全访问控制。</li>
+<li><strong>安全属性检查</strong>：<code>asib_CPU</code> 等模块中的 <code>spi_cdas</code> 逻辑负责安全属性检查。</li>
+<li><strong>GPV 访问强制安全</strong>：配置寄存器访问必须为安全事务。</li>
+<li><strong>默认从设备</strong>：<code>default_slave_ds</code> 拦截所有未映射地址访问并返回 DECERR。</li>
+</ul>
+<h3 id="6-事务跟踪与乱序完成">6. 事务跟踪与乱序完成</h3>
+<ul>
+<li><strong>Transaction Tracker（TT）</strong>：位于 <code>switch_ml_build</code> 中，每个 Slave 端口独立进行事务跟踪。</li>
+<li>支持乱序完成、事务 ID 匹配、响应聚合与背压流控。</li>
+</ul>
+<h3 id="7-功耗管理">7. 功耗管理</h3>
+<ul>
+<li>支持<strong>层次化时钟门控</strong>以降低空闲功耗。</li>
+</ul>
+<hr>
+<h2 id="第二部分：代码结构完整功能分析">第二部分：代码结构完整功能分析</h2>
+<h3 id="一、APB-子系统">一、APB 子系统</h3>
+<h4 id="cd-apb-c（APB-子系统控制器）"><code>cd_apb_c</code>（APB 子系统控制器）</h4>
+<ul>
+<li><strong>定位</strong>：APB 总线互连的顶层控制器。</li>
+<li><strong>功能</strong>：管理 APB 协议接口的配置、时钟与数据通路，是 NIC-400 中处理低速外设互连的顶层模块。</li>
+<li><strong>代码实现逻辑</strong>：<code>cd_apb_c</code> 作为顶层封装，实例化 APB 互连核心与各接口块。内部通过 <code>pclken</code> 信号进行时钟门控，状态机仅在使能边沿工作以节省功耗。</li>
+</ul>
+<h5 id="内部子模块：">内部子模块：</h5>
+<p><strong><code>amib_apb</code>（APB 主接口块）</strong></p>
+<ul>
+<li><strong>功能</strong>：将内部总线协议转换为 APB 协议，发起对外部 APB 设备的读写。</li>
+<li><strong>代码实现逻辑</strong>：地址和数据通过 <code>w_master_port_chan_slice</code> 流水线寄存器进入，APB 状态机控制 <code>PSEL</code>、<code>PENABLE</code>、<code>PWRITE</code> 等信号的时序。写数据在 <code>PWDATA</code> 上输出，读数据在 <code>PRDATA</code> 上采样。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>apb_m</code></strong>：APB 主端口逻辑。实现 APB 主端的状态机，控制 <code>PSEL</code>/<code>PENABLE</code>/<code>PWRITE</code> 的时序生成。</li>
+<li><strong><code>w_master_port_chan_slice</code></strong>：写通道切片，处理写数据/地址流水线。在写通道中插入寄存器级，切断长组合路径。</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>ib_apb_m</code>（APB 接口块 - 主向）</strong></p>
+<ul>
+<li><strong>功能</strong>：处理与 APB 主设备相关的逻辑，含缓冲与位宽转换。</li>
+<li><strong>代码实现逻辑</strong>：FIFO（<code>a_fifo_rd</code>、<code>d_fifo_rd</code>、<code>w_fifo_rd</code>）缓冲地址/数据/写控制信号。<code>downsize_read_channel</code> 和 <code>downsize_write_mux</code> 通过位宽选择器将大位宽数据拆分为小位宽，写方向使用多路复用器选择正确的字节通道。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>a_fifo_rd</code></strong>：地址 FIFO 读取逻辑。使用同步 FIFO 缓冲地址信号，通过读指针和写指针管理 FIFO 状态，支持背压。</li>
+<li><strong><code>d_fifo_rd</code></strong>：数据 FIFO 读取逻辑。缓冲读/写数据，在跨时钟域或突发传输时平滑数据流。</li>
+<li><strong><code>w_fifo_rd</code></strong>：写控制 FIFO 读取逻辑。缓冲写使能、字节选通等控制信号。</li>
+<li><strong><code>downsize_read_channel</code></strong>：读通道降位宽逻辑。根据 <code>AxSIZE</code> 从大位宽数据中选择正确的字节通道，通过多路复用器输出小位宽数据。</li>
+<li><strong><code>downsize_write_mux</code></strong>：写通道降位宽多路复用。将小位宽写数据按字节位置合并到大位宽通道中，使用字节使能掩码控制有效字节。</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>amib_a664</code> / <code>ib_a664_m</code></strong></p>
+<ul>
+<li><strong>功能</strong>：针对特定配置（a664 协议或特定 IP 核）的 AMIB（AMBA Master Interface Block）与 IB（Interface Block）实例，用于特定主设备的接口适配。</li>
+<li><strong>代码实现逻辑</strong>：遵循 AMIB/IB 标准接口模式，内部包含地址/数据通道切片和协议转换状态机，针对 A664 协议的特定时序要求进行适配。</li>
+</ul>
+<hr>
+<h3 id="二、AXI-子系统">二、AXI 子系统</h3>
+<h4 id="cd-axi-c（AXI-子系统控制器）"><code>cd_axi_c</code>（AXI 子系统控制器）</h4>
+<ul>
+<li><strong>定位</strong>：AXI 总线互连的顶层控制器。</li>
+<li><strong>功能</strong>：管理 AXI 协议接口的核心逻辑，包含地址解码、事务跟踪、位宽转换及错误响应处理。</li>
+<li><strong>代码实现逻辑</strong>：顶层封装各接口块，通过内部总线将 AMIB/ASIB 连接到 switch 网络。包含 GPV 从端接口以支持配置访问。</li>
+</ul>
+<h5 id="内部子模块：-2">内部子模块：</h5>
+<p><strong><code>amib_S0</code>（AXI 主接口块 - Slave 0 端口）</strong></p>
+<ul>
+<li><strong>功能</strong>：将内部总线信号转换为 AXI 主设备信号，访问外部 Slave。</li>
+<li><strong>代码实现逻辑</strong>：<code>ful_regd_slice</code> 在通道中插入完整的寄存器级，切断组合逻辑路径；<code>fwd_regd_slice</code> 和 <code>rev_regd_slice</code> 分别处理前向和反向流水线。通过 <code>VALID</code>/<code>READY</code> 握手协议控制数据流。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>b_master_port_chan_slice</code>（写响应通道切片）</strong>：
+<ul>
+<li><strong><code>ful_regd_slice</code></strong>：全寄存器切片。在写响应通道中插入完整寄存器，切断组合逻辑路径，优化时序。</li>
+<li><strong><code>fwd_regd_slice</code></strong>：前向寄存器切片。仅在正向路径插入寄存器，适用于延迟不敏感的反向路径。</li>
+<li><strong><code>rev_regd_slice</code></strong>：反向寄存器切片。仅在反向路径插入寄存器，适用于延迟不敏感的正向路径。</li>
+</ul>
+</li>
+<li><strong><code>r_master_port_chan_slice</code></strong>：读通道切片逻辑。在读数据/地址通道中插入寄存器级，优化时序。</li>
+<li><strong><code>w_master_port_chan_slice</code></strong>：写通道切片逻辑。在写数据/地址通道中插入寄存器级。</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>ib_S0_ib_m</code>（接口块 - Slave 0 到内部 Master）</strong></p>
+<ul>
+<li><strong>功能</strong>：处理 AXI 主机接口内部逻辑，含位宽转换与协议转换。</li>
+<li><strong>代码实现逻辑</strong>：<code>maskcntl</code> 根据 WSTRB 信号生成字节选通掩码。<code>downsize_read_channel</code> 从大位宽 FIFO 中按序读出小位宽数据；<code>downsize_write_mux</code> 将小位宽写数据按字节位置合并到大位宽通道中。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>b_boundary_chan_slice</code></strong>：写响应边界通道切片。处理写响应通道的跨时钟域/跨电源域信号传递。</li>
+<li><strong><code>r_boundary_chan_slice</code></strong>：读边界通道切片。处理读数据通道的边界信号传递。</li>
+<li><strong><code>downsize_read_channel</code></strong>：读通道降位宽逻辑。从大位宽 FIFO 中按序读出小位宽数据，通过计数器控制读取节奏。</li>
+<li><strong><code>downsize_write_mux</code></strong>：写通道降位宽多路复用。将小位宽写数据按字节位置合并到大位宽通道中。</li>
+<li><strong><code>maskcntl</code></strong>：掩码控制，处理 AXI 的 WSTRB（写选通）信号。
+<ul>
+<li><strong><code>wr_iss</code></strong>：写方向 issuing capability（主设备可发出的未完成写事务数上限）。</li>
+<li><strong><code>rd_iss</code></strong>：读方向 issuing capability（主设备可发出的未完成读事务数上限）。</li>
+<li><strong>代码实现逻辑</strong>：使用计数器跟踪当前未完成的读/写事务数，当达到 <code>wr_iss</code>/<code>rd_iss</code> 上限时，通过 <code>maskcntl</code> 逻辑屏蔽新的事务请求，直到有事务完成释放计数器。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>ib_S0_ib_s</code>（接口块 - Slave 0 到内部 Slave）</strong></p>
+<ul>
+<li><strong>功能</strong>：处理 AXI 从机接口内部逻辑，含复杂协议转换与缓冲。</li>
+<li><strong>代码实现逻辑</strong>：地址格式化模块（<code>axi_read_address_format</code>）根据 <code>AxSIZE</code> 和 <code>AxBURST</code> 计算地址对齐。<code>downsize_axi_write_merge_buffer</code> 缓存拆分的写事务，<code>downsize_axi_write_response_block</code> 聚合多个子事务的 <code>BRESP</code> 响应为单个完整响应返回。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>ar_boundary_chan_slice</code></strong>：读地址边界通道切片。处理读地址通道的跨时钟域信号传递。</li>
+<li><strong><code>aw_boundary_chan_slice</code></strong>：写地址边界通道切片。处理写地址通道的跨时钟域信号传递。</li>
+<li><strong><code>w_boundary_chan_slice</code></strong>：写数据边界通道切片。处理写数据通道的跨时钟域信号传递。</li>
+<li><strong><code>ar_slave_port_chan_slice</code></strong>：读地址从端口通道切片。在读地址通道中插入寄存器级。</li>
+<li><strong><code>aw_slave_port_chan_slice</code></strong>：写地址从端口通道切片。在写地址通道中插入寄存器级。</li>
+<li><strong><code>w_slave_port_chan_slice</code></strong>：写数据从端口通道切片。在写数据通道中插入寄存器级。</li>
+<li><strong><code>b_slave_port_chan_slice</code></strong>：写响应从端口通道切片。在写响应通道中插入寄存器级。</li>
+<li><strong><code>r_slave_port_chan_slice</code></strong>：读数据从端口通道切片。在读数据通道中插入寄存器级。</li>
+<li><strong><code>axi_read_address_format</code></strong>：读地址格式化。根据 <code>AxSIZE</code>、<code>AxBURST</code>、<code>AxLEN</code> 计算每拍的地址增量，支持 INCR/WRAP/FIXED 突发类型。</li>
+<li><strong><code>axi_write_address_format</code></strong>：写地址格式化。与读地址格式化逻辑类似，处理写地址的递增和回绕。</li>
+<li><strong><code>downsize_axi_write_control</code></strong>：写控制降位宽逻辑。将大位宽写事务的控制信号拆分为多个小位宽子事务的控制信号。</li>
+<li><strong><code>downsize_axi_write_merge_buffer</code></strong>：写合并缓冲。缓存拆分的写事务数据，在收到完整数据后合并为一个大位宽事务发送。</li>
+<li><strong><code>downsize_axi_write_response_block</code></strong>：降位宽时的写响应处理。聚合多个子事务的 <code>BRESP</code> 响应为单个完整响应。</li>
+<li><strong><code>downsize_read_control</code></strong>：读控制降位宽逻辑。将大位宽读事务的控制信号拆分为多个小位宽子事务。</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>asib_CPU</code>（AMBA Slave 接口块 - CPU）</strong></p>
+<ul>
+<li><strong>功能</strong>：针对 CPU 主设备的特定接口块，含地址解码与安全属性检查。</li>
+<li><strong>代码实现逻辑</strong>：<code>ar_add_decode</code> 和 <code>aw_add_decode</code> 通过比较地址高位与预设范围判断目标 Slave。<code>spi_cdas</code> 检查 <code>AxPROT</code> 信号的安全属性，非安全访问安全区域时触发错误。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>ar_add_decode</code></strong>：读地址解码。将读地址与预设的地址范围比较，输出目标 Slave 的选择信号。</li>
+<li><strong><code>aw_add_decode</code></strong>：写地址解码。与读地址解码逻辑类似，生成写方向的目标选择。</li>
+<li><strong><code>ar_slave_port_chan_slice</code></strong>：读地址从端口通道切片。在读地址通道中插入寄存器级。</li>
+<li><strong><code>aw_slave_port_chan_slice</code></strong>：写地址从端口通道切片。在写地址通道中插入寄存器级。</li>
+<li><strong><code>w_slave_port_chan_slice</code></strong>：写数据从端口通道切片。在写数据通道中插入寄存器级。</li>
+<li><strong><code>asib_CPU_rd_spi_cdas</code></strong>：读方向 SPI/CDAS 逻辑。检查 <code>AxPROT[1]</code> 的安全属性，非安全访问安全区域时触发错误响应。</li>
+<li><strong><code>asib_CPU_wr_spi_cdas</code></strong>：写方向 SPI/CDAS 逻辑。与读方向类似，检查写事务的安全属性。</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>ib_CPU_ib_m</code>（接口块 - CPU 到内部 Master）</strong></p>
+<ul>
+<li><strong>功能</strong>：CPU 接口的主向内部逻辑。</li>
+<li><strong>代码实现逻辑</strong>：<code>apb_async_s</code> 使用握手同步器（两级触发器）实现跨时钟域信号传递。<code>maskcntl</code> 控制 outstanding 事务数。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>apb_async_s</code></strong>：APB 异步桥（从侧）。使用两级触发器同步 <code>pclk</code> 和 <code>aclk</code> 之间的信号，防止亚稳态。</li>
+<li><strong><code>b_boundary_chan_slice</code></strong>：写响应边界通道切片。</li>
+<li><strong><code>r_boundary_chan_slice</code></strong>：读边界通道切片。</li>
+<li><strong><code>maskcntl</code></strong>：掩码控制。限制主设备发出的未完成事务数。</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>ib_CPU_ib_s</code>（接口块 - CPU 到内部 Slave）</strong></p>
+<ul>
+<li><strong>功能</strong>：CPU 接口的从向内部逻辑，含升位宽与异步桥。</li>
+<li><strong>代码实现逻辑</strong>：<code>upsize_axi_write_merge_buffer</code> 将多个小位宽写事务合并为大位宽，通过字节使能掩码控制有效字节。<code>apb_async_m</code> 实现跨时钟域信号同步。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>apb_async_m</code></strong>：APB 异步桥（主侧）。与 <code>apb_async_s</code> 对称，实现 <code>aclk</code> 到 <code>pclk</code> 的信号同步。</li>
+<li><strong><code>ar_boundary_chan_slice</code></strong>：读地址边界通道切片。</li>
+<li><strong><code>aw_boundary_chan_slice</code></strong>：写地址边界通道切片。</li>
+<li><strong><code>w_boundary_chan_slice</code></strong>：写数据边界通道切片。</li>
+<li><strong><code>axi_read_address_format</code></strong>：读地址格式化。</li>
+<li><strong><code>axi_write_address_format</code></strong>：写地址格式化。</li>
+<li><strong><code>upsize_axi_read_channel</code></strong>：读通道升位宽逻辑。将多个小位宽读数据合并为大位宽数据返回。</li>
+<li><strong><code>upsize_axi_write_control</code></strong>：写控制升位宽逻辑。将多个小位宽写事务的控制信号合并为大位宽事务的控制信号。</li>
+<li><strong><code>upsize_axi_write_merge_buffer</code></strong>：写合并缓冲。缓存多个小位宽写事务的数据，在收到完整数据后合并为一个大位宽事务发送。</li>
+<li><strong><code>upsize_axi_write_response_block</code></strong>：升位宽时的写响应处理。将大位宽事务的 <code>BRESP</code> 响应拆分为多个小位宽子事务的响应。</li>
+<li><strong><code>ib_ib_slv_apb</code></strong>：内部桥接到 APB 从机的逻辑。</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>default_slave_ds</code>（默认从设备）</strong></p>
+<ul>
+<li><strong>功能</strong>：拦截未映射地址的访问，返回 DECERR 错误响应，防止总线挂死。是总线互连的必备保护机制。</li>
+<li><strong>代码实现逻辑</strong>：当地址解码未命中任何 Slave 时，生成 <code>DECERR</code> 响应。通过状态机在接收到地址后，延迟若干个周期返回错误响应，模拟从设备的响应时序。</li>
+</ul>
+<p><strong><code>ib_gpv_ib_s</code>（GPV 从端接口块）</strong></p>
+<ul>
+<li><strong>功能</strong>：GPV（全局编程视图）的被动接口，接收配置访问，允许主设备访问 NIC-400 自身寄存器以配置 QoS、安全属性等。</li>
+<li><strong>代码实现逻辑</strong>：接收配置写请求，解码地址选择目标寄存器，将写入数据锁存到对应寄存器。对于读请求，通过多路复用器选择寄存器值返回。</li>
+</ul>
+<p><strong><code>ib_apb_ib_s</code>（APB 从端接口块）</strong></p>
+<ul>
+<li><strong>定位</strong>：面向 APB 从设备的接口桥接模块。</li>
+<li><strong>功能</strong>：结构与 <code>s1_ib_s</code> 类似，但额外集成了 ITB 相关逻辑，用于将 AXI 事务转换为 ITB 格式，实现 AXI 域与 APB/ITB 域的桥接。</li>
+<li><strong>代码实现逻辑</strong>：核心逻辑与 <code>s1_ib_s</code> 一致（地址解码、通道切片、缓冲）。ITB 相关逻辑将 AXI 事务格式映射为 ITB 格式，地址经过重新编码和位宽调整后通过 ITB 接口发送。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong>（与 <code>s1_ib_s</code> 类似的核心逻辑）</strong>：包含边界通道切片、从端口通道切片等。</li>
+<li><strong><code>axi_to_itb</code></strong>：<strong>AXI 到 ITB 协议转换器</strong>，将 AXI 事务格式转换为 ITB（互连事务桥）格式，实现跨协议域的事务适配。</li>
+<li><strong><code>itb_address_format</code></strong>：<strong>ITB 地址格式化</strong>，将 AXI 地址格式转换为 ITB 域所需的地址表示方式。</li>
+</ul>
+</li>
+</ul>
+<p><strong><code>ib_a664_ib_s</code>（A664 从端接口块）</strong></p>
+<ul>
+<li><strong>定位</strong>：面向 A664 协议（航空电子全双工交换以太网）的接口桥接模块。</li>
+<li><strong>功能</strong>：结构与 <code>s1_ib_s</code> 类似，额外集成 ITB 逻辑，用于将 AXI 事务转换为 ITB 格式，支持 A664 协议从设备的接入。</li>
+<li><strong>代码实现逻辑</strong>：与 <code>ib_apb_ib_s</code> 类似，通过 <code>axi_to_itb</code> 将 AXI 事务映射为 ITB 格式，<code>itb_address_format</code> 完成地址转换，然后通过 A664 协议接口发送。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong>（与 <code>s1_ib_s</code> 类似的核心逻辑）</strong>：包含边界通道切片、从端口通道切片等。</li>
+<li><strong><code>axi_to_itb</code></strong>：<strong>AXI 到 ITB 协议转换器</strong>，将 AXI 事务转换为 ITB 格式。</li>
+<li><strong><code>itb_address_format</code></strong>：<strong>ITB 地址格式化</strong>，转换地址格式以适配 ITB 域。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="三、总线矩阵">三、总线矩阵</h3>
+<h4 id="busmatrix（总线矩阵）"><code>busmatrix</code>（总线矩阵）</h4>
+<ul>
+<li><strong>功能</strong>：互连核心，负责将多个 Master 请求路由到多个 Slave。</li>
+<li><strong>代码实现逻辑</strong>：由 <code>switch_ml_build</code> 构建数据通路，<code>switch_ml_map</code> 实现路由仲裁和地址映射，两层协同完成多主多从的互连。</li>
+</ul>
+<h5 id="1-switch-ml-build（多层开关构建）">1. <code>switch_ml_build</code>（多层开关构建）</h5>
+<ul>
+<li><strong>功能</strong>：搭建多层开关的数据通路，各层级通常对应不同时钟域或电压域。</li>
+<li><strong>代码实现逻辑</strong>：<code>rd_spi_tt</code> 和 <code>wr_spi_tt</code> 实现事务跟踪器。每个 TT 内部维护一个计数器（如 <code>tt_cnt</code>），记录当前未完成的事务数。当计数器下溢（underflow）或上溢（overflow）时，通过 OVL 断言触发 FATAL 错误。计数器在事务发出时递增，在收到响应时递减，通过比较器检测是否越界。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>ml_blayer_0</code> / <code>ml_blayer_1</code> / <code>ml_blayer_2</code></strong>：多层开关的各层级。
+<ul>
+<li><strong><code>rd_spi_tt</code></strong>：<strong>读事务跟踪器（Read Transaction Tracker）</strong>。</li>
+<li><strong><code>wr_spi_tt</code></strong>：<strong>写事务跟踪器（Write Transaction Tracker）</strong>。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h6 id="🔑-Transaction-Tracker-TT-核心作用">🔑 Transaction Tracker (TT) 核心作用</h6>
+<ol>
+<li><strong>事务 ID 跟踪与匹配</strong>：记录 <code>ARID/AWID</code>，将 Slave 返回数据路由回正确 Master 通道。</li>
+<li><strong>乱序完成管理</strong>：允许不同 ID 事务乱序返回，同一 ID 事务必须按序返回。</li>
+<li><strong>响应聚合与重排序</strong>：位宽/协议转换时跟踪拆分子事务，全部完成后生成完整响应。</li>
+<li><strong>背压与流控</strong>：监测未完成事务数量，过多时发出背压信号。</li>
+<li><strong>错误处理</strong>：生成 SLVERR/DECERR 响应并正确路由回发起 Master。</li>
+</ol>
+<ul>
+<li><strong>计数器 <code>tt_cnt</code></strong>：跟踪当前未完成的写事务数。</li>
+<li><strong>上溢（Overflow）</strong>：计数器超过最大值（如 4bit 从 1111 回绕到 0000），说明事务发起过多而响应未及时返回。</li>
+<li><strong>下溢（Underflow）</strong>：计数器已为 0 时仍执行减法（如从 0000 变为 1111），说明收到了多余的响应。</li>
+<li><strong>断言机制</strong>：通过 OVL 库在仿真中实时监测，一旦越界立即触发 FATAL 错误并终止仿真。</li>
+</ul>
+<blockquote>
+<p>📌 TT 位于 <code>switch_ml_build</code> 中，说明事务跟踪是<strong>每个 Slave 端口（SPI）独立进行</strong>的，实现分布式跟踪。</p>
+</blockquote>
+<h5 id="2-switch-ml-map（多层开关映射）">2. <code>switch_ml_map</code>（多层开关映射）</h5>
+<ul>
+<li><strong>功能</strong>：负责具体路由仲裁与地址映射。</li>
+<li><strong>代码实现逻辑</strong>：<code>ar_arb_ml0</code> 和 <code>aw_arb_ml0</code> 实现轮询（Round-Robin）或固定优先级仲裁。通过比较各 Master 的请求信号和当前授权状态，使用状态机在单周期内完成仲裁决策。<code>ret_sel_ml0</code> 根据事务 ID 将响应路由回对应的 Master。</li>
+<li><strong>子模块</strong>：
+<ul>
+<li><strong><code>ml_mlayer_0</code></strong>：
+<ul>
+<li><strong><code>add_sel_ml0</code>（Address Select）</strong>：
+<ul>
+<li><strong><code>ar_arb_ml0</code></strong>：读仲裁器，多 Master 竞争同一 Slave 时决定访问权。实现轮询或固定优先级仲裁。</li>
+<li><strong><code>aw_arb_ml0</code></strong>：写仲裁器。</li>
+<li><strong><code>maskcntl_ml0</code></strong>：掩码控制，限制从设备接受的未完成事务数上限（acceptance capability）。</li>
+</ul>
+</li>
+<li><strong><code>ret_sel_ml0</code></strong>：返回路径选择，决定 Slave 响应返回给哪个 Master。根据事务 ID 路由响应。</li>
+<li><strong><code>wr_sel_ml0</code></strong>：写路径选择。</li>
+</ul>
+</li>
+<li><strong><code>ml_mlayer_1</code> / <code>ml_mlayer_2</code></strong>：其他层级的映射逻辑。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>📌 <strong>注意区分</strong>：<code>ib_m</code> 中的 <code>maskcntl</code> 是<strong>主设备接入控制</strong>（限制上游发出的请求数），<code>busmatrix</code> 中的 <code>maskcntl</code> 是<strong>从设备访问仲裁</strong>（限制下游接受的请求数）。两者名称相同但作用层次不同。<code>ib_m</code> 中的 <code>wr_iss</code>/<code>rd_iss</code> 指 issuing capability，<code>busmatrix</code> 中的对应参数指 acceptance capability。</p>
+</blockquote>
+<hr>
+<h3 id="四、寄存器与连接子系统">四、寄存器与连接子系统</h3>
+<h4 id="r-cd-axi-c（寄存器子系统控制器）"><code>r_cd_axi_c</code>（寄存器子系统控制器）</h4>
+<ul>
+<li><strong>定位</strong>：与 <code>cd_axi_c</code> 同级的寄存器控制器。</li>
+<li><strong>功能</strong>：管理 NIC-400 的寄存器访问与控制逻辑，提供软件配置总线互连行为的接口。</li>
+<li><strong>代码实现逻辑</strong>：通过 GPV 接口接收配置访问，解码地址并分发到对应的寄存器组。<code>id_regs</code> 管理事务 ID 拼接，<code>mnodes_axi_c</code> 和 <code>snodes_axi_c</code> 分别管理主/从节点的配置寄存器。</li>
+</ul>
+<h5 id="内部子模块：-3">内部子模块：</h5>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>功能</th>
+<th>代码实现逻辑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>ib_gpv_ib_m</code></strong></td>
+<td>GPV 主端接口块。主动发起配置访问，读取或修改寄存器。</td>
+<td>通过 AXI 读/写事务主动访问 GPV 寄存器空间，内部包含地址生成器和数据回读逻辑。</td>
+</tr>
+<tr>
+<td><strong><code>id_regs</code></strong></td>
+<td><strong>ID 寄存器组</strong>。管理事务 ID 的扩展与缩减逻辑。ID 由 <code>&lt;IID&gt;&lt;SIID&gt;&lt;VID&gt;</code> 三部分拼接而成，用于路由事务到正确的源/目标。</td>
+<td>将主设备 ID（IID）、从设备 ID（SIID）、虚拟 ID（VID）拼接为全局 ID，用于事务路由。拼接逻辑通过位选和连接操作实现。</td>
+</tr>
+<tr>
+<td><strong><code>mnodes_axi_c</code></strong></td>
+<td><strong>主节点（Master Node）配置</strong>。管理所有 AMIB 的寄存器，如 QoS 值、outstanding 事务上限等。</td>
+<td>每个主节点对应一组寄存器（<code>max_ot</code>、<code>qos_range</code> 等），通过地址解码选择目标寄存器，写入数据锁存到对应寄存器。</td>
+</tr>
+<tr>
+<td><strong><code>snodes_axi_c</code></strong></td>
+<td><strong>从节点（Slave Node）配置</strong>。管理所有 ASIB 的寄存器，如读/写 QoS、安全属性等。</td>
+<td>每个从节点对应一组寄存器（<code>read_qos</code>、<code>write_qos</code>、安全属性等），通过地址解码访问，配置值影响仲裁和访问控制逻辑。</td>
+</tr>
+</tbody>
+</table>
+<h4 id="rab-conns（RAB-连接模块）"><code>rab_conns</code>（RAB 连接模块）</h4>
+<ul>
+<li><strong>定位</strong>：与 <code>r_cd_axi_c</code> 同级。</li>
+<li><strong>功能</strong>：<strong>RAB（Register Access Bridge）连接模块</strong>，负责寄存器访问桥的连接逻辑，将 <code>r_cd_axi_c</code> 中的寄存器配置请求路由到总线矩阵的各个节点（Master/Slave 节点），实现配置空间与数据通路的解耦与互联。</li>
+<li><strong>代码实现逻辑</strong>：通过地址解码确定目标节点，将配置事务转发到对应的 <code>mnodes_axi_c</code> 或 <code>snodes_axi_c</code>。包含多路复用器和解复用器实现配置信号的正确路由。</li>
+</ul>
+<hr>
+<h3 id="五、完整层次结构总览（含子模块展开）">五、完整层次结构总览（含子模块展开）</h3>
+<figure class="highlight elm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">NIC</span><span class="number">-400</span></span><br><span class="line">├── cd_apb_c                          → <span class="type">APB</span> 子系统控制器</span><br><span class="line">│   ├── amib_apb                      → <span class="type">APB</span> 主接口块</span><br><span class="line">│   │   ├── apb_m</span><br><span class="line">│   │   └── w_master_port_chan_slice</span><br><span class="line">│   ├── ib_apb_m                      → <span class="type">APB</span> 接口块（主向）</span><br><span class="line">│   │   ├── a_fifo_rd</span><br><span class="line">│   │   ├── d_fifo_rd</span><br><span class="line">│   │   ├── w_fifo_rd</span><br><span class="line">│   │   ├── downsize_read_channel</span><br><span class="line">│   │   └── downsize_write_mux</span><br><span class="line">│   └── amib_a664 / ib_a664_m         → 特定配置接口实例</span><br><span class="line">│</span><br><span class="line">├── cd_axi_c                          → <span class="type">AXI</span> 子系统控制器</span><br><span class="line">│   ├── amib_S0                       → <span class="type">AXI</span> 主接口块</span><br><span class="line">│   │   ├── b_master_port_chan_slice</span><br><span class="line">│   │   │   ├── ful_regd_slice</span><br><span class="line">│   │   │   ├── fwd_regd_slice</span><br><span class="line">│   │   │   └── rev_regd_slice</span><br><span class="line">│   │   ├── r_master_port_chan_slice</span><br><span class="line">│   │   └── w_master_port_chan_slice</span><br><span class="line">│   ├── ib_S0_ib_m                    → 接口块（<span class="type">Slave</span> <span class="number">0</span> → 内部 <span class="type">Master</span>）</span><br><span class="line">│   │   ├── b_boundary_chan_slice</span><br><span class="line">│   │   ├── r_boundary_chan_slice</span><br><span class="line">│   │   ├── downsize_read_channel</span><br><span class="line">│   │   ├── downsize_write_mux</span><br><span class="line">│   │   └── maskcntl (wr_iss / rd_iss)</span><br><span class="line">│   ├── ib_S0_ib_s                    → 接口块（<span class="type">Slave</span> <span class="number">0</span> → 内部 <span class="type">Slave</span>）</span><br><span class="line">│   │   ├── ar_boundary_chan_slice</span><br><span class="line">│   │   ├── aw_boundary_chan_slice</span><br><span class="line">│   │   ├── w_boundary_chan_slice</span><br><span class="line">│   │   ├── ar_slave_port_chan_slice</span><br><span class="line">│   │   ├── aw_slave_port_chan_slice</span><br><span class="line">│   │   ├── w_slave_port_chan_slice</span><br><span class="line">│   │   ├── b_slave_port_chan_slice</span><br><span class="line">│   │   ├── r_slave_port_chan_slice</span><br><span class="line">│   │   ├── axi_read_address_format</span><br><span class="line">│   │   ├── axi_write_address_format</span><br><span class="line">│   │   ├── downsize_axi_write_control</span><br><span class="line">│   │   ├── downsize_axi_write_merge_buffer</span><br><span class="line">│   │   ├── downsize_axi_write_response_block</span><br><span class="line">│   │   └── downsize_read_control</span><br><span class="line">│   ├── asib_CPU                      → <span class="type">CPU</span> 从接口块</span><br><span class="line">│   │   ├── ar_add_decode</span><br><span class="line">│   │   ├── aw_add_decode</span><br><span class="line">│   │   ├── ar_slave_port_chan_slice</span><br><span class="line">│   │   ├── aw_slave_port_chan_slice</span><br><span class="line">│   │   ├── w_slave_port_chan_slice</span><br><span class="line">│   │   ├── asib_CPU_rd_spi_cdas</span><br><span class="line">│   │   └── asib_CPU_wr_spi_cdas</span><br><span class="line">│   ├── ib_CPU_ib_m                   → <span class="type">CPU</span> 接口（主向）</span><br><span class="line">│   │   ├── apb_async_s</span><br><span class="line">│   │   ├── b_boundary_chan_slice</span><br><span class="line">│   │   ├── r_boundary_chan_slice</span><br><span class="line">│   │   └── maskcntl</span><br><span class="line">│   ├── ib_CPU_ib_s                   → <span class="type">CPU</span> 接口（从向）</span><br><span class="line">│   │   ├── apb_async_m</span><br><span class="line">│   │   ├── ar_boundary_chan_slice</span><br><span class="line">│   │   ├── aw_boundary_chan_slice</span><br><span class="line">│   │   ├── w_boundary_chan_slice</span><br><span class="line">│   │   ├── axi_read_address_format</span><br><span class="line">│   │   ├── axi_write_address_format</span><br><span class="line">│   │   ├── upsize_axi_read_channel</span><br><span class="line">│   │   ├── upsize_axi_write_control</span><br><span class="line">│   │   ├── upsize_axi_write_merge_buffer</span><br><span class="line">│   │   ├── upsize_axi_write_response_block</span><br><span class="line">│   │   └── ib_ib_slv_apb</span><br><span class="line">│   ├── ib_apb_ib_s                   → <span class="type">APB</span> 从端接口块</span><br><span class="line">│   │   ├── (ib_s0_ib_s 类似核心逻辑)</span><br><span class="line">│   │   ├── axi_to_itb                → <span class="type">AXI</span> 到 <span class="type">ITB</span> 协议转换</span><br><span class="line">│   │   └── itb_address_format        → <span class="type">ITB</span> 地址格式化</span><br><span class="line">│   ├── ib_a664_ib_s                  → <span class="type">A664</span> 从端接口块</span><br><span class="line">│   │   ├── (ib_s0_ib_s 类似核心逻辑)</span><br><span class="line">│   │   ├── axi_to_itb                → <span class="type">AXI</span> 到 <span class="type">ITB</span> 协议转换</span><br><span class="line">│   │   └── itb_address_format        → <span class="type">ITB</span> 地址格式化</span><br><span class="line">│   ├── default_slave_ds              → 默认从设备（错误响应）</span><br><span class="line">│   └── ib_gpv_ib_s                   → <span class="type">GPV</span> 从端接口</span><br><span class="line">│</span><br><span class="line">├── busmatrix                         → 总线矩阵</span><br><span class="line">│   ├── switch_ml_build               → 多层开关构建</span><br><span class="line">│   │   └── ml_blayer_0/<span class="number">1</span>/<span class="number">2</span></span><br><span class="line">│   │       ├── rd_spi_tt             → 读事务跟踪器</span><br><span class="line">│   │       └── wr_spi_tt             → 写事务跟踪器</span><br><span class="line">│   └── switch_ml_map                 → 多层开关映射</span><br><span class="line">│       └── ml_mlayer_0/<span class="number">1</span>/<span class="number">2</span></span><br><span class="line">│           ├── add_sel_ml0</span><br><span class="line">│           │   ├── ar_arb_ml0</span><br><span class="line">│           │   ├── aw_arb_ml0</span><br><span class="line">│           │   └── maskcntl_ml0</span><br><span class="line">│           ├── ret_sel_ml0</span><br><span class="line">│           └── wr_sel_ml0</span><br><span class="line">│</span><br><span class="line">├── r_cd_axi_c                        → 寄存器子系统控制器</span><br><span class="line">│   ├── ib_gpv_ib_m                   → <span class="type">GPV</span> 主端接口</span><br><span class="line">│   ├── id_regs                       → <span class="type">ID</span> 寄存器（<span class="type">IID</span>+<span class="type">SIID</span>+<span class="type">VID</span>）</span><br><span class="line">│   ├── mnodes_axi_c                  → 主节点配置</span><br><span class="line">│   └── snodes_axi_c                  → 从节点配置</span><br><span class="line">│</span><br><span class="line">└── rab_conns                         → <span class="type">RAB</span> 连接模块（与 r_cd_axi_c 同级）</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="六、功能归纳与设计特点">六、功能归纳与设计特点</h3>
+<table>
+<thead>
+<tr>
+<th>功能类别</th>
+<th>涉及模块</th>
+<th>作用</th>
+<th>代码实现逻辑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>协议转换</strong></td>
+<td><code>amib_apb</code>, <code>ib_apb_m</code>, <code>ib_ib_slv_apb</code>, <code>axi_to_itb</code></td>
+<td>AXI ↔ APB / ITB 转换</td>
+<td>状态机控制协议握手；ITB 映射地址/数据/控制信号</td>
+</tr>
+<tr>
+<td><strong>位宽转换</strong></td>
+<td><code>downsize_*</code>, <code>upsize_*</code></td>
+<td>不同位宽设备间的数据适配</td>
+<td>字节通道拆分/合并；写合并缓冲聚合拆分事务</td>
+</tr>
+<tr>
+<td><strong>时钟域转换</strong></td>
+<td><code>boundary_chan_slice</code>, <code>apb_async_*</code></td>
+<td>多时钟域同步（CDC）</td>
+<td>两级触发器同步；异步 FIFO</td>
+</tr>
+<tr>
+<td><strong>路由与仲裁</strong></td>
+<td><code>busmatrix</code> 下 <code>arb</code>, <code>sel</code> 模块</td>
+<td>多主多从请求分发</td>
+<td>轮询/固定优先级仲裁；事务 ID 路由</td>
+</tr>
+<tr>
+<td><strong>事务管理</strong></td>
+<td><code>rd_spi_tt</code>, <code>wr_spi_tt</code></td>
+<td>乱序完成、ID 跟踪、背压流控</td>
+<td>计数器跟踪未完成事务；OVL 断言检测溢出/下溢</td>
+</tr>
+<tr>
+<td><strong>时序优化</strong></td>
+<td><code>regd_slice</code> 系列</td>
+<td>切断长组合路径，改善时序</td>
+<td>插入寄存器切断组合路径</td>
+</tr>
+<tr>
+<td><strong>安全与保护</strong></td>
+<td><code>asib_CPU_*_spi_cdas</code></td>
+<td>安全属性检查、QoS</td>
+<td>检查 <code>AxPROT[1]</code>；GPV 强制安全访问</td>
+</tr>
+<tr>
+<td><strong>错误保护</strong></td>
+<td><code>default_slave_ds</code></td>
+<td>未映射地址返回 DECERR</td>
+<td>地址解码未命中时生成 DECERR</td>
+</tr>
+<tr>
+<td><strong>配置管理</strong></td>
+<td><code>r_cd_axi_c</code>, <code>rab_conns</code></td>
+<td>寄存器配置与连接路由</td>
+<td>地址解码转发配置事务到目标节点</td>
+</tr>
+<tr>
+<td><strong>ID 管理</strong></td>
+<td><code>id_regs</code></td>
+<td>事务 ID 拼接与路由</td>
+<td>拼接 <code>&lt;IID&gt;&lt;SIID&gt;&lt;VID&gt;</code> 生成全局 ID</td>
+</tr>
+<tr>
+<td><strong>ITB 桥接</strong></td>
+<td><code>axi_to_itb</code>, <code>itb_address_format</code></td>
+<td>AXI 到 ITB 协议/地址转换</td>
+<td>AXI 事务映射为 ITB 格式；地址重新编码</td>
+</tr>
+<tr>
+<td><strong>QoS 调节</strong></td>
+<td><code>mnodes_axi_c</code>, <code>snodes_axi_c</code></td>
+<td>速率/延迟/未完成事务数调节</td>
+<td>寄存器配置控制仲裁和流控参数</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://9606960.xyz">Cloudlet</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://9606960.xyz/2026/09/23/NIC-400-RTL%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90/">https://9606960.xyz/2026/09/23/NIC-400-RTL%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://9606960.xyz" target="_blank">Cloudlet</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/09/11/%E7%8E%84%E9%93%81C910-C920%E7%9A%84MMU%E8%AF%A6%E8%A7%A3/" title="玄铁C910/C920的MMU详解"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">玄铁C910/C920的MMU详解</div></div><div class="info-2"><div class="info-item-1">引言 C910 和 C920 是阿里平头哥玄铁系列的两款 64 位 RISC-V 处理器，均采用 12 级乱序流水线，支持 RV64GC 及多核簇扩展。C920 相比 C910 的最大差异是从 RVV 0.7.1 升级到 RVV 1.0，并可选配 128/256 位向量单元。 两者共享同一套内存子系统架构：MMU 采用 SV39 标准 + 两级 TLB 结构，Cache 采用“私有 L1 + 共享 L2”的层次化设计。理解这套架构，是进行 IC 验证的基础。 一、整体结构框图 C910/C920 的内存子系统分为核内私有部分和簇内共享部分两层。      flowchart TB     subgraph Cluster[&quot;SoC &#x2F; Cluster&quot;]         direction TB          subgraph Core0[&quot;Core 0&quot;]             direction TB             IFU0[&quot;IFU &#x2F; IDU&quot;]             IC0...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Cloudlet</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">27</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/cloudlet2026"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="mailto:2380797942@qq.com.com" rel="external nofollow noreferrer" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86%EF%BC%9ANIC-400-%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD%E8%AF%A6%E7%BB%86%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">第一部分：NIC-400 主要功能详细描述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%A4%9A%E5%8D%8F%E8%AE%AE%E4%BA%92%E8%BF%9E%E4%B8%8E%E8%BD%AC%E6%8D%A2"><span class="toc-number">1.1.</span> <span class="toc-text">1. 多协议互连与转换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%85%A8%E5%B1%80%E7%BC%96%E7%A8%8B%E8%A7%86%E5%9B%BE%EF%BC%88GPV%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">2. 全局编程视图（GPV）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-QoS-400-%E6%9C%8D%E5%8A%A1%E8%B4%A8%E9%87%8F%E8%B0%83%E8%8A%82"><span class="toc-number">1.3.</span> <span class="toc-text">3. QoS-400 服务质量调节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%95%B0%E6%8D%AE%E4%BD%8D%E5%AE%BD%E4%B8%8E%E6%97%B6%E9%92%9F%E5%9F%9F%E9%80%82%E9%85%8D"><span class="toc-number">1.4.</span> <span class="toc-text">4. 数据位宽与时钟域适配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%AE%89%E5%85%A8%E4%B8%8E%E9%94%99%E8%AF%AF%E4%BF%9D%E6%8A%A4"><span class="toc-number">1.5.</span> <span class="toc-text">5. 安全与错误保护</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E4%BA%8B%E5%8A%A1%E8%B7%9F%E8%B8%AA%E4%B8%8E%E4%B9%B1%E5%BA%8F%E5%AE%8C%E6%88%90"><span class="toc-number">1.6.</span> <span class="toc-text">6. 事务跟踪与乱序完成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E5%8A%9F%E8%80%97%E7%AE%A1%E7%90%86"><span class="toc-number">1.7.</span> <span class="toc-text">7. 功耗管理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86%EF%BC%9A%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84%E5%AE%8C%E6%95%B4%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">第二部分：代码结构完整功能分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81APB-%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.1.</span> <span class="toc-text">一、APB 子系统</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#cd-apb-c%EF%BC%88APB-%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%8E%A7%E5%88%B6%E5%99%A8%EF%BC%89"><span class="toc-number">2.1.1.</span> <span class="toc-text">cd_apb_c（APB 子系统控制器）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E5%AD%90%E6%A8%A1%E5%9D%97%EF%BC%9A"><span class="toc-number">2.1.1.1.</span> <span class="toc-text">内部子模块：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81AXI-%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.2.</span> <span class="toc-text">二、AXI 子系统</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#cd-axi-c%EF%BC%88AXI-%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%8E%A7%E5%88%B6%E5%99%A8%EF%BC%89"><span class="toc-number">2.2.1.</span> <span class="toc-text">cd_axi_c（AXI 子系统控制器）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E5%AD%90%E6%A8%A1%E5%9D%97%EF%BC%9A-2"><span class="toc-number">2.2.1.1.</span> <span class="toc-text">内部子模块：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%80%BB%E7%BA%BF%E7%9F%A9%E9%98%B5"><span class="toc-number">2.3.</span> <span class="toc-text">三、总线矩阵</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#busmatrix%EF%BC%88%E6%80%BB%E7%BA%BF%E7%9F%A9%E9%98%B5%EF%BC%89"><span class="toc-number">2.3.1.</span> <span class="toc-text">busmatrix（总线矩阵）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-switch-ml-build%EF%BC%88%E5%A4%9A%E5%B1%82%E5%BC%80%E5%85%B3%E6%9E%84%E5%BB%BA%EF%BC%89"><span class="toc-number">2.3.1.1.</span> <span class="toc-text">1. switch_ml_build（多层开关构建）</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%F0%9F%94%91-Transaction-Tracker-TT-%E6%A0%B8%E5%BF%83%E4%BD%9C%E7%94%A8"><span class="toc-number">2.3.1.1.1.</span> <span class="toc-text">🔑 Transaction Tracker (TT) 核心作用</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-switch-ml-map%EF%BC%88%E5%A4%9A%E5%B1%82%E5%BC%80%E5%85%B3%E6%98%A0%E5%B0%84%EF%BC%89"><span class="toc-number">2.3.1.2.</span> <span class="toc-text">2. switch_ml_map（多层开关映射）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AF%84%E5%AD%98%E5%99%A8%E4%B8%8E%E8%BF%9E%E6%8E%A5%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.4.</span> <span class="toc-text">四、寄存器与连接子系统</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#r-cd-axi-c%EF%BC%88%E5%AF%84%E5%AD%98%E5%99%A8%E5%AD%90%E7%B3%BB%E7%BB%9F%E6%8E%A7%E5%88%B6%E5%99%A8%EF%BC%89"><span class="toc-number">2.4.1.</span> <span class="toc-text">r_cd_axi_c（寄存器子系统控制器）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E5%AD%90%E6%A8%A1%E5%9D%97%EF%BC%9A-3"><span class="toc-number">2.4.1.1.</span> <span class="toc-text">内部子模块：</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#rab-conns%EF%BC%88RAB-%E8%BF%9E%E6%8E%A5%E6%A8%A1%E5%9D%97%EF%BC%89"><span class="toc-number">2.4.2.</span> <span class="toc-text">rab_conns（RAB 连接模块）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%AE%8C%E6%95%B4%E5%B1%82%E6%AC%A1%E7%BB%93%E6%9E%84%E6%80%BB%E8%A7%88%EF%BC%88%E5%90%AB%E5%AD%90%E6%A8%A1%E5%9D%97%E5%B1%95%E5%BC%80%EF%BC%89"><span class="toc-number">2.5.</span> <span class="toc-text">五、完整层次结构总览（含子模块展开）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%8A%9F%E8%83%BD%E5%BD%92%E7%BA%B3%E4%B8%8E%E8%AE%BE%E8%AE%A1%E7%89%B9%E7%82%B9"><span class="toc-number">2.6.</span> <span class="toc-text">六、功能归纳与设计特点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/23/NIC-400-RTL%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90/" title="NIC-400 RTL功能分析">NIC-400 RTL功能分析</a><time datetime="2026-09-23T12:21:27.000Z" title="发表于 2026-09-23 20:21:27">2026-09-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/11/%E7%8E%84%E9%93%81C910-C920%E7%9A%84MMU%E8%AF%A6%E8%A7%A3/" title="玄铁C910/C920的MMU详解">玄铁C910/C920的MMU详解</a><time datetime="2026-09-11T14:51:28.000Z" title="发表于 2026-09-11 22:51:28">2026-09-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/11/%E7%8E%84%E9%93%81-C910-C920-Cache-%E4%B8%8E%E5%86%99%E5%90%88%E5%B9%B6%E8%AF%A6%E8%A7%A3/" title="玄铁 C910/C920 Cache 与写合并详解">玄铁 C910/C920 Cache 与写合并详解</a><time datetime="2026-09-11T13:34:50.000Z" title="发表于 2026-09-11 21:34:50">2026-09-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/06/NIC-400-Outstanding%E6%B7%B1%E5%BA%A6%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%AA%8C%E8%AF%81%E6%8C%87%E5%8D%97/" title="NIC-400 Outstanding深度配置与验证指南">NIC-400 Outstanding深度配置与验证指南</a><time datetime="2026-09-06T05:41:00.000Z" title="发表于 2026-09-06 13:41:00">2026-09-06</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/06/IC%E9%AA%8C%E8%AF%81%E4%B8%ADforce%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/" title="IC验证中force命令使用指南">IC验证中force命令使用指南</a><time datetime="2026-09-06T05:08:02.000Z" title="发表于 2026-09-06 13:08:02">2026-09-06</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Cloudlet</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">簡</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/js/tw_cn.js?v=5.7.0"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.innerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    // Clean up previous event listeners and pending frames
+    if (wrap.__mermaidAbortController) {
+      wrap.__mermaidAbortController.abort()
+      if (wrap.__mermaidRafId) cancelAnimationFrame(wrap.__mermaidRafId)
+    }
+    const ac = new AbortController()
+    wrap.__mermaidAbortController = ac
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+    // Disable default gestures to prevent scroll chaining and pinch-zoom penetration in Chrome
+    svg.style.touchAction = 'none'
+
+    // Cache BoundingClientRect, throttled on scroll to reduce reflow
+    let cachedRect = svg.getBoundingClientRect()
+    let rectDirty = false
+    const markRectDirty = () => { rectDirty = true }
+    window.addEventListener('resize', markRectDirty, { signal: ac.signal })
+    window.addEventListener('scroll', markRectDirty, { signal: ac.signal, capture: true })
+    const getRect = () => {
+      if (rectDirty) {
+        cachedRect = svg.getBoundingClientRect()
+        rectDirty = false
+      }
+      return cachedRect
+    }
+
+    // Precompute clamp bounds from initial viewBox
+    const minW = initVb[2] * 0.1
+    const maxW = initVb[2] * 10
+    const minH = initVb[3] * 0.1
+    const maxH = initVb[3] * 10
+    const clampVb = vb => {
+      const out = vb.slice()
+      out[2] = clamp(out[2], minW, maxW)
+      out[3] = clamp(out[3], minH, maxH)
+      return out
+    }
+
+    // Throttle DOM updates using requestAnimationFrame
+    let pendingVb = null
+    let rafId = null
+    const applyVb = () => {
+      if (pendingVb) {
+        wrap.__mermaidCurViewBox = pendingVb
+        setSvgViewBox(svg, pendingVb)
+        pendingVb = null
+      }
+      rafId = null
+      wrap.__mermaidRafId = null
+    }
+    const setCurVb = vb => {
+      pendingVb = clampVb(vb)
+      if (!rafId) {
+        rafId = requestAnimationFrame(applyVb)
+        wrap.__mermaidRafId = rafId
+      }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      lastPointerX: 0,
+      lastPointerY: 0
+    }
+
+    const onPointerDown = e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      const curVb = wrap.__mermaidCurViewBox
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (state.pointers.size === 1) {
+        state.startVb = curVb.slice()
+        state.lastPointerX = e.clientX
+        state.lastPointerY = e.clientY
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = curVb.slice()
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = state.pointers.values().next().value
+        const dxClient = p.x - state.lastPointerX
+        const dyClient = p.y - state.lastPointerY
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+        const dx = dxClient * (curVb[2] / rect.width)
+        const dy = dyClient * (curVb[3] / rect.height)
+        setCurVb([curVb[0] - dx, curVb[1] - dy, curVb[2], curVb[3]])
+        return
+      }
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const px = curVb[0] + (cx - rect.left) * (curVb[2] / rect.width)
+        const py = curVb[1] + (cy - rect.top) * (curVb[3] / rect.height)
+        setCurVb(zoomAtPoint(state.startVb, factor, px, py))
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      // Release PointerCapture to avoid event capture anomalies
+      if (svg.hasPointerCapture && svg.hasPointerCapture(e.pointerId)) {
+        svg.releasePointerCapture(e.pointerId)
+      }
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+      } else if (state.pointers.size === 1) {
+        const p = state.pointers.values().next().value
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+      }
+    }
+
+    const onWheel = e => {
+      // Prevent event bubbling from triggering external scroll
+      e.preventDefault()
+      e.stopPropagation()
+      // Normalize deltaY across deltaMode (Chrome uses pixels, Safari uses lines)
+      let delta = e.deltaY
+      if (e.deltaMode === 1) delta *= 16
+      else if (e.deltaMode === 2) delta *= 400
+
+      // Continuous zoom factor: smoother than fixed 1.1/0.9 steps
+      const zoomFactor = Math.pow(1.001, delta)
+
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      const px = curVb[0] + (e.clientX - rect.left) * (curVb[2] / rect.width)
+      const py = curVb[1] + (e.clientY - rect.top) * (curVb[3] / rect.height)
+      setCurVb(zoomAtPoint(curVb, zoomFactor, px, py))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (init) setCurVb(init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown, { signal: ac.signal })
+    svg.addEventListener('pointermove', onPointerMove, { signal: ac.signal })
+    svg.addEventListener('pointerup', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('pointercancel', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('wheel', onWheel, { passive: false, signal: ac.signal })
+    svg.addEventListener('dblclick', onDblClick, { signal: ac.signal })
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      // Clean up event listeners before removing old SVG
+      if (item.__mermaidAbortController) {
+        item.__mermaidAbortController.abort()
+      }
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      let config = {}
+      try {
+        config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      } catch (e) {
+        console.warn('[mermaid] failed to parse dataset.config:', e)
+      }
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+      const handleError = err => {
+        console.error(`[mermaid] render failed for block #${index}:`, err)
+        const errorEl = document.createElement('div')
+        errorEl.className = 'mermaid-error'
+        errorEl.textContent = `Mermaid render error: ${err.message || err}`
+        mermaidSrc.insertAdjacentElement('afterend', errorEl)
+      }
+
+      try {
+        const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+        // mermaid v9 and v10 compatibility
+        if (typeof renderFn === 'string') {
+          renderMermaid(renderFn)
+        } else {
+          renderFn.then(({ svg }) => renderMermaid(svg)).catch(handleError)
+        }
+      } catch (err) {
+        handleError(err)
+      }
+    })
+  }
+
+  const codeToMermaid = $article => {
+    const codeMermaidEle = $article.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    const $article = document.getElementById('article-container')
+    if (!$article) return
+
+    if (false) codeToMermaid($article)
+    const $mermaid = $article.querySelectorAll('.mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/external-link-handler.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/skins/default.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/wavedrom.min.js"></script><script>
+  window.addEventListener('load', function() {
+    if (typeof WaveDrom !== 'undefined') {
+      WaveDrom.ProcessAll();
+    }
+  });
+</script>
+<script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

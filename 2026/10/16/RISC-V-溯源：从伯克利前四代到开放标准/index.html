@@ -1,0 +1,1081 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>RISC‑V 溯源：从伯克利前四代到开放标准 | Cloudlet</title><meta name="author" content="Cloudlet"><meta name="copyright" content="Cloudlet"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="引言：一部做减法的历史 RISC‑V 的许多设计可以从早期处理器研究、软件需求和实现约束中找到背景，但不能把每个单元都归因于某一次具体工程失败。理解这些设计，需要区分历史动因、规范目标与具体实现取舍。 前四代 RISC 原型（RISC‑I、RISC‑II、SOAR、SPUR）是独立的研究项目，每一代都在解决前一代的具体局限。RISC‑V 2010 年诞生于伯克利，从设计之初就遵循开放、模块化的原则">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RISC‑V 溯源：从伯克利前四代到开放标准">
+<meta property="og:url" content="https://9606960.xyz/2026/10/16/RISC-V-%E6%BA%AF%E6%BA%90%EF%BC%9A%E4%BB%8E%E4%BC%AF%E5%85%8B%E5%88%A9%E5%89%8D%E5%9B%9B%E4%BB%A3%E5%88%B0%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86/index.html">
+<meta property="og:site_name" content="Cloudlet">
+<meta property="og:description" content="引言：一部做减法的历史 RISC‑V 的许多设计可以从早期处理器研究、软件需求和实现约束中找到背景，但不能把每个单元都归因于某一次具体工程失败。理解这些设计，需要区分历史动因、规范目标与具体实现取舍。 前四代 RISC 原型（RISC‑I、RISC‑II、SOAR、SPUR）是独立的研究项目，每一代都在解决前一代的具体局限。RISC‑V 2010 年诞生于伯克利，从设计之初就遵循开放、模块化的原则">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg">
+<meta property="article:published_time" content="2026-10-16T15:29:59.880Z">
+<meta property="article:modified_time" content="2026-10-16T16:25:26.942Z">
+<meta property="article:author" content="Cloudlet">
+<meta property="article:tag" content="RISC‑V">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "RISC‑V 溯源：从伯克利前四代到开放标准",
+  "url": "https://9606960.xyz/2026/10/16/RISC-V-%E6%BA%AF%E6%BA%90%EF%BC%9A%E4%BB%8E%E4%BC%AF%E5%85%8B%E5%88%A9%E5%89%8D%E5%9B%9B%E4%BB%A3%E5%88%B0%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86/",
+  "image": "https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg",
+  "datePublished": "2026-10-16T15:29:59.880Z",
+  "dateModified": "2026-10-16T16:25:26.942Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Cloudlet",
+      "url": "https://9606960.xyz"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://9606960.xyz/2026/10/16/RISC-V-%E6%BA%AF%E6%BA%90%EF%BC%9A%E4%BB%8E%E4%BC%AF%E5%85%8B%E5%88%A9%E5%89%8D%E5%9B%9B%E4%BB%A3%E5%88%B0%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":800,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'RISC‑V 溯源：从伯克利前四代到开放标准',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">29</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">30</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Cloudlet</span></a><a class="nav-page-title" href="/"><span class="site-name">RISC‑V 溯源：从伯克利前四代到开放标准</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">RISC‑V 溯源：从伯克利前四代到开放标准</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-16T15:29:59.880Z" title="发表于 2026-10-16 23:29:59">2026-10-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-16T16:25:26.942Z" title="更新于 2026-10-17 00:25:26">2026-10-17</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><h3 id="引言：一部做减法的历史">引言：一部做减法的历史</h3>
+<p>RISC‑V 的许多设计可以从早期处理器研究、软件需求和实现约束中找到背景，但不能把每个单元都归因于某一次具体工程失败。理解这些设计，需要区分历史动因、规范目标与具体实现取舍。</p>
+<p>前四代 RISC 原型（RISC‑I、RISC‑II、SOAR、SPUR）是独立的研究项目，每一代都在解决前一代的具体局限。RISC‑V 2010 年诞生于伯克利，从设计之初就遵循开放、模块化的原则，后续发展为开放指令集标准。RISC‑V 与早期 Berkeley RISC 研究存在历史和理念上的联系，但不宜描述为前四代原型的直接迭代，也不能说它把前代补丁全部撤销。更准确地说，RISC‑V 以精简基础 ISA、模块化扩展和开放标准为目标，明确区分架构行为与微架构实现。</p>
+<h2 id="本文将按两条主线组织：前四代的代际演进（每一代解决了什么问题、留下了什么遗产），以及RISC‑V-各单元与机制的溯源（每一个单元对应前四代的哪个失败、为什么能解决）。">本文将按两条主线组织：<strong>前四代的代际演进</strong>（每一代解决了什么问题、留下了什么遗产），以及<strong>RISC‑V 各单元与机制的溯源</strong>（每一个单元对应前四代的哪个失败、为什么能解决）。</h2>
+<h2 id="第一部分：伯克利前四代-RISC-原型">第一部分：伯克利前四代 RISC 原型</h2>
+<h3 id="第一代：RISC‑I（1981）——证明精简可行，但跑不了操作系统">第一代：RISC‑I（1981）——证明精简可行，但跑不了操作系统</h3>
+<p><strong>要解决的问题</strong>：1970 年代的普遍认知是，要提升处理器性能，就应该不断增加指令集的复杂度。CISC 处理器的微码控制单元占用了约 50% 的芯片面积，而 Patterson 在 DEC 休假期间专注于减少微码错误，发现 VAX 的指令集极其复杂，微码 bug 只能在现场修补。</p>
+<p><strong>RISC‑I 的设计目标</strong>：设计一个适合单芯片 VLSI 的指令集。目标是 40,000 个晶体管的 32 位 NMOS 微处理器，面向 C 语言和 UNIX 操作系统，竞争对手是 VAX‑11/780。</p>
+<p><strong>核心机制与解决的问题</strong>：<br>
+<strong>指令集</strong>：31‑32 条指令（统计口径差异，不含伪指令），分为算术逻辑、访存、分支、杂项四类。核心洞察是：指令集和寻址模式的简单性让大多数指令能在单个机器周期内执行，每个指令的简单性保证了短周期时间。</p>
+<p><strong>寄存器窗口</strong>：这是 RISC‑I 最具原创性的机制。过程调用中，参数传递和局部变量保存需要频繁读写内存。RISC‑I 用重叠寄存器窗口，CALL/RET 直接切换窗口指针，无需存内存。这不是为了&quot;优雅&quot;，是为了省掉访存指令，因为访存是流水线中最慢的操作。RISC‑I 软件可见共32个通用寄存器，采用重叠寄存器窗口机制减少过程调用的访存开销；物理寄存器规模远小于后续的RISC-II。</p>
+<p><strong>延迟槽</strong>：条件跳转带来取指冒险。RISC‑I 使用&quot;延迟槽&quot;机制回避流水线停顿：跳转指令后面跟一条无条件执行的指令，编译器负责填入有用的操作。引入背景：当时实用的硬件动态分支预测方案尚未成熟，选择将控制冒险的处理负担交给编译器。</p>
+<p><strong>局限</strong>：寄存器窗口数量有限，窗口耗尽时需要处理溢出，增加软件与硬件管理开销。早期原型在虚拟内存、保护机制和系统软件支持方面也存在限制。不过，将“无法运行 UNIX”单独归因于窗口数量或缺少 MMU 过于绝对，应结合具体原型、移植状态和论文中的实验条件来表述。</p>
+<h3 id="第二代：RISC‑II（1983）——补齐窗口数量，跑通-UNIX">第二代：RISC‑II（1983）——补齐窗口数量，跑通 UNIX</h3>
+<p><strong>要解决的问题</strong>：RISC‑I 跑不了 UNIX。Patterson 团队开始了第二年的架构/VLSI 课程序列，目标就是修正 RISC‑I 的短板。</p>
+<p><strong>核心改动与解决的问题</strong>：<br>
+<strong>寄存器窗口规模有所扩大</strong>，软件可见寄存器仍采用窗口化组织。窗口数量和物理寄存器统计应以对应论文的定义为准，避免混用不同实现或论文的计数口径。RISC‑II 物理寄存器为138个32位，每个寄存器位只用了 6 个晶体管，比 RISC‑I 的 11 个更经济，总晶体管数降至 40,760 个。8组窗口极大降低寄存器窗口溢出概率，编译器有充足条件把循环变量、指针、临时值尽量留在片上。32 个整数寄存器后来成为多种 RISC ISA 的常见选择，但不能简单说 MIPS、ARM 与 RISC‑V 都直接继承自 RISC‑II；各架构的寄存器数量与设计决策有各自的历史背景。</p>
+<p><strong>解决 Load‑Use 互锁</strong>：RISC‑I 的 Load 指令之后立即使用结果会阻塞整条流水线；RISC‑II 增加硬件互锁处理访存相关冒险。RISC‑I、RISC‑II 均为两级流水线，后世经典五级RISC流水线来自其他项目。</p>
+<p><strong>仍然存在的限制</strong>：RISC‑II 原型的系统支持能力受保护与地址转换机制等条件限制。缺少 MMU 会使常见的虚拟内存和进程隔离机制难以实现，但不应据此断言所有形式的多任务操作系统都绝对无法运行。</p>
+<h3 id="第三代：SOAR（1984）——为-Smalltalk-优化，但绑定得太深">第三代：SOAR（1984）——为 Smalltalk 优化，但绑定得太深</h3>
+<p><strong>要解决的问题</strong>：Smalltalk‑80 系统是一个高效的生产力编程环境，但对实现者提出了严峻挑战：动态数据类型、高级指令集、频繁且昂贵的过程调用、面向对象的存储管理。</p>
+<p><strong>SOAR 的设计哲学</strong>：将程序编译为低层、高效的指令集。并行标签检查让简单的常见情况获得高性能，复杂情况触发陷阱到软件例程。并行寄存器初始化和多个片上寄存器窗口加速过程调用。</p>
+<p><strong>三个具体瓶颈与当时的解法</strong>：<br>
+<strong>瓶颈一：动态类型检查</strong>。Smalltalk 变量有类型标签，每次算术运算都要先检查标签再计算。纯软件做标签检查太慢。SOAR 引入了并行标签检查——标签检查与算术运算在同一个时钟周期内完成，公共情况以 RISC‑I 的速度执行，复杂情况触发陷阱到软件例程。</p>
+<p><strong>瓶颈二：过程调用开销</strong>。Smalltalk 的调用频率远高于 C，寄存器窗口的保存/恢复成为瓶颈。SOAR 的解法是快速 shuffle 机制，调用和跳转单周期完成，不产生流水线延迟。SOAR 的返回指令包含三个可选功能：使能中断、递增 CWP、根据 Smalltalk‑80 的要求把局部寄存器初始化为零。</p>
+<p><strong>瓶颈三：激活记录管理</strong>。Smalltalk 每次调用需要新的激活记录。SOAR 把激活记录缓存在片上寄存器文件中，溢出时才用内存栈。指向激活记录的指针很少见，SOAR 的硬件只是检测这些指针并触发陷阱。</p>
+<p><strong>寄存器窗口与溢出</strong>：SOAR 有 8 个重叠寄存器窗口，每个窗口24个局部寄存器外加8个全局寄存器，软件可见合计32个寄存器。这个数字来自 RISC‑I 的寄存器窗口研究——最佳缓冲区大小是 8 个窗口，对 Smalltalk 的研究发现曲线拐点也在 8 个窗口。</p>
+<p><strong>为什么最终被放弃</strong>：SOAR 绑定 Smalltalk 生态。为 Smalltalk 优化的硬件标签算术，实际收益有限。随工作站市场萎缩而终结。</p>
+<h3 id="第四代：SPUR（1986）——第一次有了-MMU-和多处理器支持">第四代：SPUR（1986）——第一次有了 MMU 和多处理器支持</h3>
+<p><strong>要解决的问题</strong>：SOAR 是单处理器，没有缓存一致性，没有虚拟内存。SPUR 的目标是多处理器工作站，支持 Lisp 的符号处理。</p>
+<p><strong>核心机制与解决的问题</strong>：<br>
+<strong>MMU 首次进入伯克利 RISC</strong>。SPUR 是伯克利 RISC 系列中第一个具备完整操作系统支持能力的处理器，可运行 SPUR OS 和多任务。MMU 的引入是为了解决两个核心问题：进程隔离、地址空间大于物理内存；<strong>多处理器缓存一致性由独立的总线侦听协议实现，不属于 MMU 职责范畴</strong>。</p>
+<p><strong>40 位标记架构</strong>。SPUR 的寄存器文件是 <strong>192 字 × 40 位</strong>，支持双端口读、单端口写，组织为 8 个重叠寄存器窗口，每个窗口 32 个寄存器。40 位中的额外位用于 Lisp 的类型标签。</p>
+<p><strong>对 RISC‑II 的增强很小</strong>。论文明确指出：“Although SPUR includes just a small set of enhancements to the Berkeley RISC‑II architecture”。模拟结果显示，150ns 周期下运行 Common Lisp 程序至少与 Symbolics 3600 或 DEC VAX 8600 一样快。</p>
+<p><strong>为什么最终被放弃</strong>：SPUR 绑定 Lisp 生态，通用性差。随着工作站市场萎缩和通用处理器的进步，SPUR 停止更新。</p>
+<h3 id="前四代的-遗产-与-RISC‑V-的-反叛">前四代的&quot;遗产&quot;与 RISC‑V 的&quot;反叛&quot;</h3>
+<table>
+<thead>
+<tr>
+<th>代</th>
+<th>当时要解决的问题</th>
+<th>当时的解法</th>
+<th>留下的遗产</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RISC‑I</td>
+<td>CISC 控制单元太复杂，微码 bug 无法修补</td>
+<td>精简指令 + 寄存器窗口 + 延迟槽</td>
+<td>Load/Store 架构、寄存器窗口思路、定长精简指令集</td>
+</tr>
+<tr>
+<td>RISC‑II</td>
+<td>RISC‑I 窗口溢出频繁，跑不了 UNIX</td>
+<td>8组重叠寄存器窗口 + 流水线互锁优化</td>
+<td>32 个 GPR 成为事实标准</td>
+</tr>
+<tr>
+<td>SOAR</td>
+<td>Smalltalk 调用太频繁，动态类型检查太慢</td>
+<td>硬件标签检查 + 快速 shuffle + Shadow Registers</td>
+<td>快速过程调用机制、双端口寄存器、8窗口最优性结论</td>
+</tr>
+<tr>
+<td>SPUR</td>
+<td>需要多处理器 + 多任务 + Lisp 支持</td>
+<td>MMU + 40 位标记架构 + 虚拟地址缓存</td>
+<td>MMU 分层思想、多处理器总线一致性思路</td>
+</tr>
+</tbody>
+</table>
+<p>RISC‑V 的每一个单元和机制，都是对<strong>一个具体工程失败</strong>的回应，而它之所以&quot;能解决&quot;，是因为它<strong>切断了问题产生的结构性根源</strong>。</p>
+<h2 id="第二部分：RISC‑V-基础-ISA-与扩展的溯源">第二部分：RISC‑V 基础 ISA 与扩展的溯源</h2>
+<h3 id="一、基座：RV32I-基础整数指令集">一、基座：RV32I 基础整数指令集</h3>
+<p><strong>要解决的问题</strong>：商业 ISA 的指令编码空间被历史包袱占满，新扩展无处安放；学术研究需要一个干净、可自由修改的起点。</p>
+<p><strong>指令集结构</strong>：RV32I 基础整数指令集，按不同统计口径为 37~40 条指令；排除环境调用、断点等指令时为 37 条，完整基础整数集共 40 条，占用 32 位编码空间中不到 1/8。这个&quot;浪费&quot;是故意的：剩余编码空间留给标准扩展和厂商自定义指令。成熟 ISA 也能通过扩展机制继续演进，但既有编码与兼容性约束通常会增加设计复杂度；不宜笼统断言所有主流商业 ISA 都无法预留编码空间。</p>
+<p><strong>寄存器</strong>：32 个通用寄存器（<code>x0–x31</code>），<code>x0</code> 硬连线为零。<code>x0</code> 恒为零，因此 <code>ADDI x5, x0, 5</code> 可用于把小立即数 5 写入 <code>x5</code>；这并不意味着所有加载立即数场景都不需要专门指令。</p>
+<p><strong>关键机制：全零指令非法</strong>。编码全零的指令被永久定义为非法指令。这不是为了规范，是为了<strong>捕获跳转到未编程内存区域的 bug</strong>。未编程的 Flash 或断开的存储总线通常读出全零，这条规则让错误立刻暴露而不是静默执行垃圾。</p>
+<p><strong>为什么能持续扩展</strong>：32 位指令的最低两位固定为 <code>11</code>，压缩指令的最低两位为 <code>00</code>、<code>01</code> 或 <code>10</code>。硬件解码器只需要看最低两位就能判断指令长度，<strong>不需要复杂的变长解码逻辑</strong>。剩余 7/8 的编码空间为未来所有标准扩展和自定义指令预留——这切断了&quot;编码空间耗尽&quot;的根源。ARM Thumb 和 MIPS16 都是事后补丁，设计时没有预留编码空间，只能在现有编码中&quot;挤出&quot;16 位指令的槽位，结果是压缩指令集与原始 ISA 不兼容，编译器需要两套代码生成器。</p>
+<p><strong>来源</strong>：早期 Berkeley RISC 项目展示了精简指令集的可行性，但“前三代都因编码空间不足而无法持续扩展”缺乏充分依据。RV32I 的确为标准扩展和自定义扩展保留了编码空间。</p>
+<h3 id="二、压缩指令：C-扩展">二、压缩指令：C 扩展</h3>
+<p><strong>要解决的问题</strong>：32 位定长指令的代码密度太差。嵌入式场景中指令 Cache 容量有限，代码体积直接决定成本和能耗。</p>
+<p><strong>历史教训</strong>：ARM Thumb 和 MIPS16 的核心失败是<strong>引入了新指令</strong>。Thumb 指令不是 ARM 指令的压缩形式，而是一套独立的 16 位指令集。程序必须在 Thumb 模式和 ARM 模式之间切换，编译器必须决定哪些函数用 Thumb 编译、哪些用 ARM 编译。更严重的是，当 ARM 升级到 64 位时，Thumb 和 Thumb2 被&quot;孤立&quot;了，无法跟随主 ISA 演进。</p>
+<p><strong>RISC‑V 的解法</strong>：C 扩展从设计之初就预留了编码空间。C 扩展为常见整数操作提供 16 位编码，许多压缩指令可展开为基础 ISA 中具有等价语义的操作，但不宜概括为“所有压缩指令都是严格的 1:1 重编码”。例如，<code>C.MV</code> 可展开为 <code>ADD rd, x0, rs2</code>，<code>C.ADD</code> 可展开为 <code>ADD rd, rd, rs2</code>，<code>C.EBREAK</code> 对应 <code>EBREAK</code> 的语义。压缩编码还包含跳转、分支、立即数形式及提示编码等。C 扩展还提供了 <code>C.AND</code>、<code>C.OR</code>、<code>C.XOR</code>、<code>C.SUB</code> 等寄存器‑寄存器操作的压缩版本。</p>
+<p><strong>为什么能</strong>：C 扩展主要是在同一基础 ISA 语义上提供更短编码，通常不需要像两套互不兼容的 ISA 那样维护完整独立后端。不过，压缩指令选择会涉及编译器、汇编器、编码阶段和链接器松弛等环节，不能一概说只是简单后处理。硬件解码器只需要在最低两位不是 <code>11</code> 时，查表展开到 32 位指令，不需要独立的 Thumb 解码流水线。这切断了&quot;双 ISA 不兼容&quot;的根源。ARM Thumb 的第一代（纯 16 位）增加了动态指令数，因为很多操作需要多条 16 位指令完成。C 扩展的混合 16/32 位格式避免了这个问题。</p>
+<p><strong>代价与争议</strong>：C 扩展的未对齐编码特性意味着 32 位指令可以跨越 16 位边界，导致取指逻辑复杂化。社区中存在技术讨论：RV64G 的代码体积本身竞争力已经较强，高端实现中C扩展收益有限，部分高端CPU选择不实现C扩展；<strong>不存在2023年正式提案要从应用级Profile移除C扩展，C扩展依旧属于Profile的可选组件</strong>。这说明&quot;能解决&quot;不等于&quot;在所有场景下都最优&quot;。</p>
+<h3 id="三、乘除法：M-扩展">三、乘除法：M 扩展</h3>
+<p><strong>要解决的问题</strong>：嵌入式低端实现不需要硬件乘除法器，强制包含会浪费芯片面积。</p>
+<p><strong>为什么从基础 ISA 中剥离</strong>：RISC‑V 的设计原则是&quot;基础 ISA 只包含不可省略的部分&quot;。乘除法可以在软件中模拟，只是慢。低端 MCU 场景中，乘除法要么不频繁，要么交给外挂加速器处理。</p>
+<p><strong>M 扩展提供的指令</strong>：<code>MUL</code>（低 XLEN 位结果）、<code>MULH</code>/<code>MULHU</code>/<code>MULHSU</code>（高 XLEN 位结果，区分有符号/无符号组合）、<code>MULW</code>（RV64 专用，32 位乘后符号扩展）。</p>
+<p><strong><code>MULHSU</code> 的用途</strong>：多字有符号乘法中，被乘数的高位字（含符号位）需要与乘数的低位字（无符号）相乘。这是编译器生成大整数乘法代码时的关键指令。</p>
+<p><strong><code>Zmmul</code> 的引入</strong>：有些场景只需要乘法不需要除法。<code>Zmmul</code> 实现了 M 扩展的乘法子集，编码与 M 完全相同；实现M扩展时，必须完整包含Zmmul。这让低端实现可以只包含乘法器。这切断了&quot;要么全有要么全无&quot;的根源。</p>
+<h3 id="四、原子操作：A-扩展">四、原子操作：A 扩展</h3>
+<p><strong>要解决的问题</strong>：多核系统中，实现锁和同步原语需要硬件原子操作。没有它，多核编程只能依赖操作系统提供的系统调用，开销巨大。</p>
+<p><strong>核心机制：LR/SC（Load‑Reserved / Store‑Conditional）</strong><br>
+<code>LR</code> 在加载数据的同时，在 hart 内部建立一个&quot;保留集&quot;（reservation set）。<code>SC</code> 只有在保留集仍然有效时才执行存储。</p>
+<p><strong>保留集的失效条件</strong>（每一条都是为了解决具体的多核竞态问题）：</p>
+<ul>
+<li><code>SC</code> 的地址不在最近一次 <code>LR</code> 的保留集内 → 防止 SC 误配对到旧 LR</li>
+<li>另一个 hart 对保留集的存储可被观察到 → 防止 ABA 问题</li>
+<li>在 <code>LR</code> 和 <code>SC</code> 之间存在另一个 <code>SC</code> → 一个 hart 同时只能持有一个保留</li>
+<li>设备（非 hart）对 <code>LR</code> 访问字节的写入可被观察到 → 处理 DMA 场景</li>
+</ul>
+<p><strong>LR/SC 与 ABA 问题</strong>：CAS 可能在值经历 X→Y→X 后仍成功，因此调用方无法仅凭最终值判断中间是否发生过修改。LR/SC 的成功条件不只是比较当前值是否等于旧值，而是依赖保留状态是否仍有效；相关写入可能使 <code>SC</code> 失败。因此，LR/SC 能避免经典 CAS 循环中由值恢复原样引发的那类判断问题，但不能概括为对所有并发算法中的 ABA 问题都普遍免疫。</p>
+<p><strong>&quot;允许失败&quot;的设计哲学</strong>：规范允许 <code>SC</code> 因实现相关原因失败，但最终进展保证仅适用于满足规范约束的 LR/SC 循环，以及具备相应 eventuality 属性的内存区域。不能无条件推导为“只要没有其他 hart 或设备写入保留集，单次 SC 最终就一定成功”。</p>
+<p><strong>最终进展保证</strong>：对规范定义的受限 LR/SC 循环，执行环境必须保证最终发生规定的进展事件。该保证不等同于每个 hart 都无饥饿；语言级正确性仍取决于编译器映射、内存模型和完整同步序列。</p>
+<p><strong><code>aq</code>/<code>rl</code> 位</strong>：<code>LR</code> 的 <code>aq</code> 位给予获取语义，<code>SC</code> 的 <code>rl</code> 位给予释放语义。<code>aq</code> 和 <code>rl</code> 位分别为相应原子操作提供 acquire 与 release 排序；仅凭在 LR/SC 上同时置位，不能笼统断言任意序列都满足 C11 的 <code>memory_order_seq_cst</code>。语言级顺序一致性还取决于完整指令序列、其他同步操作及编译器映射。</p>
+<p><strong>AMO 的补充</strong>：对于&quot;fetch‑and‑op&quot;型操作（如 <code>AMOADD</code>），A 扩展直接提供了硬件原子指令。这些 AMO 在高度并行系统中比 LR/SC 扩展性更好，因为它们在内存控制器处原子执行，不需要 hart 重试。</p>
+<h3 id="五、浮点：F-D-Q-扩展与-NaN-Boxing">五、浮点：F / D / Q 扩展与 NaN Boxing</h3>
+<p><strong>要解决的问题</strong>：浮点寄存器的位宽需要支持多种精度（32/64/128 位），但硬件实现可能只支持其中一部分。软件（如上下文切换、虚拟机迁移、调试器）需要能够保存和恢复浮点寄存器，即使它不知道当前存储的是什么精度。</p>
+<p><strong>NaN Boxing 机制</strong>：当 FLEN &gt; n（例如 FLEN=64 的 D 扩展寄存器中存储 32 位 F 值），窄值存储在 FLEN 位寄存器的低 n 位中，<strong>高 FLEN‑n 位全部写 1</strong>。这样一个窄值在作为更宽的值观察时，看起来像一个&quot;负的 quiet NaN&quot;。</p>
+<p><strong>为什么有帮助</strong>：较窄格式的值存放在较宽浮点寄存器中时，NaN boxing 要求高位全部为 1。浮点操作会据此判断窄格式值是否采用规定的 boxing 形式；格式不合法时，相关操作按规范处理。它并不意味着任意宽度的读写操作都能自动保持数据不变，软件仍须遵守寄存器保存与恢复约定。如果软件用宽操作来读取它，得到的是一个合法的 NaN，而不是垃圾数据。这切断了&quot;软件在不知道精度的情况下传输数据可能破坏数据&quot;的根源。如果没有 NaN Boxing，保存 32 位值到 64 位寄存器时高位是未定义的，恢复时可能破坏数据。</p>
+<p><strong>代价</strong>：非重编码实现需要在每次浮点操作前后检查 NaN Boxing 的合法性；重编码实现需要在内部格式中增加标记位。这是为了软件正确性付出的硬件代价。</p>
+<p><strong>来源</strong>：SPUR 时代的浮点支持是外部的，没有这种&quot;多精度共存&quot;的问题，因为当时的寄存器位宽是固定的。NaN Boxing 是 RISC‑V 为&quot;可选精度组合&quot;付出的工程代价。</p>
+<h3 id="六、向量：V-扩展与-vsetvli">六、向量：V 扩展与 <code>vsetvli</code></h3>
+<p><strong>要解决的问题</strong>：数据并行计算需要向量化，但不同实现可能有不同的向量寄存器位宽（VLEN=128/256/512/…）。软件必须能够在不重新编译的情况下适配底层硬件的向量宽度。</p>
+<p><strong><code>vsetvli</code> 指令的核心机制</strong>：</p>
+<ul>
+<li><code>AVL</code>（Application Vector Length）从 <code>rs1</code> 指定的通用寄存器读取</li>
+<li>硬件根据 <code>vtype</code> 中的 <code>SEW</code>（元素宽度）和 <code>LMUL</code>（寄存器组倍数）计算实际 <code>VL</code>（Vector Length）</li>
+<li>如果 <code>AVL</code> 超过硬件支持的最大值，<code>VL</code> 被截断为 <code>VLMAX</code></li>
+<li>结果同时写入 <code>rd</code> 指定的通用寄存器</li>
+</ul>
+<p><strong>为什么能实现硬件自适应</strong>：<code>vsetvli</code> 让软件设置向量配置，并由硬件依据 AVL、SEW、LMUL 和实现能力确定 <code>vl</code>。软件通常仍需根据返回的 <code>vl</code> 迭代处理剩余元素；可移植性来自显式协商机制，而不是“无需循环或适配”。这切断了&quot;软件绑定 VLEN&quot;的根源。</p>
+<p><strong><code>vtype</code> 寄存器布局</strong>：包含 <code>vill</code>（非法配置标志）、<code>vma</code>/<code>vta</code>（掩码/尾部不可知标志）、<code>vsew</code>（元素宽度）、<code>vlmul</code>（寄存器组倍数）。</p>
+<p><strong><code>vill</code> 标志 vs Trap</strong>：早期草案要求写入非法 <code>vtype</code> 时触发异常。但这是 ISA 中第一个&quot;数据相关的 CSR 写入 trap&quot;，设计上不干净。改用 <code>vill</code> 标志后，软件可以在<strong>运行时探测</strong>硬件支持哪些配置，而不需要 trap 处理。这切断了&quot;软件必须预先知道硬件支持什么&quot;的根源。</p>
+<p><strong>元素到寄存器状态的映射</strong>：规范定义了严格的映射规则：当 LMUL=1 时，元素从最低有效字节开始依次填充。这个映射被设计为&quot;对软件最简单、最可移植的模型&quot;。规范明确说，硬件可以<strong>内部重排数据</strong>以降低布线成本，只要外部保持这个简单模型。这切断了&quot;软件需要知道硬件内部数据布局&quot;的根源。</p>
+<p>**向量单寄存器加载/存储指令（如 <code>vl1re8.v</code>）**用于在上下文切换时保存/恢复整个向量寄存器文件，不受当前 <code>vtype</code> 和 <code>vl</code> 设置的影响。</p>
+<h2 id="来源：SOAR-时代就有向量化思想，但绑定在特定语言运行时中。V-扩展把它抽象为与语言无关的通用机制，vsetvli-的-硬件自适应-设计是-RISC‑V-独有的。"><strong>来源</strong>：SOAR 时代就有向量化思想，但绑定在特定语言运行时中。V 扩展把它抽象为与语言无关的通用机制，<code>vsetvli</code> 的&quot;硬件自适应&quot;设计是 RISC‑V 独有的。</h2>
+<h2 id="第二部分（续）：系统级架构与特权规范">第二部分（续）：系统级架构与特权规范</h2>
+<h3 id="七、MMU-与特权架构">七、MMU 与特权架构</h3>
+<p><strong>要解决的问题</strong>：SPUR 在 1986 年第一次把 MMU 带入伯克利 RISC，是为了让处理器能跑多任务操作系统。但 SPUR 把 MMU 控制指令嵌入基础指令集中，<strong>不需要 MMU 的嵌入式实现被迫背负这个负担</strong>。低端 MCU 的芯片面积和功耗预算无法承受 MMU 的逻辑。</p>
+<p><strong>RISC‑V 的解法：分层</strong>。非特权 ISA（RV32I/RV64I）<strong>不包含任何地址翻译指令或 CSR</strong>。MMU 相关的所有内容——<code>satp</code> 寄存器、页表格式、TLB 管理——全部属于<strong>特权规范</strong>。</p>
+<p><strong>为什么能</strong>：因为 RISC‑V 把&quot;指令集契约&quot;和&quot;微架构实现&quot;彻底分离。基础 ISA 只定义&quot;用户态指令的行为&quot;。MMU 是&quot;特权态的行为&quot;，可以独立规范、独立实现、独立验证。一个只跑裸机程序的 MCU <strong>完全不需要知道 MMU 的存在</strong>。这切断了&quot;低端实现被迫背负高端功能&quot;的根源。</p>
+<p><strong>页表模式</strong>：Sv32（RV32，两级）、Sv39（RV64 最小强制，三级）、Sv48/Sv57（可选，四级/五级）。Sv39 的 39 位虚拟地址空间设计目标是&quot;支持现代 Unix 风格操作系统&quot;。Sv32 是 20 位 VPN + 12 位偏移，两级；Sv39 是 27 位 VPN + 12 位偏移，三级。Sv39 的PTE格式和Sv32相似，但Sv39面向RV64，<strong>设计动因并非为兼容RV32的地址空间</strong>。</p>
+<p><strong>PTE 标志位</strong>：<code>V</code>（有效）、<code>R</code>/<code>W</code>/<code>X</code>（读/写/执行权限）、<code>U</code>（用户可访问）、<code>G</code>（全局映射；相关地址转换在按 ASID 定向的 <code>SFENCE.VMA</code> 操作中可不受影响）、<code>A</code>/<code>D</code>（访问/脏位）。</p>
+<p><strong>A/D 位的原子更新机制</strong>：页表项的 Accessed/Dirty 位更新必须<strong>原子地更新整个 PTE</strong>，且必须在页表遍历检查中作为一部分执行。这个设计切断了&quot;部分写入的 PTE 被另一个 hart 观察到&quot;的竞态。D 位的更新<strong>必须精确（非推测性）</strong>，而 A 位可以推测更新。为什么？因为 D 位表示&quot;被写过&quot;，推测性的 D 位更新会导致操作系统错误地认为页面是脏的，可能触发不必要的写回。</p>
+<p><strong><code>SFENCE.VMA</code> 的作用</strong>：它用于同步本 hart 的页表更新与后续地址转换所使用的隐式页表访问，并使实现按规范处理相关地址转换缓存。它不是一般意义上的全局内存屏障；其他 hart 通常还需要通过软件协议通知并执行各自所需的同步操作。规范定义可观察的架构行为，不强制某一种具体 TLB 结构。</p>
+<p><strong>SUM 位的作用</strong>：Supervisor 访问 User 页面需要 SUM 位置 1。为什么需要这个位？因为操作系统在<strong>正常运行时不应该访问用户内存</strong>（防止安全漏洞），但在<strong>需要时</strong>（如系统调用参数传递）必须能够访问。SUM 位提供了这个显式的开关，切断了&quot;Supervisor 代码意外访问用户页面&quot;的根源。</p>
+<p><strong>来源</strong>：SPUR 做的是&quot;加 MMU&quot;，RISC‑V 做的是&quot;把 MMU 从基础 ISA 剥离，放入特权层，分层可选&quot;。</p>
+<h3 id="八、Hypervisor：H-扩展与两阶段翻译">八、Hypervisor：H 扩展与两阶段翻译</h3>
+<p><strong>要解决的问题</strong>：虚拟机需要<strong>两阶段地址翻译</strong>：Guest 虚拟地址 → Guest 物理地址 → Host 物理地址。没有硬件支持，每次 Guest 访存都要触发 trap 到 Hypervisor，性能灾难。</p>
+<p><strong>核心机制</strong>：TLB 条目同时存储 VS‑stage（Guest 虚拟 → Guest 物理）和 G‑stage（Guest 物理 → Host 物理）的 PTE。查找时先查 VS‑stage，再查 G‑stage，合并成最终翻译。这切断了&quot;每次 Guest 访存都 trap&quot;的根源。</p>
+<p><strong>CSR 虚拟化</strong>：H 扩展引入了 VS‑mode（虚拟 Supervisor）和 VU‑mode（虚拟 User），以及配套的 VS CSR（<code>vsiselect</code>、<code>vsireg</code>、<code>vstopei</code> 等）。Hypervisor 通过 <code>hvien</code>、<code>hvictl</code>、<code>hviprio1/2</code> 等寄存器向 VS‑level 注入中断。</p>
+<p><strong><code>htval</code> 寄存器</strong>：当 Guest 页错误陷入 HS‑mode 时，<code>htval</code> 存储出错的 Guest 物理地址（右移后），帮助 Hypervisor 定位问题。</p>
+<p><strong>两阶段翻译的代价</strong>：如果 Guest 用 4KB 页而 Hypervisor 用 2MB 大页，TLB 条目只能按 4KB 粒度存储，大页的 TLB 覆盖优势被抵消。这是为虚拟化隔离付出的性能代价。</p>
+<p><strong>来源</strong>：SPUR 的多处理器缓存一致性是&quot;多核共享内存&quot;的问题，H 扩展的两阶段翻译是&quot;多虚拟机隔离&quot;的问题。方向完全不同，但都是&quot;给操作系统提供硬件支持&quot;这一思路的延续。</p>
+<h3 id="九、中断控制器：CLINT-→-PLIC-→-AIA-的三代演进">九、中断控制器：CLINT → PLIC → AIA 的三代演进</h3>
+<p><strong>早期 Berkeley RISC 原型没有形成与现代 RISC‑V 平台规范相当的通用中断控制器标准</strong>。RISC‑V 的中断相关规范逐步发展；CLINT 是广泛采用的早期平台约定，后来出现 ACLINT，以及面向外部中断与消息中断的 PLIC/AIA。它们不是严格的单线、完全替代式的“三代演进”。</p>
+<h4 id="第一代：CLINT（Core-Local-Interrupt-Controller）">第一代：CLINT（Core Local Interrupt Controller）</h4>
+<p>CLINT 是<strong>核局部中断控制器</strong>，位于存储器映射地址空间。它生成两种中断：</p>
+<ul>
+<li><strong>软件中断</strong>：通过 32 位的 <code>msip</code> 寄存器，最低位直接作为软件中断信号送到 hart。软件写 1 触发，写 0 清除。</li>
+<li><strong>定时器中断</strong>：通过 64 位 <code>mtime</code> 计数器和 64 位 <code>mtimecmp</code> 比较器。当 <code>mtime &gt;= mtimecmp</code> 时产生定时器中断。</li>
+</ul>
+<p><strong>CLINT 的物理根源</strong>：早期 RISC‑V 系统需要最小化的核间同步和定时机制。<code>msip</code> 是内存映射的，不需要复杂的总线协议；<code>mtime</code> 是一个自由运行的计数器，不需要精确的时钟同步逻辑。</p>
+<h4 id="第二代：PLIC（Platform‑Level-Interrupt-Controller）">第二代：PLIC（Platform‑Level Interrupt Controller）</h4>
+<p>PLIC 负责<strong>外部中断的仲裁和分发</strong>。设备拉一根中断线，PLIC 仲裁后通知 hart，hart 再读 claim 寄存器取中断号。这是<strong>拉模式（pull）</strong>。</p>
+<p><strong>PLIC 的局限</strong>：PLIC 的基本模型围绕有线外部中断的优先级、仲裁及 claim/complete 流程设计，并不原生提供 AIA 的 IMSIC 消息中断文件模型。平台可以通过额外逻辑处理 MSI，但是否需要转换、如何路由取决于具体实现。</p>
+<h4 id="第三代：AIA（Advanced-Interrupt-Architecture）">第三代：AIA（Advanced Interrupt Architecture）</h4>
+<p>AIA 由三个核心组件构成：</p>
+<ul>
+<li><strong>AIA CSR 扩展</strong>（Smaia/Ssaia）：改进的本地中断支持和优先级配置</li>
+<li><strong>IMSIC</strong>（Incoming Message Signaled Interrupt Controller）：每个 hart 的消息中断接收端点，支持 2047 个 MSI 源，支持 MSI 虚拟化</li>
+<li><strong>APLIC</strong>（Advanced Platform‑Level Interrupt Controller）：有线中断控制器，在 MSI 模式下把线中断转为 MSI 发送给 IMSIC</li>
+</ul>
+<p><strong>IMSIC 的虚拟化机制</strong>：每个 hart 可以有多个<strong>VS‑file（虚拟 Supervisor 中断文件）</strong>，每个 Guest VCPU 分配一个。<strong>Guest 使用 VS‑file 时不产生 trap</strong>。Hypervisor 通过写 VS‑file 的 MMIO 寄存器注入模拟中断。这切断了&quot;每次 Guest 中断都 trap 到 Hypervisor&quot;的根源。</p>
+<p><strong>投递模型的变化</strong>：AIA 中的 IMSIC 支持消息中断及按 hart/特权级组织的中断文件，有利于虚拟化和扩展性。具体中断路由仍取决于平台设计，不能将所有中断都简化为一次直接内存写入。</p>
+<p><strong>AIA 的设计动因</strong>：IMSIC 的消息中断文件模型有助于降低虚拟化中断注入开销并改善扩展性。但实际延迟取决于互连、仲裁、实现和中断负载，不能概括为“延迟恒定”，也不能断言 PLIC 的延迟必然随中断频率线性增长。</p>
+<h3 id="十、内存模型：RVWMO">十、内存模型：RVWMO</h3>
+<p><strong>要解决的问题</strong>：多核程序中，编译器和硬件需要知道&quot;哪些重排序是允许的&quot;。没有一个明确的内存模型，编译器无法优化，硬件无法激进乱序。</p>
+<p><strong>RVWMO 的核心概念：语法依赖</strong>。一个内存操作对另一个内存操作有&quot;地址依赖&quot;，如果第二个操作的地址寄存器在程序顺序上依赖于第一个操作的目的寄存器。依赖的传递性也被严格定义：如果 <code>j</code> 依赖于 <code>m</code>，<code>m</code> 依赖于 <code>i</code>，且 <code>m</code> 携带从 <code>p</code> 到 <code>q</code> 的依赖，则 <code>j</code> 通过 <code>q</code> 依赖于 <code>i</code> 通过 <code>p</code>。</p>
+<p><strong>为什么定义&quot;依赖&quot;</strong>：RVWMO 允许硬件在&quot;无依赖&quot;的访存之间重排序，但必须保持有依赖的访存顺序。这是&quot;弱一致性&quot;和&quot;可编程性&quot;之间的平衡。这切断了&quot;编译器无法优化、硬件无法乱序&quot;的根源。</p>
+<p><strong>RVWMO 的规范结构</strong>：由<strong>全局访存序（gmo）</strong>、<strong>保留程序序（ppo）</strong> 和<strong>三条公理</strong>（加载值公理、原子性公理、进度保证公理）定义。</p>
+<p><strong>关键的&quot;缺失公理&quot;问题</strong>：同地址顺序一致性（SCPL）是 X86/TSO、Power、ARM 内存模型的经典公理，但 <strong>RVWMO 规范没有把它直接作为公理加入</strong>。规范附录 B.2 给出了两种等价的公理模型：一种不含 SCPL，一种含 SCPL。后者&quot;等价且更为高效&quot;。</p>
+<p><strong>为什么这是一个&quot;单元&quot;</strong>：SCPL 的定理证明是 RISC‑V 内存模型的<strong>形式化补充</strong>。研究通过将任意同地址访存序列的构建抽象为确定有限状态自动机，基于已定义的公理进行归纳证明，证明了 SCPL 可以从 RVWMO 的公理中推导出来。</p>
+<p><strong>历史背景</strong>：早期处理器的软件与硬件通常依赖具体平台的内存排序约定；编译器仍须遵循目标架构和语言内存模型。现代 RISC‑V 通过 RVWMO 为编译器、运行时和硬件提供形式化排序契约。现代多核 RISC‑V 需要<strong>形式化的契约</strong>来指导编译器和硬件设计，SCPL 的定理证明是让这个契约<strong>可验证</strong>的必要步骤。</p>
+<h3 id="十一、物理内存保护（PMP）：MMU-的-最小替代品">十一、物理内存保护（PMP）：MMU 的&quot;最小替代品&quot;</h3>
+<p><strong>前四代没有 PMP</strong>。SPUR 有 MMU，通过页表实现保护。RISC‑I/II/SOAR 没有 MMU，也没有任何物理内存保护——所有代码可以访问所有物理内存。</p>
+<p><strong>PMP 要解决的问题</strong>：RISC‑V 的 Profile 规范中，&quot;Embedded with Protection&quot;配置要求 <strong>M+U 模式</strong>，需要<strong>物理内存保护</strong>（Phys Mem Protect），但<strong>不需要虚拟内存</strong>。一个低成本嵌入式系统需要隔离非信任应用，但芯片面积不足以承载 MMU 和页表遍历。</p>
+<p><strong>PMP 的物理根源</strong>：MMU 需要 TLB、页表遍历器、页表存储。这些在低成本 MCU 中面积占比过高。PMP 可实现的条目数量由实现决定；具体平台的常见配置应以所引用的规范版本和芯片手册为准，以远低于 MMU 的硬件成本提供物理内存隔离。每个 PMP 条目定义一个物理地址范围（4 字节到 2^XLEN 字节的 NAPOT，或 TOR 范围）和读写执行权限。</p>
+<p><strong>PMP 的权限模型</strong>：R/W/X 位分别控制读、写、指令执行权限。<code>R=0, W=1</code> 的编码是保留的。权限不足时触发 access‑fault 异常。</p>
+<p><strong>Smepmp 扩展的威胁模型根源</strong>：没有 Smepmp 时，<strong>PMP 规则只能&quot;对所有模式强制执行&quot;或&quot;忽略 M 模式&quot;</strong>。这意味着一个未加锁的物理内存区域，<strong>M 模式拥有无限访问权，包括执行权限</strong>。攻击向量是：高特权进程（M 模式）可以篡改低特权进程的内存，<strong>或者被低特权进程诱导去执行其内存中的代码</strong>。Smepmp 引入 <code>mseccfg.MML</code> 位，允许 PMP 规则<strong>只对非 M 模式强制执行、对 M 模式拒绝</strong>，切断了&quot;M 模式必须无限信任&quot;的根源。</p>
+<h3 id="十二、IOMMU：设备侧的地址翻译">十二、IOMMU：设备侧的地址翻译</h3>
+<p>早期 Berkeley RISC 原型并未提供现代 RISC‑V IOMMU 这样的标准化设备地址转换架构。不能据此推断当时“设备只有内存”或所有外设都没有 DMA；DMA 与设备地址转换能力取决于具体系统平台。</p>
+<p><strong>IOMMU 要解决的问题</strong>：现代系统中，设备（GPU、网卡、NVMe）通过 DMA 直接访问内存。没有 IOMMU，设备使用物理地址，<strong>无法在虚拟机中安全地做设备直通</strong>——Guest 设备的 DMA 地址是 Guest 物理地址，但硬件需要 Host 物理地址。</p>
+<p><strong>RISC‑V IOMMU 规范定义的单元</strong>：</p>
+<ul>
+<li><strong>Device‑context</strong>：把设备与地址空间关联，存储每个设备的翻译参数</li>
+<li><strong>Process‑context</strong>：基于设备提供的进程 ID 关联不同的虚拟地址空间</li>
+<li><strong>MSI 页表配置</strong>：把 MSI 导向 IMSIC 中的 Guest 中断文件</li>
+<li><strong>命令队列</strong>：软件向 IOMMU 发命令的接口</li>
+<li><strong>故障/事件队列</strong>：IOMMU 向软件报告错误和事件</li>
+<li><strong>页请求队列</strong>：报告 PCIe 设备发来的 Page Request 消息</li>
+</ul>
+<p><strong>物理根源</strong>：SPUR 时代的外设没有 DMA，没有虚拟化，没有 MSI。IOMMU 是 <strong>PCIe + 虚拟化 + MSI</strong> 三者共同催生的产物。没有 PCIe 设备直通虚拟机的需求，就不需要设备侧的地址翻译。</p>
+<h3 id="十三、缓存与内存管理机制：Svpbmt、Svnapot、CMO、Zicbom">十三、缓存与内存管理机制：Svpbmt、Svnapot、CMO、Zicbom</h3>
+<p><strong>前四代没有缓存管理指令</strong>。SPUR 的缓存使用虚拟地址寻址，缓存一致性由硬件协议处理，软件不需要也不应该干预缓存内容。1980 年代的处理器中，缓存对软件是&quot;透明&quot;的。</p>
+<p><strong>Svpbmt（Page‑Based Memory Types）</strong>：在页表项中增加 PBMT 位，允许软件为每个页面指定内存类型（如&quot;非缓存&quot;&quot;写合并&quot;等）。物理根源：现代 SoC 中，设备 MMIO 区域和普通内存的访问语义不同——对设备寄存器的写入不能缓存，对帧缓冲的写入可以合并。没有 Svpbmt，操作系统只能用&quot;全部非缓存&quot;或&quot;全部缓存&quot;的粗粒度策略，性能损失巨大。</p>
+<p><strong>Svnapot（NAPOT Translation）</strong>：支持&quot;自然对齐的 2 的幂次&quot;连续内存区域映射；Svnapot不等同于标准大页，用于处理非标准粒度的连续内存，减少TLB压力。物理根源：现代应用（如数据库、大内存虚拟机）使用大量连续内存区域，4KB 页表项数量爆炸，TLB miss 率急剧上升。</p>
+<p><strong>CMO（Cache Management Operations）</strong>：包括 <code>Zicbom</code>（Cache Block Management，缓存块管理）、<code>Zicboz</code>（Cache Block Zero，缓存块清零）、<code>Zicbop</code>（Cache Block Prefetch，缓存块预取）。物理根源：DMA 设备与 CPU 缓存的一致性需要软件干预——设备写入内存后，CPU 缓存中可能有陈旧数据，软件必须能&quot;invalid&quot;缓存行。前四代没有 DMA‑capable 设备，没有这个问题。</p>
+<p><strong><code>Zihintpause</code>（Pause Hint）</strong>：一条提示指令，告诉硬件&quot;当前在自旋等待，可以降低功耗&quot;。物理根源：多核系统中，自旋锁的忙等待浪费大量功耗。前四代没有多核，没有自旋锁。</p>
+<h2 id="第三部分：系统级规范与平台接口">第三部分：系统级规范与平台接口</h2>
+<h3 id="十四、调试与追踪（Debug-Trace）">十四、调试与追踪（Debug &amp; Trace）</h3>
+<p><strong>前四代没有与现代 RISC‑V Debug 规范相当的通用标准调试接口</strong>。早期原型的调试方式取决于具体实验系统；不能一概归结为逻辑分析仪或简单单步电路。</p>
+<p><strong>现代 RISC‑V Debug 规范</strong>：定义外部调试器如何通过 JTAG 或其它接口控制处理器。<code>ebreak</code> 指令触发调试异常；<strong>是否停止核心取决于调试模式配置，ebreak本身不会无条件停机</strong>。</p>
+<p><strong>Trace 的完整规范体系</strong>（前四代完全不存在）：</p>
+<ul>
+<li><strong>E‑Trace（Efficient Trace）</strong>：高效的指令执行追踪格式</li>
+<li><strong>N‑Trace</strong>：基于 Nexus 标准的追踪格式</li>
+<li><strong>Trace Control Interface</strong>：每个 trace IP 块有独立的 32 位寄存器控制接口，占用最多 4KB 地址空间，基地址必须 4KB 对齐</li>
+<li><strong>Trace Connectors</strong>：Mictor38 或 MIPI20 等物理连接器定义</li>
+</ul>
+<p><strong>Trace IP 块的层次结构</strong>：</p>
+<ul>
+<li><strong>Trace Encoder</strong>：每个可追踪的 hart 一个，编码执行信息</li>
+<li><strong>Trace Funnel</strong>：多核系统中合并多个编码器的输出</li>
+<li><strong>Trace Sink</strong>：片上 SRAM、系统内存或引脚接口（PIB）</li>
+<li><strong>ATB Bridge</strong>：连接 ARM CoreSight 的 ATB 总线</li>
+</ul>
+<p><strong>物理根源</strong>：前四代的芯片规模小，调试靠示波器和逻辑分析仪足够。现代 SoC 有数十亿晶体管、多核、深度流水线，<strong>没有标准化的调试和追踪接口，芯片根本无法验证和调试</strong>。Trace 的带宽需求（每周期数十字节）也要求专门的硬件编码器和物理接口。</p>
+<h3 id="十五、系统级-RAS-与-QoS：RERI、CBQRI">十五、系统级 RAS 与 QoS：RERI、CBQRI</h3>
+<p><strong>RERI（RAS Error Record Interface）</strong>：定义可靠性、可用性、可服务性（RAS）错误记录的标准接口。物理根源：服务器级 RISC‑V 系统需要标准化的错误报告机制——内存 ECC 错误、缓存奇偶校验错误、总线协议错误，都需要<strong>统一格式</strong>报告给操作系统，否则每个厂商都要定义自己的错误格式，操作系统无法通用。</p>
+<p><strong>CBQRI（Capacity and Bandwidth QoS Register Interface）</strong>：定义容量和带宽的 QoS（服务质量）控制寄存器接口。物理根源：多租户云环境中，一个虚拟机可能&quot;霸占&quot;共享缓存或内存带宽，导致其他虚拟机性能抖动。CBQRI 让软件可以<strong>限制每个 hart 或每个地址空间的缓存容量和内存带宽</strong>。前四代是单用户系统，没有&quot;多租户&quot;概念。</p>
+<h3 id="十六、平台软件接口：SBI、BRS、FFH、Semihosting">十六、平台软件接口：SBI、BRS、FFH、Semihosting</h3>
+<p><strong>SBI（Supervisor Binary Interface）</strong>：Supervisor 软件与 M‑mode 固件之间的标准接口。物理根源：RISC‑V 的 M‑mode 是最高特权级，操作系统运行在 S‑mode。操作系统需要 M‑mode 做定时器管理、IPI 发送、远程 TLB 刷新等操作。没有 SBI，每个 RISC‑V 平台都要定义自己的 M‑mode 调用约定，Linux 无法通用。SPUR 时代操作系统直接运行在最高特权级，没有&quot;S‑mode 调用 M‑mode&quot;的分层需求。</p>
+<p><strong>BRS（Boot and Runtime Services）</strong>：定义启动时和运行时的软件服务要求。物理根源：服务器平台需要标准化的启动流程——从 M‑mode 固件到 S‑mode 操作系统的交接、设备树传递、启动参数约定。前四代没有&quot;启动固件&quot;和&quot;操作系统&quot;的分离。</p>
+<p><strong>FFH（Functional Fixed Hardware）</strong>：定义平台集成中&quot;固定功能硬件&quot;的接口规范。物理根源：ACPI 等固件标准需要知道硬件的行为是&quot;可编程的&quot;还是&quot;固定的&quot;。FFH 定义了哪些硬件功能是固定的，固件不需要探测。</p>
+<p><strong>Semihosting</strong>：半主机接口，允许目标处理器通过调试通道使用主机 I/O 功能（如 <code>printf</code>、文件读写）。物理根源：嵌入式开发中，目标板可能没有显示器和文件系统，但开发者需要调试输出。Semihosting 通过 JTAG 通道把这些请求转发到主机。</p>
+<h3 id="十七、安全模型与-TEE">十七、安全模型与 TEE</h3>
+<p>前四代的设计重点与现代处理器的威胁模型不同，但不能说当时完全没有安全概念；更准确地说，它们没有现代 RISC‑V 安全规范、TEE 与云多租户隔离机制所覆盖的那套标准化架构。RISC‑I 到 SPUR 的程序是直接编译到裸机的，没有攻击者模型，没有信任边界。</p>
+<p><strong>RISC‑V 安全相关规范与方案</strong>：覆盖安全启动、固件更新、调试授权等不同方面；具体要求分布于不同规范与平台配置中，不宜将其概括为单一规范定义了从预启动到应用层的完整安全架构。它规定了安全启动、固件更新、固件韧性、调试授权等流程的信任链。</p>
+<p><strong>Trusted Execution Environment（TEE）</strong>：RISC‑V 有多个 TEE 实现方案（如 Keystone、Penglai、CoVE）。TEE 的目标是在<strong>不可信的 Rich OS（如 Linux）之下，提供一个隔离的执行环境</strong>，保护敏感代码和数据不被 Rich OS 或其上的恶意应用访问。</p>
+<p><strong>物理根源</strong>：前四代是面向特定研究与工作站目标的早期处理器项目；将其概括为全部“单用户、无网络”过于绝对。TEE 的需求来自<strong>云、移动、金融</strong>场景——你的手机需要运行银行 App，你的云服务器需要同时运行多个客户的虚拟机，你不能信任操作系统本身。SPUR 的 MMU 只提供了&quot;进程间隔离&quot;，不提供&quot;OS 与安全世界之间的隔离&quot;。这需要新的硬件机制（如内存加密、安全监控模式、远程证明）。</p>
+<h3 id="十八、性能监控（HPM）">十八、性能监控（HPM）</h3>
+<p>前四代没有标准化的性能监控单元。RISC‑I 的&quot;性能&quot;靠外部逻辑分析仪测量。</p>
+<p><strong>RISC‑V 的硬件性能监控器（HPM）</strong>：通过 <code>mcountinhibit</code>、<code>mcycle</code>、<code>minstret</code> 以及最多 29 个可编程事件计数器（<code>mhpmcounter3</code>–<code>mhpmcounter31</code>）提供性能计数。每个计数器有一个关联的 <code>mhpmevent</code> 寄存器配置监控的事件类型。</p>
+<p><strong>Server SoC 规范中的性能监控要求</strong>：明确要求标准化的性能监控能力，使操作系统和虚拟化层能够<strong>统一采集性能数据</strong>。</p>
+<p><strong>物理根源</strong>：前四代的芯片太小，性能瓶颈靠直觉和示波器就能定位。现代 SoC 有数十亿晶体管、多级缓存、乱序流水线、多核异构，<strong>没有标准化的性能计数器，软件调优和硬件验证都无法进行</strong>。性能监控单元是&quot;芯片复杂度超过人脑直觉理解能力&quot;后的必然产物。</p>
+<h3 id="十九、架构级扩展：CHERI、Zacas、Zicond、Zawrs">十九、架构级扩展：CHERI、Zacas、Zicond、Zawrs</h3>
+<p>这一批是 RISC‑V 规范库中<strong>最新批准或正在批准</strong>的扩展，前四代没有任何对应物。</p>
+<p><strong>CHERI（Capability Hardware Enhanced RISC Instructions）</strong>：把传统的&quot;指针&quot;替换为&quot;能力（capability）&quot;——一个<strong>携带权限信息的、不可伪造的指针</strong>。CHERI‑RISC‑V 是 CHERI 在 RISC‑V 上的实现。物理根源：前四代的指针就是 32 位地址，没有任何权限信息。内存安全漏洞（缓冲区溢出、use‑after‑free）在 C/C++ 中泛滥。CHERI 用硬件<strong>强制每个内存访问都经过能力检查</strong>，切断了&quot;指针可以被任意篡改&quot;的根源。</p>
+<p><strong>Zacas（Atomic Compare-and-Swap）</strong>：提供 CAS 指令（如 <code>AMOCAS.W</code>、<code>AMOCAS.D</code>；更宽操作的支持需以具体扩展定义为准），在前四代和早期 RISC‑V 中，CAS 必须用 LR/SC 循环实现。物理根源：LR/SC 的&quot;允许失败&quot;语义在高竞争场景下导致大量软件重试；Zacas 提供架构级 CAS 操作，可能简化软件原子操作循环；其内部如何执行以及是否减少重试，属于具体微架构实现，不能假定所有实现都把重试移入内存控制器。</p>
+<p><strong>Zicond（Integer Conditional Operations）</strong>：提供条件移动/条件零指令，避免分支。物理根源：分支预测失败代价高，无分支代码在流水线中更稳定。前四代没有这个问题——流水线浅，分支惩罚小。</p>
+<p><strong>Zawrs（Wait‑on‑Reservation‑Set）</strong>：让 hart 在自旋等待时进入低功耗状态，而不是忙等。物理根源：多核自旋锁的功耗浪费。前四代没有多核，没有自旋锁。</p>
+<h3 id="二十、自定义扩展接口：CV‑X‑IF">二十、自定义扩展接口：CV‑X‑IF</h3>
+<p><strong>前四代的&quot;自定义&quot;是改指令集</strong>。SOAR 为 Smalltalk 加标签算术，SPUR 为 Lisp 加 40 位标记。<strong>每加一个功能就改一次基础指令集</strong>，导致 ISA 碎片化。</p>
+<p><strong>CV‑X‑IF 解决的问题</strong>：提供一个<strong>标准化的接口</strong>，让处理器可以挂载自定义协处理器和 ISA 扩展，而不需要修改核心的指令集编码。</p>
+<p><strong>接口机制</strong>：CV‑X‑IF 定义了<strong>独立通道</strong>用于加速器无关的指令卸载和结果写回。核心把无法识别的指令发送到协处理器接口，协处理器执行后把结果写回。核心本身<strong>不需要知道协处理器的存在</strong>。</p>
+<p><strong>物理根源</strong>：SOAR 和 SPUR 的时代，“自定义&quot;意味着<strong>重新流片</strong>。现代 SoC 中，AI 加速器、加密引擎、DSP 等协处理器需要<strong>在同一个核心上复用</strong>。CV‑X‑IF 把&quot;扩展&quot;从&quot;改 ISA&quot;变成了&quot;挂接口”，这类接口反映了现代 SoC 对可组合加速器的需求，与早期原型的设计目标和集成方式不同。</p>
+<h2 id="第四部分：微架构单元的物理根源">第四部分：微架构单元的物理根源</h2>
+<h3 id="结论前置">结论前置</h3>
+<p>前四代 RISC 原型中，<strong>只有&quot;取指&quot;和&quot;执行&quot;两个功能块是明确存在的</strong>。译码、分支预测、寄存器重命名、发射队列、重排序缓冲、提交单元——这些现代 RISC‑V 处理器的核心单元，<strong>在前四代中全部不存在，或在流水线中仅作为&quot;阶段&quot;存在而非独立&quot;单元&quot;</strong>。</p>
+<p><strong>为什么</strong>？不是设计者&quot;没想到&quot;，而是<strong>当时的芯片面积、工艺频率和流水线深度，根本不允许这些单元存在</strong>。每一个现代单元的诞生，都对应着一个前四代<strong>无法承受的代价</strong>或<strong>物理上不可能实现的约束</strong>。</p>
+<h4 id="指令译码单元：为什么前四代不需要-独立译码模块">指令译码单元：为什么前四代不需要&quot;独立译码模块&quot;</h4>
+<p><strong>前四代的做法</strong>：RISC‑I/II 的指令格式极为规整，指令数仅 31‑39 条。译码逻辑可以用<strong>纯组合逻辑</strong>直接产生控制信号——从 32 位指令中提取 <code>opcode</code>、<code>rd</code>、<code>rs1</code>、<code>rs2</code>、<code>imm</code> 字段，是一组固定的位线连接。不需要独立的&quot;译码单元&quot;模块。</p>
+<p><strong>现代实现中的译码</strong>：支持 C 扩展的实现需要识别 16 位与至少 32 位指令编码，并解码基础 ISA 和已实现的扩展。具体工作可能分布在取指、预译码、译码和微操作生成等阶段；不能据此断言所有现代 RISC‑V 都必须有独立的“译码模块”。</p>
+<p><strong>物理根源</strong>：RISC‑I 的指令全部 32 位定长，SOAR 的指令全部 32 位定长，SPUR 的指令全部 32 位定长。<strong>定长指令不需要指令长度判定逻辑</strong>。支持 C 扩展时，前端需要识别指令长度并处理不同长度的编码；但这项工作如何划分为硬件模块属于微架构选择，并非 ISA 强制要求采用独立译码模块。</p>
+<h4 id="分支预测器：为什么-RISC‑I-选择-延迟槽-而不是-预测">分支预测器：为什么 RISC‑I 选择&quot;延迟槽&quot;而不是&quot;预测&quot;</h4>
+<p><strong>前四代的物理约束</strong>：RISC‑I 的晶体管数量处于数万级（不同文献对目标值与最终实现统计可能不同）。动态分支预测器需要额外状态存储与控制逻辑；在当时的工艺和芯片面积预算下，这类结构的成本可能较高。但若无原始设计资料，不宜断言预测器一定超出预算或是选择延迟槽的唯一原因。</p>
+<p><strong>RISC‑I 的解法</strong>：延迟槽。<strong>用编译器的&quot;填槽&quot;责任，替代硬件的&quot;预测&quot;责任</strong>。这不是&quot;不想做预测&quot;，是&quot;预测器的存储成本在当时的芯片面积预算下不可接受&quot;。延迟槽把控制冒险的代价从&quot;硬件复杂度&quot;转移到了&quot;编译器复杂度&quot;——编译器只需要在分支后面找一条有用的指令，找不到就填 NOP。</p>
+<p><strong>为什么现代 RISC‑V 能做预测器</strong>：工艺从 1981 年的 NMOS 进步到现代 CMOS，晶体管数量从 4 万增加到数十亿。BHT 的存储阵列（几千位到几万位）在现代芯片面积中占比极小。如果保留具体预测准确率数据，应补充对应论文、测试配置与指标定义；否则建议删除这类难以脱离实验条件比较的数字。<strong>物理约束消失了，预测器才有了存在的空间</strong>。</p>
+<p><strong>为什么 RISC‑V 放弃延迟槽</strong>：延迟槽把微架构细节暴露给了编译器。编译器必须知道&quot;分支后有一条指令会被执行&quot;这个行为。当流水线深度从 3 级变成 5 级、7 级、甚至更深时，延迟槽的&quot;槽数&quot;需要随之变化，但<strong>指令集不能随微架构变化</strong>。RISC‑V 选择让 ISA 保持&quot;分支就是跳转&quot;的干净语义，把延迟槽的复杂度推给微架构的预测器。</p>
+<h4 id="寄存器重命名：为什么前四代的-寄存器窗口-不是重命名">寄存器重命名：为什么前四代的&quot;寄存器窗口&quot;不是重命名</h4>
+<p><strong>前四代的机制</strong>：RISC‑I/II/SOAR/SPUR 使用<strong>寄存器窗口</strong>。窗口机制的本质是：<strong>把&quot;过程调用时的寄存器保存/恢复&quot;从软件（编译器生成 save/restore 指令）转移到了硬件（CALL/RET 切换窗口指针）</strong>。</p>
+<p><strong>为什么这不是寄存器重命名</strong>：重命名的核心是 <strong>&quot;架构寄存器 ID → 物理寄存器 ID&quot;的映射表</strong>。窗口机制没有这个映射表。窗口切换改变的是&quot;基地址&quot;，软件可见的寄存器编号（r0‑r31）始终映射到<strong>同一组物理寄存器</strong>，只是这组物理寄存器的&quot;位置&quot;在窗口文件中移动了。<strong>没有&quot;同一个架构寄存器在不同时刻映射到不同物理寄存器&quot;的概念</strong>。</p>
+<p><strong>为何早期原型没有采用现代乱序处理器中的寄存器重命名</strong>：传统重命名通常需要物理寄存器、映射状态及恢复机制，增加硬件成本。早期原型的设计目标和工艺预算不同；重命名尤其适用于乱序执行，用于消除 WAR/WAW 等名字依赖。不宜把“顺序处理器绝对不需要重命名”写成普遍规律。</p>
+<p><strong>物理根源</strong>：寄存器重命名常用于乱序执行，以消除 WAR/WAW 等名字依赖；但重命名并非在逻辑上只能用于乱序处理器，也不能简单说只有乱序执行才可能受益。这些早期原型并不具备现代高性能乱序执行核心的完整重命名机制。</p>
+<h4 id="发射队列：为什么前四代-不需要排队">发射队列：为什么前四代&quot;不需要排队&quot;</h4>
+<p><strong>前四代的发射方式</strong>：RISC‑II 的两段流水线、SOAR 的三级流水线、SPUR 的四级流水线，<strong>指令严格按照程序顺序进入执行阶段</strong>。流水线寄存器本身就是&quot;队列&quot;——当前指令在执行阶段，下一条指令在译码阶段，再下一条在取指阶段。<strong>发射是&quot;时刻&quot;而不是&quot;过程&quot;</strong>：每个周期，译码阶段的指令无条件进入执行阶段。</p>
+<p><strong>为什么现代 RISC‑V 需要发射队列</strong>：当流水线支持<strong>乱序执行</strong>时，指令不能在译码后立即发射，因为它的操作数可能还没准备好（前面的指令还在执行中），或者对应的功能单元正忙。发射队列的作用是<strong>暂存已经译码但还不能发射的指令，并在操作数就绪时选择一条发射</strong>。香山昆明湖的 IQ 支持 4 类不同的发射队列，因为不同类型的指令（标量整型、向量浮点、访存）对发射条件的要求不同。</p>
+<p><strong>物理根源</strong>：顺序发射不需要队列，因为&quot;发射条件&quot;永远满足——下一条指令就是程序顺序中的下一条。<strong>只有乱序发射才需要&quot;从多条就绪指令中选择一条&quot;的逻辑</strong>，这才需要队列来存储候选指令。</p>
+<h4 id="重排序缓冲（ROB）：为什么前四代-不需要排序">重排序缓冲（ROB）：为什么前四代&quot;不需要排序&quot;</h4>
+<p><strong>前四代的提交方式</strong>：这些原型采用相对简单的顺序流水线组织；具体异常与状态提交行为仍应以各自设计文献为准。指令在流水线中按顺序前进，写回寄存器文件也是顺序的。异常在流水线的特定阶段触发，冲刷该阶段之后的所有指令即可。顺序提交有助于实现精确异常，但是否精确仍取决于流水线各阶段对架构状态更新的控制；不能仅凭“顺序提交”就认定所有实现天然具备精确异常。</p>
+<p><strong>为什么现代 RISC‑V 需要 ROB</strong>：乱序执行中，指令可能<strong>乱序完成</strong>（后发射的指令先算完）。但异常必须精确：如果一条年轻指令先完成并写入了寄存器，然后一条老指令触发异常，年轻指令的写入必须被&quot;撤销&quot;。ROB 的作用是<strong>按程序顺序记录每条指令的状态，只有最老的指令可以提交，提交时才真正修改架构状态</strong>。</p>
+<p><strong>SPUR 的&quot;哑流水线级&quot;不是 ROB</strong>：SPUR 为了解决 LOAD 指令需要两个周期写寄存器文件的问题，插入了一个额外的流水线级，让所有指令统一延长一个周期。这<strong>不是重排序</strong>——指令仍按顺序前进，只是整体多了一级。<strong>没有&quot;年轻指令先完成、老指令后完成&quot;的乱序，就不需要重排序</strong>。</p>
+<p><strong>物理根源</strong>：ROB 是<strong>乱序执行的代价</strong>。顺序执行不需要它。</p>
+<h4 id="加载-存储单元（LSU）：为什么前四代-没有独立模块">加载/存储单元（LSU）：为什么前四代&quot;没有独立模块&quot;</h4>
+<p><strong>前四代的做法</strong>：RISC‑I/II 的 Load/Store 指令的<strong>地址计算在 ALU 中完成</strong>，访存操作通过数据总线与外部存储器交互。SPUR 有 7 条专用 Load 指令和 3 条专用 Store 指令用于缓存控制，但它们通过 MMU/CC 接口通信，<strong>仍然是执行单元数据通路的一部分</strong>。</p>
+<p><strong>为什么现代 RISC‑V 需要独立 LSU</strong>：当发射宽度从 1 增加到 4、6、甚至更高时，<strong>每个周期可能有多个访存请求</strong>。地址计算、TLB 查找、缓存访问、非对齐处理、存储缓冲管理，这些操作如果全部塞在 ALU 数据通路中，<strong>ALU 会被访存操作&quot;堵塞&quot;</strong>，无法同时处理算术指令。现代 LSU 拆分为 <strong>load 单元、store 地址单元、store 数据单元</strong>，每个都连接到数据 TLB。</p>
+<p><strong>物理根源</strong>：单发射顺序流水线中，访存是&quot;一个操作&quot;，不需要独立模块。多发射乱序流水线中，访存需要<strong>与算术操作并行处理</strong>，需要独立的数据通路和缓冲管理。</p>
+<h4 id="浮点单元（FPU）：SPUR-的-协处理器接口-是硬件，不是微架构单元">浮点单元（FPU）：SPUR 的&quot;协处理器接口&quot;是硬件，不是微架构单元</h4>
+<p><strong>前四代的物理约束</strong>：RISC‑I 只有 44,500 个晶体管。一个 IEEE 754 兼容的浮点加法器，单是尾数对齐和规格化逻辑就远超这个预算。RISC‑II 的 40,760 个晶体管同样容不下。SOAR 绑定 Smalltalk，不做浮点。</p>
+<p><strong>SPUR 的解法——但这是硬件，不是 ISA 单元</strong>。SPUR CPU 包含一个<strong>到协处理器的并行接口</strong>，支持并发的 CPU 和 FPU 操作。CPU 通过 <strong>22 根引脚</strong>把指令缓存中发出的指令的 opcode 和寄存器标识符传给 FPU。CPU 向 FPU 发 2 个控制信号，FPU 向 CPU 回送 3 位状态。</p>
+<p><strong>关键机制</strong>：当 FPU 禁用时，CPU 把所有 FPU 指令当作非法指令。当 FPU 启用时，<strong>除 FPU load/store 外的所有 FPU 指令被 CPU 当作 NO_OP</strong>。对于 FPU load/store，<strong>CPU 计算有效内存地址，FPU 直接从外部缓存读写数据</strong>。这意味着 FPU 在前四代中是<strong>协处理器</strong>，不是流水线内的功能单元。</p>
+<p><strong>为什么 RISC‑V 把 FPU 做成 ISA 扩展而不是协处理器</strong>：SPUR 的协处理器模型要求 CPU 和 FPU 紧密耦合（22 根引脚传指令），<strong>增加协处理器可能需要额外的专用接口与控制逻辑</strong>。RISC‑V 选择把浮点定义为<strong>与整数指令同一指令流中的指令</strong>（F/D 扩展），FPU 只是&quot;执行浮点指令的流水线功能单元&quot;，不需要协处理器接口。代价是 FPU 必须与 CPU 共享寄存器堆访问和流水线控制，但<strong>换来了指令编码空间的统一和编译器模型的简化</strong>。</p>
+<p><strong>NaN Boxing 的物理根源</strong>：D 扩展把 32 个浮点寄存器从 32 位扩展到 64 位，FLEN 可以是 32、64 或 128。当窄值（如 32 位 F 值）存入宽寄存器（64 位 D 寄存器）时，<strong>高 32 位必须全写 1</strong>，形成 NaN Boxing。物理原因是：软件（如上下文切换、虚拟机迁移、调试器）<strong>不知道当前浮点寄存器中数据的具体精度</strong>，但必须能够保存和恢复。没有 NaN Boxing，用 64 位 load/store 传输一个 32 位 F 值时，高 32 位是未定义的，恢复时可能破坏数据。</p>
+<h2 id="总结：前四代与现代-RISC‑V-机制的对照">总结：前四代与现代 RISC‑V 机制的对照</h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>单元</th>
+<th>前四代状态</th>
+<th>诞生的物理根源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基础 ISA</td>
+<td>RV32I 编码留白</td>
+<td>前三代编码空间不足</td>
+<td>需要持续扩展的编码空间</td>
+</tr>
+<tr>
+<td>压缩</td>
+<td>C 扩展</td>
+<td>Thumb/MIPS16 是独立 ISA</td>
+<td>全部指令做1:1重编码，避免双ISA</td>
+</tr>
+<tr>
+<td>乘除</td>
+<td>M/Zmmul</td>
+<td>无</td>
+<td>低端实现不需要乘除法器</td>
+</tr>
+<tr>
+<td>原子</td>
+<td>A 扩展 LR/SC</td>
+<td>无</td>
+<td>多核同步需要硬件原子操作</td>
+</tr>
+<tr>
+<td>浮点</td>
+<td>F/D/Q + NaN Boxing</td>
+<td>SPUR 协处理器</td>
+<td>多精度共存需要软件可传输</td>
+</tr>
+<tr>
+<td>向量</td>
+<td>V + vsetvli</td>
+<td>SOAR 有思想但绑定语言</td>
+<td>需要硬件自适应 VLEN</td>
+</tr>
+<tr>
+<td>MMU</td>
+<td>特权分层</td>
+<td>SPUR 嵌入基础 ISA</td>
+<td>低端实现不应背负 MMU</td>
+</tr>
+<tr>
+<td>虚拟化</td>
+<td>H 扩展</td>
+<td>无</td>
+<td>两阶段翻译避免每次 trap</td>
+</tr>
+<tr>
+<td>中断</td>
+<td>CLINT/PLIC/AIA</td>
+<td>无标准控制器</td>
+<td>MSI 虚拟化需要推模式</td>
+</tr>
+<tr>
+<td>内存模型</td>
+<td>RVWMO</td>
+<td>无公开模型</td>
+<td>多核编译器需要形式化契约</td>
+</tr>
+<tr>
+<td>PMP</td>
+<td>物理内存保护</td>
+<td>无</td>
+<td>低成本嵌入式需要物理隔离</td>
+</tr>
+<tr>
+<td>IOMMU</td>
+<td>设备侧翻译</td>
+<td>无 DMA 设备</td>
+<td>PCIe 直通虚拟机</td>
+</tr>
+<tr>
+<td>缓存管理</td>
+<td>Svpbmt/CMO</td>
+<td>缓存对软件透明</td>
+<td>DMA 一致性需要软件干预</td>
+</tr>
+<tr>
+<td>调试追踪</td>
+<td>Debug/Trace</td>
+<td>无标准接口</td>
+<td>SoC 规模需要标准化调试</td>
+</tr>
+<tr>
+<td>RAS/QoS</td>
+<td>RERI/CBQRI</td>
+<td>无</td>
+<td>服务器多租户需要错误报告和隔离</td>
+</tr>
+<tr>
+<td>平台接口</td>
+<td>SBI/BRS/FFH</td>
+<td>无固件‑OS 分层</td>
+<td>标准化启动和运行时服务</td>
+</tr>
+<tr>
+<td>安全</td>
+<td>Security Model/TEE</td>
+<td>无攻击者模型</td>
+<td>云/移动/金融需要信任边界</td>
+</tr>
+<tr>
+<td>性能监控</td>
+<td>HPM</td>
+<td>无</td>
+<td>芯片复杂度超过直觉理解</td>
+</tr>
+<tr>
+<td>扩展接口</td>
+<td>CV‑X‑IF</td>
+<td>改 ISA 加功能</td>
+<td>异构计算需要挂接口</td>
+</tr>
+<tr>
+<td>译码单元</td>
+<td>独立译码</td>
+<td>组合逻辑</td>
+<td>C 扩展变长指令需要长度判定</td>
+</tr>
+<tr>
+<td>分支预测</td>
+<td>预测器</td>
+<td>延迟槽</td>
+<td>晶体管预算增加，延迟槽无法随流水线加深</td>
+</tr>
+<tr>
+<td>寄存器重命名</td>
+<td>映射表</td>
+<td>寄存器窗口（分段）</td>
+<td>乱序执行需要消除假依赖</td>
+</tr>
+<tr>
+<td>发射队列</td>
+<td>多类 IQ</td>
+<td>流水线寄存器</td>
+<td>乱序发射需要从就绪指令中选择</td>
+</tr>
+<tr>
+<td>ROB</td>
+<td>核心模块</td>
+<td>无</td>
+<td>乱序完成需要按序提交保证精确异常</td>
+</tr>
+<tr>
+<td>LSU</td>
+<td>独立流水线</td>
+<td>ALU 附属功能</td>
+<td>多发射需要访存与算术并行</td>
+</tr>
+<tr>
+<td>FPU</td>
+<td>ISA 扩展</td>
+<td>SPUR 协处理器</td>
+<td>协处理器接口难以大规模扩展</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>参考链接：</p>
+<ul>
+<li><a target="_blank" rel="noopener external nofollow noreferrer" href="https://docs.riscv.org/reference/isa/unpriv/c-st-ext.html">https://docs.riscv.org/reference/isa/unpriv/c-st-ext.html</a></li>
+<li><a target="_blank" rel="noopener external nofollow noreferrer" href="https://docs.riscv.org/reference/isa/unpriv/a-st-ext.html">https://docs.riscv.org/reference/isa/unpriv/a-st-ext.html</a></li>
+<li><a target="_blank" rel="noopener external nofollow noreferrer" href="https://docs.riscv.org/reference/rva23/rva23-profiles.html">https://docs.riscv.org/reference/rva23/rva23-profiles.html</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://9606960.xyz">Cloudlet</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://9606960.xyz/2026/10/16/RISC-V-%E6%BA%AF%E6%BA%90%EF%BC%9A%E4%BB%8E%E4%BC%AF%E5%85%8B%E5%88%A9%E5%89%8D%E5%9B%9B%E4%BB%A3%E5%88%B0%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86/">https://9606960.xyz/2026/10/16/RISC-V-%E6%BA%AF%E6%BA%90%EF%BC%9A%E4%BB%8E%E4%BC%AF%E5%85%8B%E5%88%A9%E5%89%8D%E5%9B%9B%E4%BB%A3%E5%88%B0%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://9606960.xyz" target="_blank">Cloudlet</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/RISC%E2%80%91V/">RISC‑V</a></div><div class="post-share"><div class="social-share" data-image="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/16/C910-C920%EF%BC%9ARISC-V-%E8%A7%84%E8%8C%83%E7%BA%A6%E6%9D%9F%E4%B8%8B%E7%9A%84%E5%BE%AE%E6%9E%B6%E6%9E%84%E5%AE%9E%E7%8E%B0/" title="C910/C920：RISC-V 规范约束下的微架构实现"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">C910/C920：RISC-V 规范约束下的微架构实现</div></div><div class="info-2"><div class="info-item-1">结论前置 C910 与 C920 与伯克利前四代 RISC 原型没有继承关系。 C910 是玄铁基于 RISC-V 规范实现的商业处理器，其微架构（12 级乱序、3 发射、双 128 位向量）的技术源头是 1990s–2000s 商用乱序处理器传统（Intel P6、MIPS R10000、Alpha 21264），而非 SPUR 的“哑流水线级”或“寄存器窗口”。 C910 对 RISC-V 的更改分为三类：RVV 版本选择（0.7.1 而非 1.0，因流片窗口早于标准定稿）、约 100 条 vendor 自定义指令（使用 RISC-V 预留的 custom 编码空间）、DSA 扩展接口（异构耦合方案的一次工程验证，为后续标准化接口提供了实践参考）。这些更改不是对 RISC-V 规范的修改，而是在规范预留空间中的填充。C920v2 的核心更改是从 RVV 0.7.1 转向 RVV 1.0，这是“标准成熟后对齐”的选择。 但“更改”只是 C910/C920 的一小部分。 C910/C920 的微架构由三层构成：契约层（RISC-V 规范强制规定的行为）、实现层（RISC-V 规范...</div></div></div></a><a class="pagination-related" href="/2026/09/23/NIC-400-RTL%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90/" title="NIC-400 RTL功能分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">NIC-400 RTL功能分析</div></div><div class="info-2"><div class="info-item-1"> 本文由AI生成，不具备参考价值。  第一部分：NIC‑400 主要功能详细描述 NIC‑400 是 ARM 面向 AMBA 4 协议族设计的第四代可配置互连组件。其配置范围从单一桥接组件（如 AHB 到 AXI 协议转换桥）到包含多达 128 个主接口和 64 个从接口的复杂网络，均可覆盖。注意：NIC‑400 本身不实现电源域、电压域跨域桥接功能。NIC‑400 的配置由一个或多个交换机（switch）、多个 AMBA Slave Interface Block（ASIB）和多个 AMBA Master Interface Block（AMIB）组成。 1. 多协议互连与转换 AXI 主/从：NIC‑400 支持 AXI3 和 AXI4 协议，所有 AXI4 与 AXI3 之间的桥接由硬件无缝处理。AXI 接口的数据宽度可配置为 32、64、128 或 256 位。512 位和 1024 位数据宽度不被支持。 接口事务能力：AXI3/AXI4 ASIB 从接口可接收 1~32 个写事务、1~127 个读事务；若 ASIB 内部配置 full register slice，接收...</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Cloudlet</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">29</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">30</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/cloudlet2026"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="mailto:2380797942@qq.com.com" rel="external nofollow noreferrer" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E8%A8%80%EF%BC%9A%E4%B8%80%E9%83%A8%E5%81%9A%E5%87%8F%E6%B3%95%E7%9A%84%E5%8E%86%E5%8F%B2"><span class="toc-number">1.</span> <span class="toc-text">引言：一部做减法的历史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E6%96%87%E5%B0%86%E6%8C%89%E4%B8%A4%E6%9D%A1%E4%B8%BB%E7%BA%BF%E7%BB%84%E7%BB%87%EF%BC%9A%E5%89%8D%E5%9B%9B%E4%BB%A3%E7%9A%84%E4%BB%A3%E9%99%85%E6%BC%94%E8%BF%9B%EF%BC%88%E6%AF%8F%E4%B8%80%E4%BB%A3%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%E3%80%81%E7%95%99%E4%B8%8B%E4%BA%86%E4%BB%80%E4%B9%88%E9%81%97%E4%BA%A7%EF%BC%89%EF%BC%8C%E4%BB%A5%E5%8F%8ARISC%E2%80%91V-%E5%90%84%E5%8D%95%E5%85%83%E4%B8%8E%E6%9C%BA%E5%88%B6%E7%9A%84%E6%BA%AF%E6%BA%90%EF%BC%88%E6%AF%8F%E4%B8%80%E4%B8%AA%E5%8D%95%E5%85%83%E5%AF%B9%E5%BA%94%E5%89%8D%E5%9B%9B%E4%BB%A3%E7%9A%84%E5%93%AA%E4%B8%AA%E5%A4%B1%E8%B4%A5%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E8%83%BD%E8%A7%A3%E5%86%B3%EF%BC%89%E3%80%82"><span class="toc-number">2.</span> <span class="toc-text">本文将按两条主线组织：前四代的代际演进（每一代解决了什么问题、留下了什么遗产），以及RISC‑V 各单元与机制的溯源（每一个单元对应前四代的哪个失败、为什么能解决）。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86%EF%BC%9A%E4%BC%AF%E5%85%8B%E5%88%A9%E5%89%8D%E5%9B%9B%E4%BB%A3-RISC-%E5%8E%9F%E5%9E%8B"><span class="toc-number">3.</span> <span class="toc-text">第一部分：伯克利前四代 RISC 原型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E4%BB%A3%EF%BC%9ARISC%E2%80%91I%EF%BC%881981%EF%BC%89%E2%80%94%E2%80%94%E8%AF%81%E6%98%8E%E7%B2%BE%E7%AE%80%E5%8F%AF%E8%A1%8C%EF%BC%8C%E4%BD%86%E8%B7%91%E4%B8%8D%E4%BA%86%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.1.</span> <span class="toc-text">第一代：RISC‑I（1981）——证明精简可行，但跑不了操作系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E4%BB%A3%EF%BC%9ARISC%E2%80%91II%EF%BC%881983%EF%BC%89%E2%80%94%E2%80%94%E8%A1%A5%E9%BD%90%E7%AA%97%E5%8F%A3%E6%95%B0%E9%87%8F%EF%BC%8C%E8%B7%91%E9%80%9A-UNIX"><span class="toc-number">3.2.</span> <span class="toc-text">第二代：RISC‑II（1983）——补齐窗口数量，跑通 UNIX</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E4%BB%A3%EF%BC%9ASOAR%EF%BC%881984%EF%BC%89%E2%80%94%E2%80%94%E4%B8%BA-Smalltalk-%E4%BC%98%E5%8C%96%EF%BC%8C%E4%BD%86%E7%BB%91%E5%AE%9A%E5%BE%97%E5%A4%AA%E6%B7%B1"><span class="toc-number">3.3.</span> <span class="toc-text">第三代：SOAR（1984）——为 Smalltalk 优化，但绑定得太深</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E4%BB%A3%EF%BC%9ASPUR%EF%BC%881986%EF%BC%89%E2%80%94%E2%80%94%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%9C%89%E4%BA%86-MMU-%E5%92%8C%E5%A4%9A%E5%A4%84%E7%90%86%E5%99%A8%E6%94%AF%E6%8C%81"><span class="toc-number">3.4.</span> <span class="toc-text">第四代：SPUR（1986）——第一次有了 MMU 和多处理器支持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E5%9B%9B%E4%BB%A3%E7%9A%84-%E9%81%97%E4%BA%A7-%E4%B8%8E-RISC%E2%80%91V-%E7%9A%84-%E5%8F%8D%E5%8F%9B"><span class="toc-number">3.5.</span> <span class="toc-text">前四代的&quot;遗产&quot;与 RISC‑V 的&quot;反叛&quot;</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86%EF%BC%9ARISC%E2%80%91V-%E5%9F%BA%E7%A1%80-ISA-%E4%B8%8E%E6%89%A9%E5%B1%95%E7%9A%84%E6%BA%AF%E6%BA%90"><span class="toc-number">4.</span> <span class="toc-text">第二部分：RISC‑V 基础 ISA 与扩展的溯源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%9F%BA%E5%BA%A7%EF%BC%9ARV32I-%E5%9F%BA%E7%A1%80%E6%95%B4%E6%95%B0%E6%8C%87%E4%BB%A4%E9%9B%86"><span class="toc-number">4.1.</span> <span class="toc-text">一、基座：RV32I 基础整数指令集</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8E%8B%E7%BC%A9%E6%8C%87%E4%BB%A4%EF%BC%9AC-%E6%89%A9%E5%B1%95"><span class="toc-number">4.2.</span> <span class="toc-text">二、压缩指令：C 扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%B9%98%E9%99%A4%E6%B3%95%EF%BC%9AM-%E6%89%A9%E5%B1%95"><span class="toc-number">4.3.</span> <span class="toc-text">三、乘除法：M 扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%EF%BC%9AA-%E6%89%A9%E5%B1%95"><span class="toc-number">4.4.</span> <span class="toc-text">四、原子操作：A 扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%B5%AE%E7%82%B9%EF%BC%9AF-D-Q-%E6%89%A9%E5%B1%95%E4%B8%8E-NaN-Boxing"><span class="toc-number">4.5.</span> <span class="toc-text">五、浮点：F &#x2F; D &#x2F; Q 扩展与 NaN Boxing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%90%91%E9%87%8F%EF%BC%9AV-%E6%89%A9%E5%B1%95%E4%B8%8E-vsetvli"><span class="toc-number">4.6.</span> <span class="toc-text">六、向量：V 扩展与 vsetvli</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A5%E6%BA%90%EF%BC%9ASOAR-%E6%97%B6%E4%BB%A3%E5%B0%B1%E6%9C%89%E5%90%91%E9%87%8F%E5%8C%96%E6%80%9D%E6%83%B3%EF%BC%8C%E4%BD%86%E7%BB%91%E5%AE%9A%E5%9C%A8%E7%89%B9%E5%AE%9A%E8%AF%AD%E8%A8%80%E8%BF%90%E8%A1%8C%E6%97%B6%E4%B8%AD%E3%80%82V-%E6%89%A9%E5%B1%95%E6%8A%8A%E5%AE%83%E6%8A%BD%E8%B1%A1%E4%B8%BA%E4%B8%8E%E8%AF%AD%E8%A8%80%E6%97%A0%E5%85%B3%E7%9A%84%E9%80%9A%E7%94%A8%E6%9C%BA%E5%88%B6%EF%BC%8Cvsetvli-%E7%9A%84-%E7%A1%AC%E4%BB%B6%E8%87%AA%E9%80%82%E5%BA%94-%E8%AE%BE%E8%AE%A1%E6%98%AF-RISC%E2%80%91V-%E7%8B%AC%E6%9C%89%E7%9A%84%E3%80%82"><span class="toc-number">5.</span> <span class="toc-text">来源：SOAR 时代就有向量化思想，但绑定在特定语言运行时中。V 扩展把它抽象为与语言无关的通用机制，vsetvli 的&quot;硬件自适应&quot;设计是 RISC‑V 独有的。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86%EF%BC%88%E7%BB%AD%EF%BC%89%EF%BC%9A%E7%B3%BB%E7%BB%9F%E7%BA%A7%E6%9E%B6%E6%9E%84%E4%B8%8E%E7%89%B9%E6%9D%83%E8%A7%84%E8%8C%83"><span class="toc-number">6.</span> <span class="toc-text">第二部分（续）：系统级架构与特权规范</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%83%E3%80%81MMU-%E4%B8%8E%E7%89%B9%E6%9D%83%E6%9E%B6%E6%9E%84"><span class="toc-number">6.1.</span> <span class="toc-text">七、MMU 与特权架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AB%E3%80%81Hypervisor%EF%BC%9AH-%E6%89%A9%E5%B1%95%E4%B8%8E%E4%B8%A4%E9%98%B6%E6%AE%B5%E7%BF%BB%E8%AF%91"><span class="toc-number">6.2.</span> <span class="toc-text">八、Hypervisor：H 扩展与两阶段翻译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E4%B8%AD%E6%96%AD%E6%8E%A7%E5%88%B6%E5%99%A8%EF%BC%9ACLINT-%E2%86%92-PLIC-%E2%86%92-AIA-%E7%9A%84%E4%B8%89%E4%BB%A3%E6%BC%94%E8%BF%9B"><span class="toc-number">6.3.</span> <span class="toc-text">九、中断控制器：CLINT → PLIC → AIA 的三代演进</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E4%BB%A3%EF%BC%9ACLINT%EF%BC%88Core-Local-Interrupt-Controller%EF%BC%89"><span class="toc-number">6.3.1.</span> <span class="toc-text">第一代：CLINT（Core Local Interrupt Controller）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E4%BB%A3%EF%BC%9APLIC%EF%BC%88Platform%E2%80%91Level-Interrupt-Controller%EF%BC%89"><span class="toc-number">6.3.2.</span> <span class="toc-text">第二代：PLIC（Platform‑Level Interrupt Controller）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E4%BB%A3%EF%BC%9AAIA%EF%BC%88Advanced-Interrupt-Architecture%EF%BC%89"><span class="toc-number">6.3.3.</span> <span class="toc-text">第三代：AIA（Advanced Interrupt Architecture）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%EF%BC%9ARVWMO"><span class="toc-number">6.4.</span> <span class="toc-text">十、内存模型：RVWMO</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E4%BF%9D%E6%8A%A4%EF%BC%88PMP%EF%BC%89%EF%BC%9AMMU-%E7%9A%84-%E6%9C%80%E5%B0%8F%E6%9B%BF%E4%BB%A3%E5%93%81"><span class="toc-number">6.5.</span> <span class="toc-text">十一、物理内存保护（PMP）：MMU 的&quot;最小替代品&quot;</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81IOMMU%EF%BC%9A%E8%AE%BE%E5%A4%87%E4%BE%A7%E7%9A%84%E5%9C%B0%E5%9D%80%E7%BF%BB%E8%AF%91"><span class="toc-number">6.6.</span> <span class="toc-text">十二、IOMMU：设备侧的地址翻译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E7%BC%93%E5%AD%98%E4%B8%8E%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%EF%BC%9ASvpbmt%E3%80%81Svnapot%E3%80%81CMO%E3%80%81Zicbom"><span class="toc-number">6.7.</span> <span class="toc-text">十三、缓存与内存管理机制：Svpbmt、Svnapot、CMO、Zicbom</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E9%83%A8%E5%88%86%EF%BC%9A%E7%B3%BB%E7%BB%9F%E7%BA%A7%E8%A7%84%E8%8C%83%E4%B8%8E%E5%B9%B3%E5%8F%B0%E6%8E%A5%E5%8F%A3"><span class="toc-number">7.</span> <span class="toc-text">第三部分：系统级规范与平台接口</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E8%B0%83%E8%AF%95%E4%B8%8E%E8%BF%BD%E8%B8%AA%EF%BC%88Debug-Trace%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">十四、调试与追踪（Debug &amp; Trace）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E7%B3%BB%E7%BB%9F%E7%BA%A7-RAS-%E4%B8%8E-QoS%EF%BC%9ARERI%E3%80%81CBQRI"><span class="toc-number">7.2.</span> <span class="toc-text">十五、系统级 RAS 与 QoS：RERI、CBQRI</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E5%85%AD%E3%80%81%E5%B9%B3%E5%8F%B0%E8%BD%AF%E4%BB%B6%E6%8E%A5%E5%8F%A3%EF%BC%9ASBI%E3%80%81BRS%E3%80%81FFH%E3%80%81Semihosting"><span class="toc-number">7.3.</span> <span class="toc-text">十六、平台软件接口：SBI、BRS、FFH、Semihosting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E4%B8%83%E3%80%81%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9E%8B%E4%B8%8E-TEE"><span class="toc-number">7.4.</span> <span class="toc-text">十七、安全模型与 TEE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E5%85%AB%E3%80%81%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%EF%BC%88HPM%EF%BC%89"><span class="toc-number">7.5.</span> <span class="toc-text">十八、性能监控（HPM）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%81%E4%B9%9D%E3%80%81%E6%9E%B6%E6%9E%84%E7%BA%A7%E6%89%A9%E5%B1%95%EF%BC%9ACHERI%E3%80%81Zacas%E3%80%81Zicond%E3%80%81Zawrs"><span class="toc-number">7.6.</span> <span class="toc-text">十九、架构级扩展：CHERI、Zacas、Zicond、Zawrs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E5%8D%81%E3%80%81%E8%87%AA%E5%AE%9A%E4%B9%89%E6%89%A9%E5%B1%95%E6%8E%A5%E5%8F%A3%EF%BC%9ACV%E2%80%91X%E2%80%91IF"><span class="toc-number">7.7.</span> <span class="toc-text">二十、自定义扩展接口：CV‑X‑IF</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E9%83%A8%E5%88%86%EF%BC%9A%E5%BE%AE%E6%9E%B6%E6%9E%84%E5%8D%95%E5%85%83%E7%9A%84%E7%89%A9%E7%90%86%E6%A0%B9%E6%BA%90"><span class="toc-number">8.</span> <span class="toc-text">第四部分：微架构单元的物理根源</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA%E5%89%8D%E7%BD%AE"><span class="toc-number">8.1.</span> <span class="toc-text">结论前置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%87%E4%BB%A4%E8%AF%91%E7%A0%81%E5%8D%95%E5%85%83%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%89%8D%E5%9B%9B%E4%BB%A3%E4%B8%8D%E9%9C%80%E8%A6%81-%E7%8B%AC%E7%AB%8B%E8%AF%91%E7%A0%81%E6%A8%A1%E5%9D%97"><span class="toc-number">8.1.1.</span> <span class="toc-text">指令译码单元：为什么前四代不需要&quot;独立译码模块&quot;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E6%94%AF%E9%A2%84%E6%B5%8B%E5%99%A8%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88-RISC%E2%80%91I-%E9%80%89%E6%8B%A9-%E5%BB%B6%E8%BF%9F%E6%A7%BD-%E8%80%8C%E4%B8%8D%E6%98%AF-%E9%A2%84%E6%B5%8B"><span class="toc-number">8.1.2.</span> <span class="toc-text">分支预测器：为什么 RISC‑I 选择&quot;延迟槽&quot;而不是&quot;预测&quot;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8%E9%87%8D%E5%91%BD%E5%90%8D%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%89%8D%E5%9B%9B%E4%BB%A3%E7%9A%84-%E5%AF%84%E5%AD%98%E5%99%A8%E7%AA%97%E5%8F%A3-%E4%B8%8D%E6%98%AF%E9%87%8D%E5%91%BD%E5%90%8D"><span class="toc-number">8.1.3.</span> <span class="toc-text">寄存器重命名：为什么前四代的&quot;寄存器窗口&quot;不是重命名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%91%E5%B0%84%E9%98%9F%E5%88%97%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%89%8D%E5%9B%9B%E4%BB%A3-%E4%B8%8D%E9%9C%80%E8%A6%81%E6%8E%92%E9%98%9F"><span class="toc-number">8.1.4.</span> <span class="toc-text">发射队列：为什么前四代&quot;不需要排队&quot;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E6%8E%92%E5%BA%8F%E7%BC%93%E5%86%B2%EF%BC%88ROB%EF%BC%89%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%89%8D%E5%9B%9B%E4%BB%A3-%E4%B8%8D%E9%9C%80%E8%A6%81%E6%8E%92%E5%BA%8F"><span class="toc-number">8.1.5.</span> <span class="toc-text">重排序缓冲（ROB）：为什么前四代&quot;不需要排序&quot;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD-%E5%AD%98%E5%82%A8%E5%8D%95%E5%85%83%EF%BC%88LSU%EF%BC%89%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E5%89%8D%E5%9B%9B%E4%BB%A3-%E6%B2%A1%E6%9C%89%E7%8B%AC%E7%AB%8B%E6%A8%A1%E5%9D%97"><span class="toc-number">8.1.6.</span> <span class="toc-text">加载&#x2F;存储单元（LSU）：为什么前四代&quot;没有独立模块&quot;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%AE%E7%82%B9%E5%8D%95%E5%85%83%EF%BC%88FPU%EF%BC%89%EF%BC%9ASPUR-%E7%9A%84-%E5%8D%8F%E5%A4%84%E7%90%86%E5%99%A8%E6%8E%A5%E5%8F%A3-%E6%98%AF%E7%A1%AC%E4%BB%B6%EF%BC%8C%E4%B8%8D%E6%98%AF%E5%BE%AE%E6%9E%B6%E6%9E%84%E5%8D%95%E5%85%83"><span class="toc-number">8.1.7.</span> <span class="toc-text">浮点单元（FPU）：SPUR 的&quot;协处理器接口&quot;是硬件，不是微架构单元</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A%E5%89%8D%E5%9B%9B%E4%BB%A3%E4%B8%8E%E7%8E%B0%E4%BB%A3-RISC%E2%80%91V-%E6%9C%BA%E5%88%B6%E7%9A%84%E5%AF%B9%E7%85%A7"><span class="toc-number">9.</span> <span class="toc-text">总结：前四代与现代 RISC‑V 机制的对照</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/16/C910-C920%EF%BC%9ARISC-V-%E8%A7%84%E8%8C%83%E7%BA%A6%E6%9D%9F%E4%B8%8B%E7%9A%84%E5%BE%AE%E6%9E%B6%E6%9E%84%E5%AE%9E%E7%8E%B0/" title="C910/C920：RISC-V 规范约束下的微架构实现">C910/C920：RISC-V 规范约束下的微架构实现</a><time datetime="2026-10-16T15:31:45.000Z" title="发表于 2026-10-16 23:31:45">2026-10-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/16/RISC-V-%E6%BA%AF%E6%BA%90%EF%BC%9A%E4%BB%8E%E4%BC%AF%E5%85%8B%E5%88%A9%E5%89%8D%E5%9B%9B%E4%BB%A3%E5%88%B0%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86/" title="RISC‑V 溯源：从伯克利前四代到开放标准">RISC‑V 溯源：从伯克利前四代到开放标准</a><time datetime="2026-10-16T15:29:59.880Z" title="发表于 2026-10-16 23:29:59">2026-10-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/23/NIC-400-RTL%E5%8A%9F%E8%83%BD%E5%88%86%E6%9E%90/" title="NIC-400 RTL功能分析">NIC-400 RTL功能分析</a><time datetime="2026-09-23T12:21:27.000Z" title="发表于 2026-09-23 20:21:27">2026-09-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/11/%E7%8E%84%E9%93%81C910-C920%E7%9A%84MMU%E8%AF%A6%E8%A7%A3/" title="玄铁C910/C920的MMU详解">玄铁C910/C920的MMU详解</a><time datetime="2026-09-11T14:51:28.000Z" title="发表于 2026-09-11 22:51:28">2026-09-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/11/%E7%8E%84%E9%93%81-C910-C920-Cache-%E4%B8%8E%E5%86%99%E5%90%88%E5%B9%B6%E8%AF%A6%E8%A7%A3/" title="玄铁 C910/C920 Cache 与写合并详解">玄铁 C910/C920 Cache 与写合并详解</a><time datetime="2026-09-11T13:34:50.000Z" title="发表于 2026-09-11 21:34:50">2026-09-11</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Cloudlet</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">簡</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/js/tw_cn.js?v=5.7.0"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.innerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    // Clean up previous event listeners and pending frames
+    if (wrap.__mermaidAbortController) {
+      wrap.__mermaidAbortController.abort()
+      if (wrap.__mermaidRafId) cancelAnimationFrame(wrap.__mermaidRafId)
+    }
+    const ac = new AbortController()
+    wrap.__mermaidAbortController = ac
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+    // Disable default gestures to prevent scroll chaining and pinch-zoom penetration in Chrome
+    svg.style.touchAction = 'none'
+
+    // Cache BoundingClientRect, throttled on scroll to reduce reflow
+    let cachedRect = svg.getBoundingClientRect()
+    let rectDirty = false
+    const markRectDirty = () => { rectDirty = true }
+    window.addEventListener('resize', markRectDirty, { signal: ac.signal })
+    window.addEventListener('scroll', markRectDirty, { signal: ac.signal, capture: true })
+    const getRect = () => {
+      if (rectDirty) {
+        cachedRect = svg.getBoundingClientRect()
+        rectDirty = false
+      }
+      return cachedRect
+    }
+
+    // Precompute clamp bounds from initial viewBox
+    const minW = initVb[2] * 0.1
+    const maxW = initVb[2] * 10
+    const minH = initVb[3] * 0.1
+    const maxH = initVb[3] * 10
+    const clampVb = vb => {
+      const out = vb.slice()
+      out[2] = clamp(out[2], minW, maxW)
+      out[3] = clamp(out[3], minH, maxH)
+      return out
+    }
+
+    // Throttle DOM updates using requestAnimationFrame
+    let pendingVb = null
+    let rafId = null
+    const applyVb = () => {
+      if (pendingVb) {
+        wrap.__mermaidCurViewBox = pendingVb
+        setSvgViewBox(svg, pendingVb)
+        pendingVb = null
+      }
+      rafId = null
+      wrap.__mermaidRafId = null
+    }
+    const setCurVb = vb => {
+      pendingVb = clampVb(vb)
+      if (!rafId) {
+        rafId = requestAnimationFrame(applyVb)
+        wrap.__mermaidRafId = rafId
+      }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      lastPointerX: 0,
+      lastPointerY: 0
+    }
+
+    const onPointerDown = e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      const curVb = wrap.__mermaidCurViewBox
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (state.pointers.size === 1) {
+        state.startVb = curVb.slice()
+        state.lastPointerX = e.clientX
+        state.lastPointerY = e.clientY
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = curVb.slice()
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = state.pointers.values().next().value
+        const dxClient = p.x - state.lastPointerX
+        const dyClient = p.y - state.lastPointerY
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+        const dx = dxClient * (curVb[2] / rect.width)
+        const dy = dyClient * (curVb[3] / rect.height)
+        setCurVb([curVb[0] - dx, curVb[1] - dy, curVb[2], curVb[3]])
+        return
+      }
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const px = curVb[0] + (cx - rect.left) * (curVb[2] / rect.width)
+        const py = curVb[1] + (cy - rect.top) * (curVb[3] / rect.height)
+        setCurVb(zoomAtPoint(state.startVb, factor, px, py))
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      // Release PointerCapture to avoid event capture anomalies
+      if (svg.hasPointerCapture && svg.hasPointerCapture(e.pointerId)) {
+        svg.releasePointerCapture(e.pointerId)
+      }
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+      } else if (state.pointers.size === 1) {
+        const p = state.pointers.values().next().value
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+      }
+    }
+
+    const onWheel = e => {
+      // Prevent event bubbling from triggering external scroll
+      e.preventDefault()
+      e.stopPropagation()
+      // Normalize deltaY across deltaMode (Chrome uses pixels, Safari uses lines)
+      let delta = e.deltaY
+      if (e.deltaMode === 1) delta *= 16
+      else if (e.deltaMode === 2) delta *= 400
+
+      // Continuous zoom factor: smoother than fixed 1.1/0.9 steps
+      const zoomFactor = Math.pow(1.001, delta)
+
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      const px = curVb[0] + (e.clientX - rect.left) * (curVb[2] / rect.width)
+      const py = curVb[1] + (e.clientY - rect.top) * (curVb[3] / rect.height)
+      setCurVb(zoomAtPoint(curVb, zoomFactor, px, py))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (init) setCurVb(init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown, { signal: ac.signal })
+    svg.addEventListener('pointermove', onPointerMove, { signal: ac.signal })
+    svg.addEventListener('pointerup', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('pointercancel', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('wheel', onWheel, { passive: false, signal: ac.signal })
+    svg.addEventListener('dblclick', onDblClick, { signal: ac.signal })
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      // Clean up event listeners before removing old SVG
+      if (item.__mermaidAbortController) {
+        item.__mermaidAbortController.abort()
+      }
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      let config = {}
+      try {
+        config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      } catch (e) {
+        console.warn('[mermaid] failed to parse dataset.config:', e)
+      }
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+      const handleError = err => {
+        console.error(`[mermaid] render failed for block #${index}:`, err)
+        const errorEl = document.createElement('div')
+        errorEl.className = 'mermaid-error'
+        errorEl.textContent = `Mermaid render error: ${err.message || err}`
+        mermaidSrc.insertAdjacentElement('afterend', errorEl)
+      }
+
+      try {
+        const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+        // mermaid v9 and v10 compatibility
+        if (typeof renderFn === 'string') {
+          renderMermaid(renderFn)
+        } else {
+          renderFn.then(({ svg }) => renderMermaid(svg)).catch(handleError)
+        }
+      } catch (err) {
+        handleError(err)
+      }
+    })
+  }
+
+  const codeToMermaid = $article => {
+    const codeMermaidEle = $article.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    const $article = document.getElementById('article-container')
+    if (!$article) return
+
+    if (false) codeToMermaid($article)
+    const $mermaid = $article.querySelectorAll('.mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/external-link-handler.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/skins/default.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/wavedrom.min.js"></script><script>
+  window.addEventListener('load', function() {
+    if (typeof WaveDrom !== 'undefined') {
+      WaveDrom.ProcessAll();
+    }
+  });
+</script>
+<script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

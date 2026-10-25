@@ -1,0 +1,1172 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>缓存与内存模型 | Cloudlet</title><meta name="author" content="Cloudlet"><meta name="copyright" content="Cloudlet"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="第一层：CPU 与主存之间的速度鸿沟 问题：CPU 等内存等得越来越久 CPU 速度的提升超过了内存访问速度的改进。&quot;等内存&quot;从偶尔发生变成常态——主存慢（介质慢、距离远、协议开销），物理和成本上存在「快的做不大，大的不够快」的硬约束。 解决：缓存（Cache） 基本思路：用一小块高速存储器，保存 CPU 最近用过、以及附近会用到的数据，放在离核心最近的地方。 能实现的理论基础">
+<meta property="og:type" content="article">
+<meta property="og:title" content="缓存与内存模型">
+<meta property="og:url" content="https://9606960.xyz/2026/10/25/%E7%BC%93%E5%AD%98%E4%B8%8E%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/index.html">
+<meta property="og:site_name" content="Cloudlet">
+<meta property="og:description" content="第一层：CPU 与主存之间的速度鸿沟 问题：CPU 等内存等得越来越久 CPU 速度的提升超过了内存访问速度的改进。&quot;等内存&quot;从偶尔发生变成常态——主存慢（介质慢、距离远、协议开销），物理和成本上存在「快的做不大，大的不够快」的硬约束。 解决：缓存（Cache） 基本思路：用一小块高速存储器，保存 CPU 最近用过、以及附近会用到的数据，放在离核心最近的地方。 能实现的理论基础">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg">
+<meta property="article:published_time" content="2026-10-25T07:51:06.000Z">
+<meta property="article:modified_time" content="2026-10-25T10:10:02.820Z">
+<meta property="article:author" content="Cloudlet">
+<meta property="article:tag" content="RISC-V">
+<meta property="article:tag" content="处理器">
+<meta property="article:tag" content="计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "缓存与内存模型",
+  "url": "https://9606960.xyz/2026/10/25/%E7%BC%93%E5%AD%98%E4%B8%8E%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/",
+  "image": "https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg",
+  "datePublished": "2026-10-25T07:51:06.000Z",
+  "dateModified": "2026-10-25T10:10:02.820Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Cloudlet",
+      "url": "https://9606960.xyz"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://9606960.xyz/2026/10/25/%E7%BC%93%E5%AD%98%E4%B8%8E%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":800,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '缓存与内存模型',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.1"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      if ($loadingBox.classList.contains('loaded')) return
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+
+  if (document.readyState === 'complete') {
+    preloader.endLoading()
+  } else {
+    window.addEventListener('load', preloader.endLoading)
+    document.addEventListener('DOMContentLoaded', preloader.endLoading)
+    // Add timeout protection: force end after 7 seconds
+    setTimeout(preloader.endLoading, 7000)
+  }
+
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">32</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Cloudlet</span></a><a class="nav-page-title" href="/"><span class="site-name">缓存与内存模型</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">缓存与内存模型</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-25T07:51:06.000Z" title="发表于 2026-10-25 15:51:06">2026-10-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-25T10:10:02.820Z" title="更新于 2026-10-25 18:10:02">2026-10-25</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><h3 id="第一层：CPU-与主存之间的速度鸿沟">第一层：CPU 与主存之间的速度鸿沟</h3>
+<h4 id="问题：CPU-等内存等得越来越久">问题：CPU 等内存等得越来越久</h4>
+<p>CPU 速度的提升超过了内存访问速度的改进。&quot;等内存&quot;从偶尔发生变成常态——主存慢（介质慢、距离远、协议开销），物理和成本上存在「快的做不大，大的不够快」的硬约束。</p>
+<h4 id="解决：缓存（Cache）">解决：缓存（Cache）</h4>
+<p><strong>基本思路</strong>：用一小块高速存储器，保存 CPU 最近用过、以及附近会用到的数据，放在离核心最近的地方。</p>
+<p><strong>能实现的理论基础</strong>——程序的两个局限性（对典型程序行为的统计观察）：</p>
+<ul>
+<li><strong>时间局部性</strong>：刚用过的数据，很可能马上再用。→ 循环反复访问同一批变量和指令，让热点留在缓存里。</li>
+<li><strong>空间局部性</strong>：用了某个地址，很可能接着用相邻地址。→ 数组、结构体、顺序执行的代码在内存中连续，让&quot;取一块、用一片&quot;划算。</li>
+</ul>
+<h4 id="新问题：单级缓存无法兼顾速度和容量">新问题：单级缓存无法兼顾速度和容量</h4>
+<p>容量大 → 面积大 → 延迟高；容量小 → 命中率低 → 没有效果。</p>
+<h4 id="解决：多级缓存（L1-L2-L3-分层）">解决：多级缓存（L1/L2/L3 分层）</h4>
+<p>每一级都是「容量、速度、成本」的不同折中点：</p>
+<ul>
+<li><strong>L1</strong>：最小最快，兜住最热的数据</li>
+<li><strong>L2</strong>：较大稍慢，接住 L1 未命中</li>
+<li><strong>L3</strong>：更大、多核共享，作为去主存前的最后缓冲</li>
+</ul>
+<p>用分层模拟&quot;又大又快&quot;。</p>
+<h3 id="第二层：多级缓存带来的组织方式问题">第二层：多级缓存带来的组织方式问题</h3>
+<h4 id="问题：多级缓存下，同一数据在-L1-和-L2-各有一份，如何管理？">问题：多级缓存下，同一数据在 L1 和 L2 各有一份，如何管理？</h4>
+<p>需要决定&quot;L2 是否必须包含 L1 的所有内容&quot;，这直接影响一致性检查和容量利用。</p>
+<h4 id="解决：包含式-vs-非包含式">解决：包含式 vs 非包含式</h4>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>优点</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>包含式</strong>​</td>
+<td>L2 包含 L1 全部内容</td>
+<td>一致性检查简单（查 L2 就知道 L1 有没有）</td>
+<td>容量重复浪费</td>
+</tr>
+<tr>
+<td><strong>非包含式</strong>​</td>
+<td>L2 不强制包含 L1</td>
+<td>容量利用更充分</td>
+<td>一致性维护复杂，需额外追踪机制</td>
+</tr>
+</tbody>
+</table>
+<p><strong>典型实施例</strong>：</p>
+<ul>
+<li><strong>指令缓存与 L2 之间采用包含式</strong>：指令缓存只读，不会产生脏数据。L2 淘汰某条指令时直接使 L1I 副本失效，管理简单且无写回开销。</li>
+<li><strong>数据缓存与 L2 之间采用排他式</strong>（非包含的一种）：数据可写，会产生脏行。L1D 淘汰干净行直接丢弃、脏行才写回 L2，减少不必要的数据搬运，提高有效容量。</li>
+</ul>
+<h4 id="新问题：写操作每次都同步到主存太慢">新问题：写操作每次都同步到主存太慢</h4>
+<p>如果每次写都跑主存，写延迟高、带宽浪费大。</p>
+<h4 id="解决：写策略——写回-vs-写直达">解决：写策略——写回 vs 写直达</h4>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>优点</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>写直达</strong>​</td>
+<td>每次写同步到主存</td>
+<td>缓存和主存永远一致，无脏行</td>
+<td>每次写都付主存延迟，占用带宽</td>
+</tr>
+<tr>
+<td><strong>写回</strong>​</td>
+<td>先改缓存，标记脏行，换出时才写回</td>
+<td>同一行多次修改只写回一次，写快、带宽省</td>
+<td>引入脏行，主存暂时过时</td>
+</tr>
+</tbody>
+</table>
+<p>写回的直接目的：</p>
+<ol>
+<li>减少写主存次数</li>
+<li>降低写延迟（缓存内完成）</li>
+<li>节省主存带宽</li>
+</ol>
+<p>多级缓存通常在高层（L1/L2）用写回策略。</p>
+<h4 id="新问题：缓存和主存之间传输的最小单位怎么定？">新问题：缓存和主存之间传输的最小单位怎么定？</h4>
+<h4 id="解决：缓存行（Cache-Line）">解决：缓存行（Cache Line）</h4>
+<p>基于空间局部性，<strong>一块一块搬运</strong>，后续对相邻地址的访问直接命中缓存。缓存行既是主存和缓存之间传输的最小单位，也是缓存里占一格的单位，还带着标签、有效位、脏位等元数据。</p>
+<ul>
+<li><strong>脏行（Dirty Line）</strong>：CPU 改过但还没写回主存的缓存行</li>
+<li><strong>干净行（Clean Line）</strong>：和主存数据一致的缓存行</li>
+</ul>
+<h3 id="第三层：多级缓存的物理布局">第三层：多级缓存的物理布局</h3>
+<h4 id="问题：多级缓存在物理上怎么放？">问题：多级缓存在物理上怎么放？</h4>
+<p>逻辑上分了 L1/L2/L3，但物理位置直接决定访问延迟和带宽。</p>
+<h4 id="解决：L1-紧耦合在核内，L2-松耦合在核外">解决：L1 紧耦合在核内，L2 松耦合在核外</h4>
+<p><strong>L1 必须在核内的原因</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>约束</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>延迟预算只有 3~4 个周期</strong>​</td>
+<td>IF 和 MEM 阶段每周期都要访问 L1。电信号在硅片上传导距离稍远就吃掉好几个周期</td>
+</tr>
+<tr>
+<td><strong>带宽需求极端</strong>​</td>
+<td>4 发射核心每周期可能同时需要：取 4 条指令（L1I）+ 读 2 个源操作数（L1D）+ 写回 1 个结果（L1D）→ 3~5 次访问/周期，需要多端口 SRAM + 超宽数据通路（64~128 字节），只有专用接口能满足</td>
+</tr>
+<tr>
+<td><strong>私有性</strong>​</td>
+<td>L1 里是当前线程的指令和栈数据，别的核几乎不碰。私有缓存每拍都不需要跟别的核&quot;打招呼&quot;，零仲裁延迟</td>
+</tr>
+</tbody>
+</table>
+<p><strong>L2 在核外（松耦合）的原因</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>约束</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>延迟容忍度高</strong>​</td>
+<td>L1 命中率通常 90~95%，L2 访问只占 5~10%。偶尔多花 10~20 周期对整体 IPC 影响有限</td>
+</tr>
+<tr>
+<td><strong>共享需求</strong>​</td>
+<td>多核交换数据（共享变量、锁、消息队列）时，共享 L2 能直接转发（cache-to-cache transfer），不用下探到主存</td>
+</tr>
+<tr>
+<td><strong>容量和面积</strong>​</td>
+<td>L2 容量是 L1 的 4~16 倍，大块 SRAM 挤进核心会挤压 ALU/寄存器堆面积，且漏电和动态功耗拉高核心电源轨</td>
+</tr>
+<tr>
+<td><strong>一致性汇聚点</strong>​</td>
+<td>所有核的 L1 缺失请求都经过 L2，天然适合做目录/嗅探过滤器，跟踪&quot;谁持有了哪行、什么状态&quot;</td>
+</tr>
+</tbody>
+</table>
+<h4 id="新问题：L2-在核外的具体放置方式因架构而异">新问题：L2 在核外的具体放置方式因架构而异</h4>
+<table>
+<thead>
+<tr>
+<th>设计</th>
+<th>L2 位置</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Intel Core</strong>​</td>
+<td>核内私有（256KB~2MB）</td>
+<td>每个核有自己的大 L2，L3 才是共享层</td>
+</tr>
+<tr>
+<td><strong>Apple M 系列</strong>​</td>
+<td>核内私有（12MB+）</td>
+<td>超大 L2 靠高命中率减少对共享层的依赖</td>
+</tr>
+<tr>
+<td><strong>ARM big.LITTLE</strong>​</td>
+<td>cluster 内共享</td>
+<td>4 大核或 4 小核共享一个 L2，cluster 间走 L3</td>
+</tr>
+<tr>
+<td><strong>C920 多核簇</strong>​</td>
+<td>cluster 内共享</td>
+<td>4 核共享一个 L2，平衡延迟和核间通信</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>核心结论</strong>：L1 在核内 = 延迟预算极紧 + 带宽极端 + 私有性；L2 在核外 = 延迟容忍 + 共享需求 + 容量/面积 + 一致性汇聚。不是物理定律，是四个力拉出来的最优解。</p>
+</blockquote>
+<h4 id="新问题：L1-分离-L2-在核外，但取指和访存仍可能争抢同一资源">新问题：L1 分离 + L2 在核外，但取指和访存仍可能争抢同一资源</h4>
+<h3 id="第四层：缓存引发的流水线结构冒险">第四层：缓存引发的流水线结构冒险</h3>
+<h4 id="问题：经典五级流水线中-IF（取指）和-MEM（访存）争抢同一-L1-缓存端口">问题：经典五级流水线中 IF（取指）和 MEM（访存）争抢同一 L1 缓存端口</h4>
+<p>同一周期既要取指令又要读数据 → 结构冒险 → 流水线被迫停顿。</p>
+<h4 id="解决：改进哈佛结构（L1-分离指令和数据）">解决：改进哈佛结构（L1 分离指令和数据）</h4>
+<p>把 L1 拆成 L1I（指令缓存）​ 和 L1D（数据缓存），取指和访存各走各的通路，同周期并行。</p>
+<h4 id="新问题：如果彻底回到原始哈佛结构（双物理地址空间）">新问题：如果彻底回到原始哈佛结构（双物理地址空间）</h4>
+<p>指令和数据放在完全独立的两个存储器里 → 软件加载麻烦、无法统一寻址。</p>
+<h4 id="解决：只在-L1-用哈佛，L2-及以下回归冯·诺依曼结构">解决：只在 L1 用哈佛，L2 及以下回归冯·诺依曼结构</h4>
+<ul>
+<li><strong>冯·诺依曼结构</strong>：指令和数据在同一存储器，同一地址空间、同一组总线访问</li>
+<li><strong>改进哈佛</strong>：L1 分离解决端口冲突，L2 以下统一避免加载/寻址麻烦</li>
+</ul>
+<blockquote>
+<p>这是通用计算机领域冯·诺依曼成为主流的原因——软件生态和统一寻址的便利性压倒了纯哈佛的理论优势。</p>
+</blockquote>
+<h3 id="第五层：多核带来的缓存一致性问题">第五层：多核带来的缓存一致性问题</h3>
+<h4 id="问题：多核各有私有缓存，同一地址出现多副本">问题：多核各有私有缓存，同一地址出现多副本</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">初始：X = 0，Core A 和 Core B 都把 X 缓存在自己 L1 里</span><br><span class="line">Core A: store X = 1    # 写在自己 L1，还没写回内存</span><br><span class="line">Core B: load  X → 0    # 读自己 L1，看到旧值 ❌</span><br></pre></td></tr></table></figure>
+<p>没有一致性协议时，Core B 永远读到旧值，程序逻辑悄悄崩溃。</p>
+<h4 id="解决：缓存一致性协议（MESI）">解决：缓存一致性协议（MESI）</h4>
+<p>保证「同一个内存地址」在多个核心的私有缓存里不出现分裂。经典教材定义两条不变式：</p>
+<table>
+<thead>
+<tr>
+<th>不变式</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**SWMR（单写者-多读者）**​</td>
+<td>任意时刻，一条缓存行要么只有一个核可写，要么多个核只读，二者互斥</td>
+</tr>
+<tr>
+<td><strong>数据值不变式</strong>​</td>
+<td>对任意地址的读，必须返回该地址所有写操作全序里&quot;最新那次&quot;的值</td>
+</tr>
+</tbody>
+</table>
+<p>每条缓存行维护四种稳定状态：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+<th>独占？</th>
+<th>和内存一致？</th>
+<th>本核能写？</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M</strong>​ (Modified)</td>
+<td>脏数据，唯一副本</td>
+<td>✅</td>
+<td>❌</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>E</strong>​ (Exclusive)</td>
+<td>干净，唯一副本</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ 静默升级 M，零总线流量</td>
+</tr>
+<tr>
+<td><strong>S</strong>​ (Shared)</td>
+<td>干净，可能多核共享</td>
+<td>❌</td>
+<td>✅</td>
+<td>❌ 写前需拿独占权</td>
+</tr>
+<tr>
+<td><strong>I</strong>​ (Invalid)</td>
+<td>副本无效</td>
+<td>—</td>
+<td>—</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p><strong>时间线示例</strong>（Core A / Core B 访问同一地址 X）：</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">A 读 X   → A:E(<span class="number">0</span>), <span class="keyword">B:I </span>   协议确认无人持有，给 A 独占干净副本</span><br><span class="line">A 写 X=<span class="number">1</span> → A:M(<span class="number">1</span>), <span class="keyword">B:I </span>   E→M 静默升级，零广播</span><br><span class="line"><span class="keyword">B </span>读 X   → A:S(<span class="number">1</span>), <span class="keyword">B:S(1) </span>A 的 M 态被探测，<span class="keyword">cache-to-cache </span>直接给 <span class="keyword">B</span></span><br><span class="line"><span class="keyword"></span><span class="keyword">B </span>写 X=<span class="number">2</span> → A:I,    <span class="keyword">B:M(2) </span><span class="keyword">B </span>发 Invalidate，A 副本失效，<span class="keyword">B </span>拿独占</span><br></pre></td></tr></table></figure>
+<h4 id="新问题：MESI-中-M-态被其他核读取时，必须写回内存再让对方读">新问题：MESI 中 M 态被其他核读取时，必须写回内存再让对方读</h4>
+<p>数据明明就在 A 的缓存里，却要绕一圈内存 → 浪费带宽。</p>
+<h4 id="解决：MOESI（加-Owned-态）">解决：MOESI（加 Owned 态）</h4>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>MESI</th>
+<th>MOESI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M 态被别的核读</td>
+<td>写回内存 → 双方变 S</td>
+<td>A 保持 <strong>O</strong>，直接给 B，B 进 S，<strong>不碰内存</strong>​</td>
+</tr>
+<tr>
+<td>O 被驱逐</td>
+<td>—</td>
+<td>必须写回（它是脏数据责任人）</td>
+</tr>
+</tbody>
+</table>
+<p>O 的本质：脏数据但允许别人持有只读副本，把&quot;写回内存&quot;和&quot;共享&quot;解耦。AMD/ARM 常用 MOESI；Intel 服务端常用 MESIF。</p>
+<h4 id="新问题：协议怎么让多核-互相看见-？">新问题：协议怎么让多核&quot;互相看见&quot;？</h4>
+<h4 id="解决：两种实现路径">解决：两种实现路径</h4>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>做法</th>
+<th>优点</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>总线嗅探</strong>​</td>
+<td>所有缓存控制器监听共享总线上的一致性事务</td>
+<td>实现简单，2~8 核高效</td>
+<td>广播不随核数扩展</td>
+</tr>
+<tr>
+<td><strong>目录协议</strong>​</td>
+<td>目录记录每条缓存行被哪些核持有，点对点通知</td>
+<td>扩展性好，适合多核/多 socket</td>
+<td>目录本身有存储和维护开销</td>
+</tr>
+</tbody>
+</table>
+<h4 id="新问题：缓存一致性「管不到」的地方">新问题：缓存一致性「管不到」的地方</h4>
+<ol>
+<li><strong>伪共享</strong>：两个核写不同变量，碰巧在同一条缓存行 → 整行反复失效，性能断崖下跌（值永远正确）。解法：<code>alignas(64)</code> 或 padding 隔开。</li>
+<li><strong>不保证内存可见顺序</strong>：Store Buffer、乱序执行让别的核可能先看到后面的写。需要内存一致性模型。</li>
+<li><strong>普通 <code>counter++</code> 不是原子操作</strong>：读-改-写三步之间可被别的核插进来。需要原子指令/锁。</li>
+</ol>
+<h3 id="第六层：内存一致性模型">第六层：内存一致性模型</h3>
+<h4 id="问题：即使缓存完全一致，多核看到的读写顺序仍然不确定">问题：即使缓存完全一致，多核看到的读写顺序仍然不确定</h4>
+<p><strong>根因：写的全局可见被 Store Buffer 延迟，而读不等人。</strong></p>
+<p>缓存一致性协议（MESI/MOESI）只管得住已经进入 L1 Cache 的缓存行状态。但 store 指令执行完毕后，数据先进 Store Buffer，还没进入 L1——此时<strong>别的核根本看不到这次写</strong>。而 load 指令直接从 L1 读数据，不等前面的 store 刷出去。</p>
+<p>这就制造了一个时间差：<strong>写的对外广播被缓冲延迟了，读没有这个延迟，两者生效时间不对齐。</strong></p>
+<p>在顺序执行的处理器上，这是<strong>唯一一种</strong>由硬件制造的&quot;重排&quot;——写后读（Store-Load）从外部看像被颠倒了顺序。乱序执行只是进一步放大了这个窗口。</p>
+<pre><code class="highlight mermaid">sequenceDiagram
+    autonumber
+    participant C0 as Core 0&lt;br/&gt;(程序顺序)
+    participant SB0 as Store Buffer&lt;br/&gt;Core 0
+    participant Mem as L1 Cache / Memory
+    participant SB1 as Store Buffer&lt;br/&gt;Core 1
+    participant C1 as Core 1&lt;br/&gt;(程序顺序)
+
+    Note over C0, C1: 初始状态: A=0, B=0
+
+    rect rgb(230, 240, 255)
+        Note over C0, SB0: 阶段一：Core 0 写入 A
+        C0-&gt;&gt;SB0: store [A] = 1
+        Note right of SB0: 数据卡在 Buffer，未刷入 L1
+        SB0--&gt;&gt;Mem: （未刷出，L1 中 A 仍为 0）
+    end
+
+    rect rgb(255, 245, 220)
+        Note over C0, Mem: 阶段二：Core 0 读取 B
+        C0-&gt;&gt;Mem: load [B]
+        Mem--&gt;&gt;C0: 返回 B = 0（旧值）
+    end
+
+    rect rgb(230, 255, 230)
+        Note over C1, SB1: 阶段三：Core 1 写入 B
+        C1-&gt;&gt;SB1: store [B] = 1
+        Note right of SB1: 数据卡在 Buffer，未刷入 L1
+        SB1--&gt;&gt;Mem: （未刷出，L1 中 B 仍为 0）
+    end
+
+    rect rgb(255, 220, 220)
+        Note over C1, Mem: 阶段四：Core 1 读取 A
+        C1-&gt;&gt;Mem: load [A]
+        Mem--&gt;&gt;C1: 返回 A = 0（旧值）
+    end
+
+    Note over C0, C1: 结果：Core 0 读 B=0，Core 1 读 A=0&lt;br/&gt;各自核内顺序正确，但跨核观察顺序分裂&lt;br/&gt;写后读（Store-Load）重排发生</code></pre>
+<p>结果：Core 0 和 Core 1 <strong>都读到 0</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>内存模型</th>
+<th>是否允许这种结果</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SC</strong>（顺序一致性）</td>
+<td>❌ 不可能</td>
+<td>要求每个核的读写严格按程序顺序全局可见，store 必须对外生效后才执行下一条</td>
+</tr>
+<tr>
+<td><strong>TSO</strong>（x86）</td>
+<td>✅ 允许</td>
+<td>顺序执行但有 Store Buffer，唯一允许的 Store-Load 重排</td>
+</tr>
+<tr>
+<td><strong>RVWMO / ARM 弱模型</strong>​</td>
+<td>✅ 允许，且重排更多</td>
+<td>乱序执行进一步放大，不止 Store-Load</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>一句话</strong>：Coherence 保证&quot;同一份数据不打架&quot;，但 Store Buffer 让写延迟全局可见、读提前执行——多核看到的读写顺序因此偏离程序顺序。这不是缓存的错，是 Store Buffer 这个&quot;一致性协议盲区&quot;制造的写后读时间差。</p>
+</blockquote>
+<h4 id="解决：内存一致性模型-约束-Store-Buffer-何时必须排空">解决：内存一致性模型 = 约束 Store Buffer 何时必须排空</h4>
+<p>内存一致性模型本质上是<strong>硬件与软件之间关于 Store Buffer 行为的契约</strong>：</p>
+<ul>
+<li><strong>硬件承诺</strong>：在哪些情况下，Store Buffer 里的写<strong>必须</strong>在后续操作之前排空（让其他核能看到）</li>
+<li><strong>软件承诺</strong>：在需要严格顺序的地方，用 fence / 原子指令告诉硬件&quot;这里不能偷懒&quot;</li>
+</ul>
+<p>不同模型的区别，就是<strong>允许 Store Buffer 延迟多久、延迟到什么程度</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>Store Buffer 约束</th>
+<th>重排自由度</th>
+<th>代表</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SC</strong>​</td>
+<td>每条 store 必须排空到 L1 后，后续指令才能执行</td>
+<td>零重排</td>
+<td>理论模型</td>
+</tr>
+<tr>
+<td><strong>TSO</strong>​</td>
+<td>store 进 Buffer 即可继续；只要求同核后续 load 能从 Buffer 转发到最新值，但<strong>其他核可以暂时看不到</strong>​</td>
+<td>仅允许 Store-Load 重排</td>
+<td>x86</td>
+</tr>
+<tr>
+<td><strong>RVWMO</strong>​</td>
+<td>同 TSO 的 Store Buffer 行为；但给了更多实现自由度（如 store 可按不同路径到达其他核、更灵活的合并/刷出策略）</td>
+<td>默认仅 Store→Load 不保序，实现可更激进</td>
+<td>RISC-V</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>📌 <strong>TSO 和 RVWMO 的默认保序规则几乎相同</strong>——都只不保序 Store→Load（写后读）。区别在 RVWMO 给了更多微架构自由度，且 fence / 原子语义更细粒度。</p>
+</blockquote>
+<h3 id="RISC-V-的选择：RVWMO">RISC-V 的选择：RVWMO</h3>
+<p>RVWMO 的保留程序顺序规则——无 fence / 原子指令时：</p>
+<table>
+<thead>
+<tr>
+<th>前操作</th>
+<th>后操作</th>
+<th>是否保序</th>
+<th>硬件实际行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Load</td>
+<td>Load</td>
+<td>✅</td>
+<td>按序或乱序均可，但全局可见顺序需保序</td>
+</tr>
+<tr>
+<td>Load</td>
+<td>Store</td>
+<td>✅</td>
+<td>load 完成后 store 才全局可见</td>
+</tr>
+<tr>
+<td>Store</td>
+<td>Store</td>
+<td>✅</td>
+<td>Store Buffer 按 FIFO 刷出</td>
+</tr>
+<tr>
+<td><strong>Store</strong>​</td>
+<td><strong>Load</strong>​</td>
+<td>❌ <strong>不保序</strong>​</td>
+<td>store 在 Buffer 里，load 就提前从 L1 读了</td>
+</tr>
+</tbody>
+</table>
+<h3 id="软件约束手段：强制-Store-Buffer-排空或等待">软件约束手段：强制 Store Buffer 排空或等待</h3>
+<p><strong>1. <code>fence</code> 指令——显式冲刷</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fence rw, rw   # 全屏障：前面的所有读写必须全局可见后，后面的才能开始</span><br><span class="line">fence w, w     # 写屏障：前面的 store 必须排空到 L1 后，后面的 store 才能执行</span><br><span class="line">fence r, r     # 读屏障：前面的 load 完成后，后面的 load 才能开始</span><br></pre></td></tr></table></figure>
+<p>硬件执行 <code>fence</code> 时的实际动作：</p>
+<ul>
+<li>标记 fence 为<strong>同步点</strong></li>
+<li>后续所有访存指令<strong>暂停发射</strong>，直到 Store Buffer 中 fence 之前的所有条目全部刷入 L1（且对其他核可见）</li>
+<li>这是&quot;暴力&quot;方案，会阻塞无关操作</li>
+</ul>
+<p><strong>2. 原子指令的 acquire / release 语义——精细约束</strong></p>
+<table>
+<thead>
+<tr>
+<th>语义</th>
+<th>硬件行为</th>
+<th>对应直觉</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>release</strong>（<code>rl</code> 位）</td>
+<td>前面的所有 store <strong>必须排空到 L1</strong>（全局可见）后，才执行这条原子写</td>
+<td>“释放锁：先把所有修改刷出去，再让别的核看到锁可用”</td>
+</tr>
+<tr>
+<td><strong>acquire</strong>（<code>aq</code> 位）</td>
+<td>后面的所有 load/store <strong>不能提前到这条原子读之前执行</strong>​</td>
+<td>“获取锁：拿到锁之后才能读共享数据”</td>
+</tr>
+</tbody>
+</table>
+<p>比全屏障 <code>fence rw,rw</code> 轻量——只约束特定方向的顺序，不阻塞无关操作。</p>
+<h4 id="新问题：乱序执行想尽可能重排，内存模型是红线">新问题：乱序执行想尽可能重排，内存模型是红线</h4>
+<p>乱序执行器会尽量让 load 提前执行、store 延迟刷出，最大化并行度。内存模型就是<strong>不可逾越的红线</strong>：</p>
+<ul>
+<li>流水线中插入检查逻辑（LSQ 依赖检查、Store Buffer 转发规则、store-to-load forwarding 的地址匹配）</li>
+<li><code>fence</code> 到来时，硬件必须<strong>暂停后续访存指令的发射</strong>，轮询 Store Buffer 排空状态</li>
+<li>原子指令的 <code>aq/rl</code> 位触发类似的同步点，但只影响特定指令窗口，代价更小</li>
+</ul>
+<h3 id="第七层：缓存的其他配套优化">第七层：缓存的其他配套优化</h3>
+<h4 id="问题：缓存满了，新数据进来该换出哪行？">问题：缓存满了，新数据进来该换出哪行？</h4>
+<h4 id="解决：替换策略（LRU-及近似）">解决：替换策略（LRU 及近似）</h4>
+<p>优先淘汰最久没被访问的行，利用时间局部性。精确 LRU 硬件开销大，实际多用伪 LRU、时钟算法等近似方案。</p>
+<h4 id="新问题：即使有缓存，未命中时仍要等主存">新问题：即使有缓存，未命中时仍要等主存</h4>
+<h4 id="解决：预取（Prefetch）">解决：预取（Prefetch）</h4>
+<p>根据访问模式（如顺序访问数组）预测接下来要用的地址，在真正被请求之前就取进缓存。代价：预取错了会浪费带宽和容量，激进程度需权衡。</p>
+<h3 id="附：两条线对照">附：两条线对照</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>缓存一致性（Cache Coherence）</th>
+<th>内存一致性（Memory Consistency）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>解决什么</strong>​</td>
+<td>同一地址的多缓存副本是否一致</td>
+<td>不同地址的读写，全局可见顺序是什么</td>
+</tr>
+<tr>
+<td><strong>关注点</strong>​</td>
+<td>数据正确性（多副本同步）</td>
+<td>顺序可见性（多核观察顺序）</td>
+</tr>
+<tr>
+<td><strong>没有缓存时</strong>​</td>
+<td>不存在</td>
+<td>依然存在</td>
+</tr>
+<tr>
+<td><strong>典型机制</strong>​</td>
+<td>MESI/MOESI</td>
+<td>SC/TSO/RVWMO</td>
+</tr>
+</tbody>
+</table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://9606960.xyz">Cloudlet</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://9606960.xyz/2026/10/25/%E7%BC%93%E5%AD%98%E4%B8%8E%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/">https://9606960.xyz/2026/10/25/%E7%BC%93%E5%AD%98%E4%B8%8E%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://9606960.xyz" target="_blank">Cloudlet</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/RISC-V/">RISC-V</a><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/">计算机</a><a class="post-meta__tags" href="/tags/%E5%A4%84%E7%90%86%E5%99%A8/">处理器</a></div><div class="post-share"><div class="social-share" data-image="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" data-sites="wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/25/RISCV%E6%8C%87%E4%BB%A4%E4%B8%8E%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84/" title="RISCV指令与指令集架构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">RISCV指令与指令集架构</div></div><div class="info-2"><div class="info-item-1">第一层：为什么需要指令集架构（ISA） 问题：软件和硬件直接对话不可行 软件是一串高级语言逻辑，硬件是一堆晶体管开关。两者无法直接沟通——需要一个标准化接口让软件&quot;告诉&quot;硬件做什么。 解决：指令 → 指令集 → 指令集架构    概念 定义 说明     指令​ 指挥硬件完成某一基本操作的单条命令，由操作码+地址码组成 机器语言的基本语句，二进制编码   指令集​ 一台 CPU 能执行的全部指令的集合 二进制编码与操作的映射表   **指令集架构（ISA）**​ 指令集的超集，软件与硬件之间的完整抽象接口规范 包含指令集 + 寄存器/内存资源 + 异常/中断模型    因果：CPU 硬件需要标准化接口 → 诞生 ISA → 软件编译后面向 ISA 编程 → 硬件实现 ISA 即可运行软件。 第二层：RISC-V ISA 的设计 问题：传统 ISA 绑定特定厂商 x86 封闭、ARM 授权昂贵 → 需要开放、模块化、可扩展的 ISA。 解决：基础 + 扩展模式    类别 名称 说明     基础指令​ RV32I 整数指令，32 个 32 位寄存器，寻址 32...</div></div></div></a><a class="pagination-related" href="/2026/10/25/RISCV%E4%BA%94%E7%BA%A7%E6%B5%81%E6%B0%B4%E7%BA%BF%E4%B8%8E%E4%B8%89%E5%A4%A7%E5%86%92%E9%99%A9/" title="RISCV五级流水线与三大冒险"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">RISCV五级流水线与三大冒险</div></div><div class="info-2"><div class="info-item-1">第一层：为什么要引入流水线 问题：单周期 CPU 硬件大量闲置 在单周期 CPU 中，一条指令必须走完&quot;取指、译码、执行、访存、写回&quot;所有步骤才能执行下一条。大量硬件资源在绝大部分时间里处于闲置状态——比如执行阶段 ALU 在干活，寄存器堆、存储器接口、写回逻辑全在围观。 解决：流水线（时间重叠的魔术） 把一条指令的执行过程拆分成多个独立的步骤，每个步骤由专门的硬件负责。当第一条指令在&quot;执行&quot;时，第二条指令正在&quot;译码&quot;，第三条指令正在&quot;取指&quot;。通过时间上的重叠，让多个硬件单元并行工作。 理想目标：让每个时钟周期都能完成一条指令，CPI（每指令周期数）逼近 1，吞吐量提升 5 倍（对应 5 级流水线）。 新问题：一旦引入流水线，三大冒险立刻把管线卡得死死的 后一条指令如果必须等前一条的结果，流水线就得停。时间重叠的前提是指令之间互不依赖，而现实程序充满依赖。 第二层：经典五级流水线的骨架 解决：拆成五个阶段，用流水线寄存器隔离 每条指令依次经过五个阶段，阶段之间插入流水线寄存器保存中间结果和控制信号——...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/25/RISCV%E6%8C%87%E4%BB%A4%E4%B8%8E%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84/" title="RISCV指令与指令集架构"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-25</div><div class="info-item-2">RISCV指令与指令集架构</div></div><div class="info-2"><div class="info-item-1">第一层：为什么需要指令集架构（ISA） 问题：软件和硬件直接对话不可行 软件是一串高级语言逻辑，硬件是一堆晶体管开关。两者无法直接沟通——需要一个标准化接口让软件&quot;告诉&quot;硬件做什么。 解决：指令 → 指令集 → 指令集架构    概念 定义 说明     指令​ 指挥硬件完成某一基本操作的单条命令，由操作码+地址码组成 机器语言的基本语句，二进制编码   指令集​ 一台 CPU 能执行的全部指令的集合 二进制编码与操作的映射表   **指令集架构（ISA）**​ 指令集的超集，软件与硬件之间的完整抽象接口规范 包含指令集 + 寄存器/内存资源 + 异常/中断模型    因果：CPU 硬件需要标准化接口 → 诞生 ISA → 软件编译后面向 ISA 编程 → 硬件实现 ISA 即可运行软件。 第二层：RISC-V ISA 的设计 问题：传统 ISA 绑定特定厂商 x86 封闭、ARM 授权昂贵 → 需要开放、模块化、可扩展的 ISA。 解决：基础 + 扩展模式    类别 名称 说明     基础指令​ RV32I 整数指令，32 个 32 位寄存器，寻址 32...</div></div></div></a><a class="pagination-related" href="/2026/10/25/RISCV%E4%BA%94%E7%BA%A7%E6%B5%81%E6%B0%B4%E7%BA%BF%E4%B8%8E%E4%B8%89%E5%A4%A7%E5%86%92%E9%99%A9/" title="RISCV五级流水线与三大冒险"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-25</div><div class="info-item-2">RISCV五级流水线与三大冒险</div></div><div class="info-2"><div class="info-item-1">第一层：为什么要引入流水线 问题：单周期 CPU 硬件大量闲置 在单周期 CPU 中，一条指令必须走完&quot;取指、译码、执行、访存、写回&quot;所有步骤才能执行下一条。大量硬件资源在绝大部分时间里处于闲置状态——比如执行阶段 ALU 在干活，寄存器堆、存储器接口、写回逻辑全在围观。 解决：流水线（时间重叠的魔术） 把一条指令的执行过程拆分成多个独立的步骤，每个步骤由专门的硬件负责。当第一条指令在&quot;执行&quot;时，第二条指令正在&quot;译码&quot;，第三条指令正在&quot;取指&quot;。通过时间上的重叠，让多个硬件单元并行工作。 理想目标：让每个时钟周期都能完成一条指令，CPI（每指令周期数）逼近 1，吞吐量提升 5 倍（对应 5 级流水线）。 新问题：一旦引入流水线，三大冒险立刻把管线卡得死死的 后一条指令如果必须等前一条的结果，流水线就得停。时间重叠的前提是指令之间互不依赖，而现实程序充满依赖。 第二层：经典五级流水线的骨架 解决：拆成五个阶段，用流水线寄存器隔离 每条指令依次经过五个阶段，阶段之间插入流水线寄存器保存中间结果和控制信号——...</div></div></div></a><a class="pagination-related" href="/2026/10/16/C910-C920%EF%BC%9ARISC-V-%E8%A7%84%E8%8C%83%E7%BA%A6%E6%9D%9F%E4%B8%8B%E7%9A%84%E5%BE%AE%E6%9E%B6%E6%9E%84%E5%AE%9E%E7%8E%B0/" title="C910&#x2F;C920：RISC-V 规范约束下的微架构实现"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-16</div><div class="info-item-2">C910&#x2F;C920：RISC-V 规范约束下的微架构实现</div></div><div class="info-2"><div class="info-item-1">结论前置 C910 与 C920 与伯克利前四代 RISC 原型没有继承关系。 C910 是玄铁基于 RISC-V 规范实现的商业处理器，其微架构（12 级乱序、3 发射、双 128 位向量）的技术源头是 1990s–2000s 商用乱序处理器传统（Intel P6、MIPS R10000、Alpha 21264），而非 SPUR 的“哑流水线级”或“寄存器窗口”。 C910 对 RISC-V 的更改分为三类：RVV 版本选择（0.7.1 而非 1.0，因流片窗口早于标准定稿）、约 100 条 vendor 自定义指令（使用 RISC-V 预留的 custom 编码空间）、DSA 扩展接口（异构耦合方案的一次工程验证，为后续标准化接口提供了实践参考）。这些更改不是对 RISC-V 规范的修改，而是在规范预留空间中的填充。C920v2 的核心更改是从 RVV 0.7.1 转向 RVV 1.0，这是“标准成熟后对齐”的选择。 但“更改”只是 C910/C920 的一小部分。 C910/C920 的微架构由三层构成：契约层（RISC-V 规范强制规定的行为）、实现层（RISC-V 规范...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Cloudlet</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">32</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><a id="card-info-btn" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/cloudlet2026"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="mailto:2380797942@qq.com.com" rel="external nofollow noreferrer" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%82%EF%BC%9ACPU-%E4%B8%8E%E4%B8%BB%E5%AD%98%E4%B9%8B%E9%97%B4%E7%9A%84%E9%80%9F%E5%BA%A6%E9%B8%BF%E6%B2%9F"><span class="toc-number">1.</span> <span class="toc-text">第一层：CPU 与主存之间的速度鸿沟</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9ACPU-%E7%AD%89%E5%86%85%E5%AD%98%E7%AD%89%E5%BE%97%E8%B6%8A%E6%9D%A5%E8%B6%8A%E4%B9%85"><span class="toc-number">1.1.</span> <span class="toc-text">问题：CPU 等内存等得越来越久</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E7%BC%93%E5%AD%98%EF%BC%88Cache%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">解决：缓存（Cache）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9A%E5%8D%95%E7%BA%A7%E7%BC%93%E5%AD%98%E6%97%A0%E6%B3%95%E5%85%BC%E9%A1%BE%E9%80%9F%E5%BA%A6%E5%92%8C%E5%AE%B9%E9%87%8F"><span class="toc-number">1.3.</span> <span class="toc-text">新问题：单级缓存无法兼顾速度和容量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%EF%BC%88L1-L2-L3-%E5%88%86%E5%B1%82%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">解决：多级缓存（L1&#x2F;L2&#x2F;L3 分层）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%82%EF%BC%9A%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E5%B8%A6%E6%9D%A5%E7%9A%84%E7%BB%84%E7%BB%87%E6%96%B9%E5%BC%8F%E9%97%AE%E9%A2%98"><span class="toc-number">2.</span> <span class="toc-text">第二层：多级缓存带来的组织方式问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E4%B8%8B%EF%BC%8C%E5%90%8C%E4%B8%80%E6%95%B0%E6%8D%AE%E5%9C%A8-L1-%E5%92%8C-L2-%E5%90%84%E6%9C%89%E4%B8%80%E4%BB%BD%EF%BC%8C%E5%A6%82%E4%BD%95%E7%AE%A1%E7%90%86%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">问题：多级缓存下，同一数据在 L1 和 L2 各有一份，如何管理？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E5%8C%85%E5%90%AB%E5%BC%8F-vs-%E9%9D%9E%E5%8C%85%E5%90%AB%E5%BC%8F"><span class="toc-number">2.2.</span> <span class="toc-text">解决：包含式 vs 非包含式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9A%E5%86%99%E6%93%8D%E4%BD%9C%E6%AF%8F%E6%AC%A1%E9%83%BD%E5%90%8C%E6%AD%A5%E5%88%B0%E4%B8%BB%E5%AD%98%E5%A4%AA%E6%85%A2"><span class="toc-number">2.3.</span> <span class="toc-text">新问题：写操作每次都同步到主存太慢</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E5%86%99%E7%AD%96%E7%95%A5%E2%80%94%E2%80%94%E5%86%99%E5%9B%9E-vs-%E5%86%99%E7%9B%B4%E8%BE%BE"><span class="toc-number">2.4.</span> <span class="toc-text">解决：写策略——写回 vs 写直达</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9A%E7%BC%93%E5%AD%98%E5%92%8C%E4%B8%BB%E5%AD%98%E4%B9%8B%E9%97%B4%E4%BC%A0%E8%BE%93%E7%9A%84%E6%9C%80%E5%B0%8F%E5%8D%95%E4%BD%8D%E6%80%8E%E4%B9%88%E5%AE%9A%EF%BC%9F"><span class="toc-number">2.5.</span> <span class="toc-text">新问题：缓存和主存之间传输的最小单位怎么定？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E7%BC%93%E5%AD%98%E8%A1%8C%EF%BC%88Cache-Line%EF%BC%89"><span class="toc-number">2.6.</span> <span class="toc-text">解决：缓存行（Cache Line）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E5%B1%82%EF%BC%9A%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E7%9A%84%E7%89%A9%E7%90%86%E5%B8%83%E5%B1%80"><span class="toc-number">3.</span> <span class="toc-text">第三层：多级缓存的物理布局</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E5%9C%A8%E7%89%A9%E7%90%86%E4%B8%8A%E6%80%8E%E4%B9%88%E6%94%BE%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">问题：多级缓存在物理上怎么放？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9AL1-%E7%B4%A7%E8%80%A6%E5%90%88%E5%9C%A8%E6%A0%B8%E5%86%85%EF%BC%8CL2-%E6%9D%BE%E8%80%A6%E5%90%88%E5%9C%A8%E6%A0%B8%E5%A4%96"><span class="toc-number">3.2.</span> <span class="toc-text">解决：L1 紧耦合在核内，L2 松耦合在核外</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9AL2-%E5%9C%A8%E6%A0%B8%E5%A4%96%E7%9A%84%E5%85%B7%E4%BD%93%E6%94%BE%E7%BD%AE%E6%96%B9%E5%BC%8F%E5%9B%A0%E6%9E%B6%E6%9E%84%E8%80%8C%E5%BC%82"><span class="toc-number">3.3.</span> <span class="toc-text">新问题：L2 在核外的具体放置方式因架构而异</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9AL1-%E5%88%86%E7%A6%BB-L2-%E5%9C%A8%E6%A0%B8%E5%A4%96%EF%BC%8C%E4%BD%86%E5%8F%96%E6%8C%87%E5%92%8C%E8%AE%BF%E5%AD%98%E4%BB%8D%E5%8F%AF%E8%83%BD%E4%BA%89%E6%8A%A2%E5%90%8C%E4%B8%80%E8%B5%84%E6%BA%90"><span class="toc-number">3.4.</span> <span class="toc-text">新问题：L1 分离 + L2 在核外，但取指和访存仍可能争抢同一资源</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E5%B1%82%EF%BC%9A%E7%BC%93%E5%AD%98%E5%BC%95%E5%8F%91%E7%9A%84%E6%B5%81%E6%B0%B4%E7%BA%BF%E7%BB%93%E6%9E%84%E5%86%92%E9%99%A9"><span class="toc-number">4.</span> <span class="toc-text">第四层：缓存引发的流水线结构冒险</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A%E7%BB%8F%E5%85%B8%E4%BA%94%E7%BA%A7%E6%B5%81%E6%B0%B4%E7%BA%BF%E4%B8%AD-IF%EF%BC%88%E5%8F%96%E6%8C%87%EF%BC%89%E5%92%8C-MEM%EF%BC%88%E8%AE%BF%E5%AD%98%EF%BC%89%E4%BA%89%E6%8A%A2%E5%90%8C%E4%B8%80-L1-%E7%BC%93%E5%AD%98%E7%AB%AF%E5%8F%A3"><span class="toc-number">4.1.</span> <span class="toc-text">问题：经典五级流水线中 IF（取指）和 MEM（访存）争抢同一 L1 缓存端口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E6%94%B9%E8%BF%9B%E5%93%88%E4%BD%9B%E7%BB%93%E6%9E%84%EF%BC%88L1-%E5%88%86%E7%A6%BB%E6%8C%87%E4%BB%A4%E5%92%8C%E6%95%B0%E6%8D%AE%EF%BC%89"><span class="toc-number">4.2.</span> <span class="toc-text">解决：改进哈佛结构（L1 分离指令和数据）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9A%E5%A6%82%E6%9E%9C%E5%BD%BB%E5%BA%95%E5%9B%9E%E5%88%B0%E5%8E%9F%E5%A7%8B%E5%93%88%E4%BD%9B%E7%BB%93%E6%9E%84%EF%BC%88%E5%8F%8C%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">新问题：如果彻底回到原始哈佛结构（双物理地址空间）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E5%8F%AA%E5%9C%A8-L1-%E7%94%A8%E5%93%88%E4%BD%9B%EF%BC%8CL2-%E5%8F%8A%E4%BB%A5%E4%B8%8B%E5%9B%9E%E5%BD%92%E5%86%AF%C2%B7%E8%AF%BA%E4%BE%9D%E6%9B%BC%E7%BB%93%E6%9E%84"><span class="toc-number">4.4.</span> <span class="toc-text">解决：只在 L1 用哈佛，L2 及以下回归冯·诺依曼结构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%94%E5%B1%82%EF%BC%9A%E5%A4%9A%E6%A0%B8%E5%B8%A6%E6%9D%A5%E7%9A%84%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-number">5.</span> <span class="toc-text">第五层：多核带来的缓存一致性问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A%E5%A4%9A%E6%A0%B8%E5%90%84%E6%9C%89%E7%A7%81%E6%9C%89%E7%BC%93%E5%AD%98%EF%BC%8C%E5%90%8C%E4%B8%80%E5%9C%B0%E5%9D%80%E5%87%BA%E7%8E%B0%E5%A4%9A%E5%89%AF%E6%9C%AC"><span class="toc-number">5.1.</span> <span class="toc-text">问题：多核各有私有缓存，同一地址出现多副本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%88MESI%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">解决：缓存一致性协议（MESI）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9AMESI-%E4%B8%AD-M-%E6%80%81%E8%A2%AB%E5%85%B6%E4%BB%96%E6%A0%B8%E8%AF%BB%E5%8F%96%E6%97%B6%EF%BC%8C%E5%BF%85%E9%A1%BB%E5%86%99%E5%9B%9E%E5%86%85%E5%AD%98%E5%86%8D%E8%AE%A9%E5%AF%B9%E6%96%B9%E8%AF%BB"><span class="toc-number">5.3.</span> <span class="toc-text">新问题：MESI 中 M 态被其他核读取时，必须写回内存再让对方读</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9AMOESI%EF%BC%88%E5%8A%A0-Owned-%E6%80%81%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">解决：MOESI（加 Owned 态）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9A%E5%8D%8F%E8%AE%AE%E6%80%8E%E4%B9%88%E8%AE%A9%E5%A4%9A%E6%A0%B8-%E4%BA%92%E7%9B%B8%E7%9C%8B%E8%A7%81-%EF%BC%9F"><span class="toc-number">5.5.</span> <span class="toc-text">新问题：协议怎么让多核&quot;互相看见&quot;？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E4%B8%A4%E7%A7%8D%E5%AE%9E%E7%8E%B0%E8%B7%AF%E5%BE%84"><span class="toc-number">5.6.</span> <span class="toc-text">解决：两种实现路径</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9A%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E3%80%8C%E7%AE%A1%E4%B8%8D%E5%88%B0%E3%80%8D%E7%9A%84%E5%9C%B0%E6%96%B9"><span class="toc-number">5.7.</span> <span class="toc-text">新问题：缓存一致性「管不到」的地方</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E5%85%AD%E5%B1%82%EF%BC%9A%E5%86%85%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">6.</span> <span class="toc-text">第六层：内存一致性模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A%E5%8D%B3%E4%BD%BF%E7%BC%93%E5%AD%98%E5%AE%8C%E5%85%A8%E4%B8%80%E8%87%B4%EF%BC%8C%E5%A4%9A%E6%A0%B8%E7%9C%8B%E5%88%B0%E7%9A%84%E8%AF%BB%E5%86%99%E9%A1%BA%E5%BA%8F%E4%BB%8D%E7%84%B6%E4%B8%8D%E7%A1%AE%E5%AE%9A"><span class="toc-number">6.1.</span> <span class="toc-text">问题：即使缓存完全一致，多核看到的读写顺序仍然不确定</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E5%86%85%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B-%E7%BA%A6%E6%9D%9F-Store-Buffer-%E4%BD%95%E6%97%B6%E5%BF%85%E9%A1%BB%E6%8E%92%E7%A9%BA"><span class="toc-number">6.2.</span> <span class="toc-text">解决：内存一致性模型 &#x3D; 约束 Store Buffer 何时必须排空</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RISC-V-%E7%9A%84%E9%80%89%E6%8B%A9%EF%BC%9ARVWMO"><span class="toc-number">7.</span> <span class="toc-text">RISC-V 的选择：RVWMO</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6%E7%BA%A6%E6%9D%9F%E6%89%8B%E6%AE%B5%EF%BC%9A%E5%BC%BA%E5%88%B6-Store-Buffer-%E6%8E%92%E7%A9%BA%E6%88%96%E7%AD%89%E5%BE%85"><span class="toc-number">8.</span> <span class="toc-text">软件约束手段：强制 Store Buffer 排空或等待</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9A%E4%B9%B1%E5%BA%8F%E6%89%A7%E8%A1%8C%E6%83%B3%E5%B0%BD%E5%8F%AF%E8%83%BD%E9%87%8D%E6%8E%92%EF%BC%8C%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%98%AF%E7%BA%A2%E7%BA%BF"><span class="toc-number">8.1.</span> <span class="toc-text">新问题：乱序执行想尽可能重排，内存模型是红线</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%83%E5%B1%82%EF%BC%9A%E7%BC%93%E5%AD%98%E7%9A%84%E5%85%B6%E4%BB%96%E9%85%8D%E5%A5%97%E4%BC%98%E5%8C%96"><span class="toc-number">9.</span> <span class="toc-text">第七层：缓存的其他配套优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A%E7%BC%93%E5%AD%98%E6%BB%A1%E4%BA%86%EF%BC%8C%E6%96%B0%E6%95%B0%E6%8D%AE%E8%BF%9B%E6%9D%A5%E8%AF%A5%E6%8D%A2%E5%87%BA%E5%93%AA%E8%A1%8C%EF%BC%9F"><span class="toc-number">9.1.</span> <span class="toc-text">问题：缓存满了，新数据进来该换出哪行？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E6%9B%BF%E6%8D%A2%E7%AD%96%E7%95%A5%EF%BC%88LRU-%E5%8F%8A%E8%BF%91%E4%BC%BC%EF%BC%89"><span class="toc-number">9.2.</span> <span class="toc-text">解决：替换策略（LRU 及近似）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B0%E9%97%AE%E9%A2%98%EF%BC%9A%E5%8D%B3%E4%BD%BF%E6%9C%89%E7%BC%93%E5%AD%98%EF%BC%8C%E6%9C%AA%E5%91%BD%E4%B8%AD%E6%97%B6%E4%BB%8D%E8%A6%81%E7%AD%89%E4%B8%BB%E5%AD%98"><span class="toc-number">9.3.</span> <span class="toc-text">新问题：即使有缓存，未命中时仍要等主存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%EF%BC%9A%E9%A2%84%E5%8F%96%EF%BC%88Prefetch%EF%BC%89"><span class="toc-number">9.4.</span> <span class="toc-text">解决：预取（Prefetch）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%EF%BC%9A%E4%B8%A4%E6%9D%A1%E7%BA%BF%E5%AF%B9%E7%85%A7"><span class="toc-number">10.</span> <span class="toc-text">附：两条线对照</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/RISCV%E6%8C%87%E4%BB%A4%E4%B8%8E%E6%8C%87%E4%BB%A4%E9%9B%86%E6%9E%B6%E6%9E%84/" title="RISCV指令与指令集架构">RISCV指令与指令集架构</a><time datetime="2026-10-25T07:52:04.000Z" title="发表于 2026-10-25 15:52:04">2026-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/%E7%BC%93%E5%AD%98%E4%B8%8E%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/" title="缓存与内存模型">缓存与内存模型</a><time datetime="2026-10-25T07:51:06.000Z" title="发表于 2026-10-25 15:51:06">2026-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/25/RISCV%E4%BA%94%E7%BA%A7%E6%B5%81%E6%B0%B4%E7%BA%BF%E4%B8%8E%E4%B8%89%E5%A4%A7%E5%86%92%E9%99%A9/" title="RISCV五级流水线与三大冒险">RISCV五级流水线与三大冒险</a><time datetime="2026-10-25T07:49:42.000Z" title="发表于 2026-10-25 15:49:42">2026-10-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/16/C910-C920%EF%BC%9ARISC-V-%E8%A7%84%E8%8C%83%E7%BA%A6%E6%9D%9F%E4%B8%8B%E7%9A%84%E5%BE%AE%E6%9E%B6%E6%9E%84%E5%AE%9E%E7%8E%B0/" title="C910/C920：RISC-V 规范约束下的微架构实现">C910/C920：RISC-V 规范约束下的微架构实现</a><time datetime="2026-10-16T15:31:45.000Z" title="发表于 2026-10-16 23:31:45">2026-10-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/16/RISC-V-%E6%BA%AF%E6%BA%90%EF%BC%9A%E4%BB%8E%E4%BC%AF%E5%85%8B%E5%88%A9%E5%89%8D%E5%9B%9B%E4%BB%A3%E5%88%B0%E5%BC%80%E6%94%BE%E6%A0%87%E5%87%86/" title="RISC‑V 溯源：从伯克利前四代到开放标准">RISC‑V 溯源：从伯克利前四代到开放标准</a><time datetime="2026-10-16T15:29:59.880Z" title="发表于 2026-10-16 23:29:59">2026-10-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Cloudlet</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">簡</button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><script src="/js/tw_cn.js?v=5.7.0"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.innerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+
+    setTimeout(() => URL.revokeObjectURL(url), 5000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    // Clean up previous event listeners and pending frames
+    if (wrap.__mermaidAbortController) {
+      wrap.__mermaidAbortController.abort()
+      if (wrap.__mermaidRafId) cancelAnimationFrame(wrap.__mermaidRafId)
+    }
+    const ac = new AbortController()
+    wrap.__mermaidAbortController = ac
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+    // Disable default gestures to prevent scroll chaining and pinch-zoom penetration in Chrome
+    svg.style.touchAction = 'none'
+
+    // Cache BoundingClientRect, throttled on scroll to reduce reflow
+    let cachedRect = svg.getBoundingClientRect()
+    let rectDirty = false
+    const markRectDirty = () => { rectDirty = true }
+    window.addEventListener('resize', markRectDirty, { signal: ac.signal })
+    window.addEventListener('scroll', markRectDirty, { signal: ac.signal, capture: true })
+    const getRect = () => {
+      if (rectDirty) {
+        cachedRect = svg.getBoundingClientRect()
+        rectDirty = false
+      }
+      return cachedRect
+    }
+
+    // Precompute clamp bounds from initial viewBox
+    const minW = initVb[2] * 0.1
+    const maxW = initVb[2] * 10
+    const minH = initVb[3] * 0.1
+    const maxH = initVb[3] * 10
+    const clampVb = vb => {
+      const out = vb.slice()
+      out[2] = clamp(out[2], minW, maxW)
+      out[3] = clamp(out[3], minH, maxH)
+      return out
+    }
+
+    // Throttle DOM updates using requestAnimationFrame
+    let pendingVb = null
+    let rafId = null
+    const applyVb = () => {
+      if (pendingVb) {
+        wrap.__mermaidCurViewBox = pendingVb
+        setSvgViewBox(svg, pendingVb)
+        pendingVb = null
+      }
+      rafId = null
+      wrap.__mermaidRafId = null
+    }
+    const setCurVb = vb => {
+      pendingVb = clampVb(vb)
+      if (!rafId) {
+        rafId = requestAnimationFrame(applyVb)
+        wrap.__mermaidRafId = rafId
+      }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      lastPointerX: 0,
+      lastPointerY: 0
+    }
+
+    const onPointerDown = e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      const curVb = wrap.__mermaidCurViewBox
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (state.pointers.size === 1) {
+        state.startVb = curVb.slice()
+        state.lastPointerX = e.clientX
+        state.lastPointerY = e.clientY
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = curVb.slice()
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = state.pointers.values().next().value
+        const dxClient = p.x - state.lastPointerX
+        const dyClient = p.y - state.lastPointerY
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+        const dx = dxClient * (curVb[2] / rect.width)
+        const dy = dyClient * (curVb[3] / rect.height)
+        setCurVb([curVb[0] - dx, curVb[1] - dy, curVb[2], curVb[3]])
+        return
+      }
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const px = curVb[0] + (cx - rect.left) * (curVb[2] / rect.width)
+        const py = curVb[1] + (cy - rect.top) * (curVb[3] / rect.height)
+        setCurVb(zoomAtPoint(state.startVb, factor, px, py))
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      // Release PointerCapture to avoid event capture anomalies
+      if (svg.hasPointerCapture && svg.hasPointerCapture(e.pointerId)) {
+        svg.releasePointerCapture(e.pointerId)
+      }
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+      } else if (state.pointers.size === 1) {
+        const p = state.pointers.values().next().value
+        state.lastPointerX = p.x
+        state.lastPointerY = p.y
+      }
+    }
+
+    const onWheel = e => {
+      // Prevent event bubbling from triggering external scroll
+      e.preventDefault()
+      e.stopPropagation()
+      // Normalize deltaY across deltaMode (Chrome uses pixels, Safari uses lines)
+      let delta = e.deltaY
+      if (e.deltaMode === 1) delta *= 16
+      else if (e.deltaMode === 2) delta *= 400
+
+      // Continuous zoom factor: smoother than fixed 1.1/0.9 steps
+      const zoomFactor = Math.pow(1.001, delta)
+
+      const curVb = wrap.__mermaidCurViewBox
+      const rect = getRect()
+      const px = curVb[0] + (e.clientX - rect.left) * (curVb[2] / rect.width)
+      const py = curVb[1] + (e.clientY - rect.top) * (curVb[3] / rect.height)
+      setCurVb(zoomAtPoint(curVb, zoomFactor, px, py))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (init) setCurVb(init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown, { signal: ac.signal })
+    svg.addEventListener('pointermove', onPointerMove, { signal: ac.signal })
+    svg.addEventListener('pointerup', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('pointercancel', onPointerUpOrCancel, { signal: ac.signal })
+    svg.addEventListener('wheel', onWheel, { passive: false, signal: ac.signal })
+    svg.addEventListener('dblclick', onDblClick, { signal: ac.signal })
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+      // Clean up event listeners before removing old SVG
+      if (item.__mermaidAbortController) {
+        item.__mermaidAbortController.abort()
+      }
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      let config = {}
+      try {
+        config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      } catch (e) {
+        console.warn('[mermaid] failed to parse dataset.config:', e)
+      }
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+      const handleError = err => {
+        console.error(`[mermaid] render failed for block #${index}:`, err)
+        const errorEl = document.createElement('div')
+        errorEl.className = 'mermaid-error'
+        errorEl.textContent = `Mermaid render error: ${err.message || err}`
+        mermaidSrc.insertAdjacentElement('afterend', errorEl)
+      }
+
+      try {
+        const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+        // mermaid v9 and v10 compatibility
+        if (typeof renderFn === 'string') {
+          renderMermaid(renderFn)
+        } else {
+          renderFn.then(({ svg }) => renderMermaid(svg)).catch(handleError)
+        }
+      } catch (err) {
+        handleError(err)
+      }
+    })
+  }
+
+  const codeToMermaid = $article => {
+    const codeMermaidEle = $article.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    const $article = document.getElementById('article-container')
+    if (!$article) return
+
+    if (false) codeToMermaid($article)
+    const $mermaid = $article.querySelectorAll('.mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script src="/js/external-link-handler.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/skins/default.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.1.0/wavedrom.min.js"></script><script>
+  window.addEventListener('load', function() {
+    if (typeof WaveDrom !== 'undefined') {
+      WaveDrom.ProcessAll();
+    }
+  });
+</script>
+<script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.7.0"></script></div></div></body></html>

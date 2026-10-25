@@ -7,7 +7,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg">
 <meta property="article:published_time" content="2026-09-06T05:08:02.000Z">
-<meta property="article:modified_time" content="2026-10-25T06:53:51.044Z">
+<meta property="article:modified_time" content="2026-10-25T15:02:25.356Z">
 <meta property="article:author" content="Cloudlet">
 <meta property="article:tag" content="SystemVerilog">
 <meta name="twitter:card" content="summary">
@@ -18,7 +18,7 @@
   "url": "https://9606960.xyz/2026/09/06/IC%E9%AA%8C%E8%AF%81%E4%B8%ADforce%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/",
   "image": "https://9606960.xyz/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg",
   "datePublished": "2026-09-06T05:08:02.000Z",
-  "dateModified": "2026-10-25T06:53:51.044Z",
+  "dateModified": "2026-10-25T15:02:25.356Z",
   "author": [
     {
       "@type": "Person",
@@ -231,7 +231,7 @@
     btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
     btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
   }
-})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">32</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Cloudlet</span></a><a class="nav-page-title" href="/"><span class="site-name">IC验证中force命令使用指南</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">IC验证中force命令使用指南</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-06T05:08:02.000Z" title="发表于 2026-09-06 13:08:02">2026-09-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-25T06:53:51.044Z" title="更新于 2026-10-25 14:53:51">2026-10-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/IC%E9%AA%8C%E8%AF%81/">IC验证</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><blockquote>
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/fb3abcd6be3619800e6e291ec5bc6b11.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">32</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">8</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Cloudlet</span></a><a class="nav-page-title" href="/"><span class="site-name">IC验证中force命令使用指南</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">IC验证中force命令使用指南</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-06T05:08:02.000Z" title="发表于 2026-09-06 13:08:02">2026-09-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-25T15:02:25.356Z" title="更新于 2026-10-25 23:02:25">2026-10-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/IC%E9%AA%8C%E8%AF%81/">IC验证</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><blockquote>
 <p>本文由AI生成，不具备参考价值。</p>
 </blockquote>
 <hr>
@@ -240,7 +240,8 @@
 <p>想象你正在开车，方向盘在自己手中（这是 DUT 内部逻辑对信号的控制）。突然副驾驶伸手<strong>死死抓住方向盘</strong>——无论你怎么转，方向盘都纹丝不动，直到他主动松手。</p>
 <p><strong><code>force</code> 干的就是这件事</strong>：强行夺取信号控制权，DUT 内部任何逻辑都无法改变，直到你执行 <code>release</code>。</p>
 <h3 id="1-2-三大核心认知">1.2 三大核心认知</h3>
-<pre><code class="highlight mermaid">graph LR
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+graph LR
     A[force 的本质] --&gt; B[≠ 赋值]
     A --&gt; C[= 夺取控制权]
     A --&gt; D[是非正常手段]
@@ -278,7 +279,8 @@
 <hr>
 <h2 id="二、原理篇-——-force-怎么工作？">二、原理篇 —— <code>force</code> 怎么工作？</h2>
 <h3 id="2-1-信号控制权金字塔">2.1 信号控制权金字塔</h3>
-<pre><code class="highlight mermaid">flowchart TD
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TD
     A[🔴 force 命令&lt;br/&gt;最高优先级] --&gt; B[🟡 assign / 门级输出&lt;br/&gt;组合逻辑驱动]
     B --&gt; C[🟢 always / initial 块&lt;br/&gt;时序逻辑驱动]
     
@@ -287,7 +289,8 @@
     style C fill:#6bcb77,color:#fff</code></pre>
 <p><strong>核心结论</strong>：<code>force</code> 站在金字塔顶端，无视并覆盖下面所有层次的驱动。</p>
 <h3 id="2-2-仿真器内部机制">2.2 仿真器内部机制</h3>
-<pre><code class="highlight mermaid">flowchart LR
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart LR
     DUT[DUT 内部逻辑] --&gt;|计算| DV[驱动值]
     TB[验证代码] --&gt;|force| FV[强制值]
     
@@ -319,7 +322,8 @@
 </tbody>
 </table>
 <h3 id="2-3-force-的传播特性">2.3 <code>force</code> 的传播特性</h3>
-<pre><code class="highlight mermaid">flowchart TB
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TB
     subgraph force一个wire
         direction TB
         W[wire 型信号] --&gt;|强制值传播| W1[模块A]
@@ -360,7 +364,8 @@
 <hr>
 <h2 id="三、操作篇-——-怎么用？怎么选？">三、操作篇 —— 怎么用？怎么选？</h2>
 <h3 id="3-1-决策流程图：该用-force-还是-deposit？">3.1 决策流程图：该用 <code>force</code> 还是 <code>deposit</code>？</h3>
-<pre><code class="highlight mermaid">flowchart TD
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TD
     START[需要改变信号值] --&gt; Q1&#123;目的是什么？&#125;
     
     Q1 --&gt;|消除X态 赋初值| A[用 deposit]
@@ -415,7 +420,8 @@
 <h3 id="3-3-基础语法">3.3 基础语法</h3>
 <figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 基本格式</span></span><br><span class="line"><span class="keyword">force</span> &lt;信号路径&gt; = &lt;值&gt;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 示例</span></span><br><span class="line"><span class="keyword">force</span> u_dut<span class="variable">.reset_n</span> = <span class="number">1&#x27;b0</span>;   <span class="comment">// 强制复位</span></span><br><span class="line"><span class="keyword">force</span> u_dut<span class="variable">.cnt</span> = <span class="number">8&#x27;hFF</span>;      <span class="comment">// 强制计数器为 FF</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 释放（必须！）</span></span><br><span class="line"><span class="keyword">release</span> u_dut<span class="variable">.reset_n</span>;        <span class="comment">// 恢复 DUT 控制权</span></span><br></pre></td></tr></table></figure>
 <h3 id="3-4-三种释放模式">3.4 三种释放模式</h3>
-<pre><code class="highlight mermaid">flowchart TB
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TB
     subgraph 模式1[模式1 基于时间]
         direction TB
         F1[force] --&gt; T[超时到达]
@@ -522,7 +528,8 @@
 <p><strong>模板2：后仿真安全的 force</strong></p>
 <figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">task</span> <span class="keyword">automatic</span> safe_force(<span class="keyword">ref</span> <span class="keyword">logic</span> signal, <span class="keyword">bit</span> value);</span><br><span class="line">    @(<span class="keyword">negedge</span> clk);      <span class="comment">// 先等时钟下降沿</span></span><br><span class="line">    #<span class="number">1</span>ps;                <span class="comment">// 再等 1ps，避开时序窗口</span></span><br><span class="line">    <span class="keyword">force</span> signal = value;</span><br><span class="line"><span class="keyword">endtask</span></span><br></pre></td></tr></table></figure>
 <h3 id="4-3-三条铁律">4.3 三条铁律</h3>
-<pre><code class="highlight mermaid">flowchart TB
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TB
     subgraph 铁律1[铁律1]
     direction TB
         F[force] &lt;--&gt; R[release]
@@ -541,7 +548,8 @@
 <hr>
 <h2 id="五、调试篇-——-force-为什么不生效？">五、调试篇 —— <code>force</code> 为什么不生效？</h2>
 <h3 id="5-1-问题现象总览">5.1 问题现象总览</h3>
-<pre><code class="highlight mermaid">flowchart TD
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TD
     subgraph 常见问题
         P1[force不生效&lt;br/&gt;信号无变化]
         P2[force后变X]
@@ -558,7 +566,8 @@
 <h3 id="5-2-问题1：位宽不匹配">5.2 问题1：位宽不匹配</h3>
 <figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DUT 中</span></span><br><span class="line"><span class="keyword">logic</span> [<span class="number">7</span>:<span class="number">0</span>] data_out;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ❌ 位宽不匹配——可能静默失败</span></span><br><span class="line"><span class="keyword">force</span> u_dut<span class="variable">.data_out</span> = <span class="number">1&#x27;b1</span>;    <span class="comment">// 危险！</span></span><br><span class="line"><span class="keyword">force</span> u_dut<span class="variable">.data_out</span> = &#x27;<span class="number">1</span>;      <span class="comment">// 危险！</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 正确做法</span></span><br><span class="line"><span class="keyword">force</span> u_dut<span class="variable">.data_out</span> = <span class="number">8&#x27;b11111111</span>;</span><br><span class="line"><span class="keyword">force</span> u_dut<span class="variable">.data_out</span> = &#123;<span class="number">8</span>&#123;<span class="number">1&#x27;b1</span>&#125;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调试：检查位宽</span></span><br><span class="line"><span class="built_in">$display</span>(<span class="string">&quot;Width: %0d&quot;</span>, <span class="built_in">$size</span>(u_dut<span class="variable">.data_out</span>));</span><br></pre></td></tr></table></figure>
 <h3 id="5-3-问题2：路径错误">5.3 问题2：路径错误</h3>
-<pre><code class="highlight mermaid">flowchart TB
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TB
 subgraph 正确的路径写法
 P1[top.gen_blk索引.my_module.sig]
 end
@@ -574,7 +583,8 @@ GB --&gt; GM[my_module]
 end</code></pre>
 <figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// generate 块中的信号</span></span><br><span class="line"><span class="keyword">generate</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">genvar</span> i=<span class="number">0</span>; i&lt;<span class="number">4</span>; i++) <span class="keyword">begin</span> : gen_blk</span><br><span class="line">        my_module u_mod(.*);</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">endgenerate</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ❌ 错误：缺少 gen_blk 层级</span></span><br><span class="line"><span class="keyword">force</span> top<span class="variable">.u_mod</span><span class="variable">.sig</span> = <span class="number">1&#x27;b1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 正确：包含 generate 块名和索引</span></span><br><span class="line"><span class="keyword">force</span> top<span class="variable">.gen_blk</span>[<span class="number">1</span>]<span class="variable">.u_mod</span><span class="variable">.sig</span> = <span class="number">1&#x27;b1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Package 中的信号</span></span><br><span class="line"><span class="keyword">force</span> my_pkg::global_cnt = <span class="number">8&#x27;hAA</span>;   <span class="comment">// 双冒号</span></span><br></pre></td></tr></table></figure>
 <h3 id="5-4-问题3：多个-force-互相覆盖">5.4 问题3：多个 <code>force</code> 互相覆盖</h3>
-<pre><code class="highlight mermaid">flowchart TD
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TD
     F1[文件A force = 1] --&gt;|后执行| F2[文件B force = 0]
     F2 --&gt;|覆盖| F1
     F2 --&gt;|release| NORMAL[回到正常驱动值]
@@ -584,7 +594,8 @@ end</code></pre>
     style F2 fill:#ff6b6b,color:#fff</code></pre>
 <figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 调试：force 前检查是否已被 force</span></span><br><span class="line"><span class="keyword">if</span> ($is_forced(u_dut<span class="variable">.flag</span>)) <span class="keyword">begin</span>    <span class="comment">// VCS 特有函数</span></span><br><span class="line">    <span class="built_in">$warning</span>(<span class="string">&quot;Signal already forced, releasing first&quot;</span>);</span><br><span class="line">    <span class="keyword">release</span> u_dut<span class="variable">.flag</span>;</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">force</span> u_dut<span class="variable">.flag</span> = <span class="number">1&#x27;b1</span>;</span><br></pre></td></tr></table></figure>
 <h3 id="5-5-问题4：后仿中-force-导致-X-态">5.5 问题4：后仿中 force 导致 X 态</h3>
-<pre><code class="highlight mermaid">flowchart TD
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TD
     X[force后信号变X] --&gt; C1&#123;force在时钟沿?&#125;
     C1 --&gt;|是| S1[改用 negedge clk 1ps]
     C1 --&gt;|否| C2&#123;force的是寄存器D端?&#125;
@@ -593,7 +604,8 @@ end</code></pre>
     C3 --&gt;|是| S3[检查SDF 调整force时机]
     C3 --&gt;|否| S4[检查多驱动冲突]</code></pre>
 <h3 id="5-6-调试-三板斧">5.6 调试&quot;三板斧&quot;</h3>
-<pre><code class="highlight mermaid">flowchart LR
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart LR
     STEP1[第一步&lt;br/&gt;确认路径] --&gt; STEP2[第二步&lt;br/&gt;确认变化]
     STEP2 --&gt; STEP3[第三步&lt;br/&gt;确认持续]</code></pre>
 <figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 第一步：确认路径存在且类型正确</span></span><br><span class="line"><span class="built_in">$display</span>(<span class="string">&quot;Path check: %d&quot;</span>, $check_path(<span class="string">&quot;u_dut.target_sig&quot;</span>));</span><br><span class="line"><span class="built_in">$display</span>(<span class="string">&quot;Type: %s, Width: %0d&quot;</span>, <span class="built_in">$typename</span>(u_dut<span class="variable">.target_sig</span>), <span class="built_in">$size</span>(u_dut<span class="variable">.target_sig</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 第二步：force 前后打印值，确认变化</span></span><br><span class="line"><span class="built_in">$display</span>(<span class="string">&quot;Before force: %h&quot;</span>, u_dut<span class="variable">.target_sig</span>);</span><br><span class="line"><span class="keyword">force</span> u_dut<span class="variable">.target_sig</span> = <span class="number">8&#x27;hFF</span>;</span><br><span class="line"><span class="built_in">$display</span>(<span class="string">&quot;After force: %h&quot;</span>, u_dut<span class="variable">.target_sig</span>);   <span class="comment">// 应显示 FF</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 第三步：延迟后再次打印，确认未被覆盖</span></span><br><span class="line">#<span class="number">100</span>;</span><br><span class="line"><span class="built_in">$display</span>(<span class="string">&quot;After 100ns: %h&quot;</span>, u_dut<span class="variable">.target_sig</span>);</span><br></pre></td></tr></table></figure>
@@ -642,7 +654,8 @@ end</code></pre>
 <hr>
 <h2 id="六、进阶篇-——-高手进阶之路">六、进阶篇 —— 高手进阶之路</h2>
 <h3 id="6-1-不同工具行为差异">6.1 不同工具行为差异</h3>
-<pre><code class="highlight mermaid">flowchart TD
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TD
     subgraph VCS[VCS]
         V1[位宽不匹配 高位补零 警告]
         V2[检查函数 is_forced]
@@ -661,7 +674,8 @@ end</code></pre>
         X3[查看 show forces]
     end</code></pre>
 <h3 id="6-2-UVM-环境中的-force">6.2 UVM 环境中的 <code>force</code></h3>
-<pre><code class="highlight mermaid">flowchart TB
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TB
     subgraph 原生force
         NF[force u_dut.reg = val] --&gt;|风险| R1[路径错误静默失败]
         NF --&gt;|风险| R2[忘记release]
@@ -674,7 +688,8 @@ end</code></pre>
     end</code></pre>
 <figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 推荐：UVM 封装的 force</span></span><br><span class="line">uvm_hdl_force(<span class="string">&quot;u_dut.reg_a&quot;</span>, <span class="number">32&#x27;hDEADBEEF</span>);</span><br><span class="line">uvm_hdl_release(<span class="string">&quot;u_dut.reg_a&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 推荐：UVM 后门写入（替代 deposit）</span></span><br><span class="line">uvm_hdl_deposit(<span class="string">&quot;u_dut.reg_a&quot;</span>, <span class="number">32&#x27;h12345678</span>);</span><br></pre></td></tr></table></figure>
 <h3 id="6-3-从-force-走向-无-force-验证">6.3 从 <code>force</code> 走向&quot;无 <code>force</code>&quot;验证</h3>
-<pre><code class="highlight mermaid">flowchart TD
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TD
     subgraph 传统方式
         F[force] --&gt;|问题| P1[不可综合]
         F --&gt;|问题| P2[时序问题]
@@ -725,7 +740,8 @@ end</code></pre>
 <hr>
 <h2 id="七、总结篇-——-一张图记住全部">七、总结篇 —— 一张图记住全部</h2>
 <h3 id="7-1-核心知识全景图">7.1 核心知识全景图</h3>
-<pre><code class="highlight mermaid">flowchart TD
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+flowchart TD
     subgraph 认知层
         C1[force = 夺取控制权]
         C2[非正常手段 调试工具]
@@ -767,7 +783,8 @@ end</code></pre>
 <p><strong><code>force</code> 是仿真器的&quot;万能钥匙&quot;，能强行打开任何信号的门，但必须亲手关回去（<code>release</code>）。它只用于调试，永远不要成为验证用例的常规武器。</strong></p>
 </blockquote>
 <h3 id="7-3-核心知识点速记">7.3 核心知识点速记</h3>
-<pre><code class="highlight mermaid">mindmap
+<pre><code class="highlight mermaid">%%&#123;init: &#123;&#x27;themeVariables&#x27;: &#123;&#x27;fontSize&#x27;: &#x27;16px&#x27;, &#x27;fontFamily&#x27;: &#x27;var(--font-body)&#x27;&#125;&#125;&#125;%%
+mindmap
   root force 核心
     夺取控制权
       不是赋值
@@ -1183,7 +1200,7 @@ end</code></pre>
     const $article = document.getElementById('article-container')
     if (!$article) return
 
-    if (false) codeToMermaid($article)
+    if (true) codeToMermaid($article)
     const $mermaid = $article.querySelectorAll('.mermaid-wrap')
     if ($mermaid.length === 0) return
 

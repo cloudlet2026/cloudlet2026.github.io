@@ -6173,6 +6173,9 @@ figure.highlight pre .javascript .function {
   max-width: 100%;
   height: 100%;
 }
+pre > code.mermaid {
+  display: none;
+}
 .utterances,
 .fb-comments iframe {
   width: 100% !important;
